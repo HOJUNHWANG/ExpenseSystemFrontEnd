@@ -2,6 +2,7 @@
 import { Link, NavLink, Route, Routes, Navigate } from "react-router-dom";
 import CreateExpenseReportForm from "./components/CreateExpenseReportForm";
 import ExpenseReportList from "./components/ExpenseReportList";
+import ExpenseReportDetail from "./components/ExpenseReportDetail.jsx";
 
 function App() {
   return (

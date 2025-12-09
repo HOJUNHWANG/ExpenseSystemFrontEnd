@@ -57,6 +57,7 @@ function App() {
           <Routes>
             <Route path="/create" element={<CreateExpenseReportForm />} />
             <Route path="/reports" element={<ExpenseReportList />} />
+            <Route path="/reports/:id" element={<ExpenseReportDetail />} />
             {/* 루트 접속 시 /create로 보내기 */}
             <Route path="/" element={<Navigate to="/create" replace />} />
             {/* 잘못된 경로는 /create로 */}

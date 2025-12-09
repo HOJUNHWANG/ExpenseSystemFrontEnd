@@ -1,10 +1,13 @@
 // src/components/ExpenseReportList.jsx
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function ExpenseReportList() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
+
 
   // 일단 submitterId 고정 1로 사용 (나중에 로그인 붙이면 변경)
   const submitterId = 1;
@@ -71,15 +74,11 @@ export default function ExpenseReportList() {
             </thead>
             <tbody>
               {reports.map((r) => (
-                <tr
-                  key={r.id}
-                  className="border-b hover:bg-slate-50 cursor-pointer"
-                  onClick={() => {
-                    // 일단은 상세 페이지 아직 없으니 콘솔/alert만
-                    console.log("Clicked report", r.id);
-                    alert(`(다음 단계) 상세로 이동: report id = ${r.id}`);
-                  }}
-                >
+                  <tr
+                      key={r.id}
+                      className="border-b hover:bg-slate-50 cursor-pointer"
+                      onClick={() => navigate(`/reports/${r.id}`)}
+                  >
                   <td className="px-3 py-2">{r.id}</td>
                   <td className="px-3 py-2">{r.title}</td>
                   <td className="px-3 py-2">

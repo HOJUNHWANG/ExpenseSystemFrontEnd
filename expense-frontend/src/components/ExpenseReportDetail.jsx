@@ -14,7 +14,7 @@ export default function ExpenseReportDetail() {
     const [comment, setComment] = useState("");
 
     // TODO: later this should come from logged-in user
-    const approverId = 2;
+    const approverId = 1;
 
     const fetchReport = async () => {
         setLoading(true);

@@ -1,83 +1,68 @@
 // src/App.jsx
-import { NavLink, Route, Routes, Navigate } from "react-router-dom";
+import { Routes, Route, Link, Navigate } from "react-router-dom";
 import CreateExpenseReportForm from "./components/CreateExpenseReportForm";
 import ExpenseReportList from "./components/ExpenseReportList";
 import ExpenseReportDetail from "./components/ExpenseReportDetail";
-import WelcomePage from "./components/WelcomePage";
+import LoginPage from "./pages/LoginPage";
+import { useAuth } from "./AuthContext";
 
 function App() {
+  const { user, logout } = useAuth();
+
   return (
       <div className="min-h-screen bg-slate-100">
-        <div className="max-w-6xl mx-auto py-8 px-4">
-          {/* Header */}
-          <header className="mb-6 flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Expense Report Demo</h1>
-            <span className="text-xs text-slate-400">
-            Personal portfolio project
-          </span>
-          </header>
-
-          {/* Navigation */}
-          <nav className="mb-6 border-b border-slate-200">
-            <ul className="flex gap-4 text-sm">
-              <li>
-                <NavLink
-                    to="/"
-                    end
-                    className={({ isActive }) =>
-                        `pb-2 border-b-2 ${
-                            isActive
-                                ? "border-blue-600 text-blue-600"
-                                : "border-transparent text-slate-500 hover:text-slate-800"
-                        }`
-                    }
-                >
-                  Welcome
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                    to="/create"
-                    className={({ isActive }) =>
-                        `pb-2 border-b-2 ${
-                            isActive
-                                ? "border-blue-600 text-blue-600"
-                                : "border-transparent text-slate-500 hover:text-slate-800"
-                        }`
-                    }
-                >
-                  Create Report
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                    to="/reports"
-                    className={({ isActive }) =>
-                        `pb-2 border-b-2 ${
-                            isActive
-                                ? "border-blue-600 text-blue-600"
-                                : "border-transparent text-slate-500 hover:text-slate-800"
-                        }`
-                    }
-                >
+        {/* Header */}
+        <header className="bg-white shadow-sm">
+          <div className="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <Link to="/" className="font-semibold text-slate-800">
+                Expense Report Demo
+              </Link>
+              <nav className="flex gap-3 text-sm">
+                <Link to="/create" className="text-slate-600 hover:text-slate-900">
+                  Create
+                </Link>
+                <Link to="/reports" className="text-slate-600 hover:text-slate-900">
                   My Reports
-                </NavLink>
-              </li>
-            </ul>
-          </nav>
+                </Link>
+              </nav>
+            </div>
 
-          {/* Pages */}
-          <main>
-            <Routes>
-              <Route path="/" element={<WelcomePage />} />
-              <Route path="/create" element={<CreateExpenseReportForm />} />
-              <Route path="/reports" element={<ExpenseReportList />} />
-              <Route path="/reports/:id" element={<ExpenseReportDetail />} />
-              {/* 잘못된 경로는 Welcome으로 */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </main>
-        </div>
+            <div className="text-sm flex items-center gap-3">
+              {user ? (
+                  <>
+                <span className="text-slate-700">
+                  {user.name} <span className="text-xs text-slate-500">({user.role})</span>
+                </span>
+                    <button
+                        onClick={logout}
+                        className="text-xs text-red-600 hover:underline"
+                    >
+                      Logout
+                    </button>
+                  </>
+              ) : (
+                  <Link
+                      to="/login"
+                      className="text-xs text-blue-600 hover:underline"
+                  >
+                    Login
+                  </Link>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Content */}
+        <main className="max-w-4xl mx-auto px-4 py-6">
+          <Routes>
+            <Route path="/" element={<Navigate to="/reports" replace />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/create" element={<CreateExpenseReportForm />} />
+            <Route path="/reports" element={<ExpenseReportList />} />
+            <Route path="/reports/:id" element={<ExpenseReportDetail />} />
+          </Routes>
+        </main>
       </div>
   );
 }

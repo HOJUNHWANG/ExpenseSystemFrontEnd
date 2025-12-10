@@ -1,7 +1,7 @@
 // src/pages/LoginPage.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../AuthContext";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("jun@example.com");

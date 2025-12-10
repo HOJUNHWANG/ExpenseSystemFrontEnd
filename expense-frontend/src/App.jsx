@@ -6,6 +6,7 @@ import ExpenseReportDetail from "./components/ExpenseReportDetail";
 import LoginPage from "./pages/LoginPage";
 import { useAuth } from "./AuthContext";
 import RequireAuth from "./RequireAuth.jsx";
+import WelcomePage from "./components/WelcomePage.jsx";
 
 function App() {
   const { user, logout } = useAuth();

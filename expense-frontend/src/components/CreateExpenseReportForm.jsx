@@ -1,8 +1,10 @@
 // src/components/CreateExpenseReportForm.jsx
 import { useState } from "react";
+import { useAuth } from "../AuthContext";
 
 export default function CreateExpenseReportForm() {
-  const [submitterId, setSubmitterId] = useState(1);
+  const { user } = useAuth();
+
   const [title, setTitle] = useState("");
   const [destination, setDestination] = useState("");
   const [departureDate, setDepartureDate] = useState("");
@@ -12,6 +14,16 @@ export default function CreateExpenseReportForm() {
   ]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  if (!user) {
+    return (
+        <div className="bg-white shadow-lg rounded-xl p-6">
+          <p className="text-sm text-slate-700 mb-2">
+            Please login to create an expense report.
+          </p>
+        </div>
+    );
+  }
 
   const handleItemChange = (index, field, value) => {
     const newItems = [...items];
@@ -33,7 +45,7 @@ export default function CreateExpenseReportForm() {
     setLoading(true);
 
     const payload = {
-      submitterId: Number(submitterId),
+      submitterId: user.id,         // 🔹 로그인 유저 id 사용
       title,
       destination,
       departureDate,
@@ -60,8 +72,7 @@ export default function CreateExpenseReportForm() {
 
       const id = await res.json();
       setMessage(`✅ Created report with id = ${id}`);
-      // 폼 초기화 (필요하면)
-      // setTitle(""); setDestination(""); ...
+      // 필요하면 폼 초기화
     } catch (err) {
       console.error(err);
       setMessage(`❌ Error: ${err.message}`);
@@ -84,15 +95,6 @@ export default function CreateExpenseReportForm() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Submitter ID</label>
-          <input
-            type="number"
-            value={submitterId}
-            onChange={(e) => setSubmitterId(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-sm"
-          />
-        </div>
 
         <div>
           <label className="block text-sm font-medium mb-1">Title</label>

@@ -1,6 +1,6 @@
 // src/pages/LoginPage.jsx
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 
 export default function LoginPage() {
@@ -9,6 +9,8 @@ export default function LoginPage() {
     const [error, setError] = useState("");
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || "/reports";
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,7 +31,8 @@ export default function LoginPage() {
 
             const data = await res.json();
             login(data);              // 🔹 전역 user 설정
-            navigate("/reports");     // 로그인 후 내 보고서 리스트로 이동
+            navigate(from, { replace: true });
+
         } catch (err) {
             console.error(err);
             setError(err.message);

@@ -1,10 +1,12 @@
 // src/components/ExpenseReportDetail.jsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../AuthContext";
 
 export default function ExpenseReportDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const [report, setReport] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -12,9 +14,6 @@ export default function ExpenseReportDetail() {
     const [actionMessage, setActionMessage] = useState("");
     const [processing, setProcessing] = useState(false);
     const [comment, setComment] = useState("");
-
-    // TODO: later this should come from logged-in user
-    const approverId = 1;
 
     const fetchReport = async () => {
         setLoading(true);
@@ -46,6 +45,11 @@ export default function ExpenseReportDetail() {
     }, [id]);
 
     const handleApproveOrReject = async (action) => {
+        if (!user) {
+            setError("You must be logged in to approve or reject.");
+            return;
+        }
+
         if (!window.confirm(`Are you sure you want to ${action} this report?`)) {
             return;
         }
@@ -61,8 +65,8 @@ export default function ExpenseReportDetail() {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        approverId,
-                        comment: comment || `${action} by approver ${approverId}`,
+                        approverId: user.id, // 🔹 로그인 유저를 approver로
+                        comment: comment || `${action} by ${user.name}`,
                     }),
                 }
             );
@@ -73,7 +77,6 @@ export default function ExpenseReportDetail() {
             }
 
             setActionMessage(`Report successfully ${action}d.`);
-            // reload report to see updated status
             await fetchReport();
         } catch (err) {
             console.error(err);

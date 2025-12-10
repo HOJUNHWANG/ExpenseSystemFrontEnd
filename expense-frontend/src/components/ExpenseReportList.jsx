@@ -1,25 +1,23 @@
 // src/components/ExpenseReportList.jsx
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useAuth } from "../AuthContext";
 
 export default function ExpenseReportList() {
+  const { user } = useAuth();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
-
-
-  // 일단 submitterId 고정 1로 사용 (나중에 로그인 붙이면 변경)
-  const submitterId = 1;
 
   useEffect(() => {
+    if (!user) return;
     const fetchReports = async () => {
       setLoading(true);
       setError("");
 
       try {
         const res = await fetch(
-          `http://localhost:8080/api/expense-reports?submitterId=${submitterId}`
+            `http://localhost:8080/api/expense-reports?submitterId=${user.id}`
         );
 
         if (!res.ok) {
@@ -38,7 +36,20 @@ export default function ExpenseReportList() {
     };
 
     fetchReports();
-  }, [submitterId]);
+  }, [user]);
+
+  if (!user) {
+    return (
+        <div className="bg-white rounded-xl shadow p-6">
+          <p className="text-sm text-slate-700">
+            Please login to see your expense reports.
+          </p>
+          <p className="text-xs text-slate-500 mt-1">
+            Go to the Login page and use one of the demo emails.
+          </p>
+        </div>
+    );
+  }
 
   return (
     <div className="bg-white shadow-md rounded-xl p-6">

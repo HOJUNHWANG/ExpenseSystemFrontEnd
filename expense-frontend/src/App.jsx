@@ -8,9 +8,14 @@ import { useAuth } from "./AuthContext";
 import RequireAuth from "./RequireAuth.jsx";
 import WelcomePage from "./components/WelcomePage.jsx";
 import InProgressReportsPage from "./components/InProgressReportsPage.jsx";
+import ApprovalQueuePage from "./components/ApprovalQueuePage.jsx";
 
 function App() {
+
   const { user, logout } = useAuth();
+
+  const isApprover =
+      user && (user.role === "MANAGER" || user.role === "FINANCE");
 
   return (
       <div className="min-h-screen bg-slate-100">
@@ -34,6 +39,14 @@ function App() {
                     >
                         In progress
                     </Link>
+                    {isApprover && (
+                        <Link
+                            to="/approvals"
+                            className="text-slate-600 hover:text-slate-900"
+                        >
+                            Approval Queue
+                        </Link>
+                    )}
                 </nav>
             </div>
 
@@ -64,7 +77,6 @@ function App() {
 
         {/* Content */}
         <main className="max-w-4xl mx-auto px-4 py-6">
-
             <Routes>
                 <Route path="/" element={<WelcomePage />} />
                 <Route path="/login" element={<LoginPage />} />
@@ -94,6 +106,14 @@ function App() {
                     }
                 />
                 <Route
+                    path="/approvals"
+                    element={
+                        <RequireAuth>
+                            <ApprovalQueuePage />
+                        </RequireAuth>
+                    }
+                />
+                <Route
                     path="/reports/:id"
                     element={
                         <RequireAuth>
@@ -101,10 +121,8 @@ function App() {
                         </RequireAuth>
                     }
                 />
-
                 <Route path="*" element={<WelcomePage />} />
             </Routes>
-
         </main>
       </div>
   );

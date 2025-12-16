@@ -118,6 +118,10 @@ export default function ExpenseReportDetail() {
 
     const total = report.totalAmount ?? 0;
 
+    const isOwner = user && report && Number(report.submitterId) === Number(user.id);
+    const canApproveByRole = user && (user.role === "MANAGER" || user.role === "FINANCE");
+    const canTakeAction = canApproveByRole && !isOwner && report?.status === "SUBMITTED";
+
     return (
         <div className="bg-white shadow-md rounded-xl p-6 space-y-4">
             <div className="flex items-center justify-between">
@@ -275,24 +279,40 @@ export default function ExpenseReportDetail() {
                     </div>
                 )}
 
-                <div className="flex gap-3">
-                    <button
-                        type="button"
-                        disabled={processing || report.status === "APPROVED"}
-                        onClick={() => handleApproveOrReject("approve")}
-                        className="px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white disabled:opacity-60"
-                    >
-                        Approve
-                    </button>
-                    <button
-                        type="button"
-                        disabled={processing || report.status === "REJECTED"}
-                        onClick={() => handleApproveOrReject("reject")}
-                        className="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 text-white disabled:opacity-60"
-                    >
-                        Reject
-                    </button>
-                </div>
+                {canApproveByRole && (
+                    <div className="mt-4 border-t pt-4">
+                        {isOwner && (
+                            <div className="text-sm bg-yellow-50 text-yellow-800 rounded-lg px-3 py-2 mb-3">
+                                You cannot approve or reject your own report.
+                            </div>
+                        )}
+
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                disabled={!canTakeAction || processing}
+                                onClick={() => handleApproveOrReject("approve")}
+                                className="px-4 py-2 rounded-lg text-sm bg-green-600 text-white disabled:opacity-50"
+                            >
+                                Approve
+                            </button>
+                            <button
+                                type="button"
+                                disabled={!canTakeAction || processing}
+                                onClick={() => handleApproveOrReject("reject")}
+                                className="px-4 py-2 rounded-lg text-sm bg-red-600 text-white disabled:opacity-50"
+                            >
+                                Reject
+                            </button>
+                        </div>
+
+                        {report?.status !== "SUBMITTED" && (
+                            <p className="text-xs text-slate-500 mt-2">
+                                This report is already {report.status.toLowerCase()}.
+                            </p>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

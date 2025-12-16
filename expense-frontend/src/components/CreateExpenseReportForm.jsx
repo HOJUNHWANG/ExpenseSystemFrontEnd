@@ -3,7 +3,6 @@
 const CATEGORY_OPTIONS = [
   "Airfare",
   "Hotel",
-  "Meal",
   "Transportation",
   "Mileage",
   "Office",

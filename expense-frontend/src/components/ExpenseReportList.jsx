@@ -1,13 +1,14 @@
 // src/components/ExpenseReportList.jsx
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import {Link, useNavigate} from "react-router-dom";
 
 export default function ExpenseReportList() {
   const { user } = useAuth();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) return;
@@ -65,7 +66,7 @@ export default function ExpenseReportList() {
 
       {!loading && !error && reports.length === 0 && (
         <p className="text-sm text-slate-500">
-          아직 생성한 Expense Report가 없습니다.
+          No report has been created yet
         </p>
       )}
 
@@ -113,7 +114,16 @@ export default function ExpenseReportList() {
                       {r.status}
                     </span>
                   </td>
-                </tr>
+                    <td className="px-3 py-2 text-right">
+                      <Link
+                          to={`/reports/${r.id}`}
+                          className="text-xs text-blue-600 hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                      >
+                        View
+                      </Link>
+                    </td>
+                  </tr>
               ))}
             </tbody>
           </table>

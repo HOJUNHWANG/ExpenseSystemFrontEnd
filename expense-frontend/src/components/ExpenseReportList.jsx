@@ -54,8 +54,17 @@ export default function ExpenseReportList() {
 
   return (
     <div className="bg-white shadow-md rounded-xl p-6">
-      <h2 className="text-xl font-semibold mb-4">My Expense Reports</h2>
-
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-semibold mb-4">My Expense Reports</h1>
+      </div>
+      <div>
+        <Link
+            to="/create"
+            className="text-xs rounded-lg px-3 py-1 bg-blue-600 text-white hover:bg-blue-700"
+        >
+          New report
+        </Link>
+      </div>
       {loading && <p className="text-sm text-slate-600">Loading...</p>}
 
       {error && (

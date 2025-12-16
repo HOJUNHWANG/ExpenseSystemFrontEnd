@@ -29,7 +29,7 @@ const ITEM_TYPES = {
 }
 
 const MILEAGE_RATE = 0.7;
-const MEAL_RATE = 0.5;
+const MEAL_RATE = 25;
 
 import { useState } from "react";
 import { useAuth } from "../AuthContext";
@@ -133,12 +133,11 @@ export default function CreateExpenseReportForm() {
     newItems[index][field] = value;
     setItems(newItems);
   };
-  */
 
   const addItem = () => {
     setItems([...items, { date: "", description: "", amount: "", category: "" }]);
   };
-
+  */
   const addNormalItem = () => {
     setItems((prev) => [
       ...prev,
@@ -238,7 +237,7 @@ export default function CreateExpenseReportForm() {
       if (it.type === ITEM_TYPES.MILEAGE) {
         return {
           date: it.date || departureDate, // 날짜 필수로 안 받을 거면 이렇게 fallback
-          description: `Mileage: ${it.miles} miles @ ${MILEAGE_RATE}`,
+          description: `Mileage: ${it.miles} miles x ${MILEAGE_RATE}`,
           amount: Number(it.amount),
           category: "Mileage",
         };
@@ -281,7 +280,7 @@ export default function CreateExpenseReportForm() {
       }
 
       const id = await res.json();
-      setMessage(`✅ Report Successfully Created = ${id}`);
+      setMessage(`✅ Report Successfully Created`);
       // 필요하면 폼 초기화
     } catch (err) {
       console.error(err);
@@ -552,13 +551,31 @@ export default function CreateExpenseReportForm() {
         ))}
       </div>
 
-      <button
-        type="button"
-        onClick={addItem}
-        className="text-sm px-3 py-1 rounded-lg border border-dashed"
-      >
-        + Add Item
-      </button>
+      <div className="flex flex-wrap gap-2 mt-3">
+        <button
+            type="button"
+            onClick={addNormalItem}
+            className="px-3 py-2 rounded-lg text-sm border hover:bg-slate-50"
+        >
+          + Add Item
+        </button>
+
+        <button
+            type="button"
+            onClick={addMileageItem}
+            className="px-3 py-2 rounded-lg text-sm border hover:bg-slate-50"
+        >
+          + Add Mileage
+        </button>
+
+        <button
+            type="button"
+            onClick={addMealItem}
+            className="px-3 py-2 rounded-lg text-sm border hover:bg-slate-50"
+        >
+          + Add Meal
+        </button>
+      </div>
 
       <div className="mt-6">
         <button
@@ -569,33 +586,6 @@ export default function CreateExpenseReportForm() {
           {loading ? "Submitting..." : "Submit Report"}
         </button>
       </div>
-
-      <div className="flex flex-wrap gap-2 mt-3">
-        <button
-            type="button"
-            onClick={addNormalItem}
-            className="px-3 py-2 rounded-lg text-sm border hover:bg-slate-50"
-        >
-          Add Item
-        </button>
-
-        <button
-            type="button"
-            onClick={addMileageItem}
-            className="px-3 py-2 rounded-lg text-sm border hover:bg-slate-50"
-        >
-          Add Mileage
-        </button>
-
-        <button
-            type="button"
-            onClick={addMealItem}
-            className="px-3 py-2 rounded-lg text-sm border hover:bg-slate-50"
-        >
-          Add Meal
-        </button>
-      </div>
-
     </form>
   );
 }

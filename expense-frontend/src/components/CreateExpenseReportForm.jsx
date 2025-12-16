@@ -23,6 +23,15 @@ const COUNTRY_OPTIONS = [
   "Singapore",
 ];
 
+const ITEM_TYPES = {
+  NORMAL: "Normal",
+  MILEAGE: "MILEAGE",
+  MEAL: "Meal",
+}
+
+const MILEAGE_RATE = 0.7;
+const MEAL_RATE = 0.5;
+
 import { useState } from "react";
 import { useAuth } from "../AuthContext";
 
@@ -35,7 +44,7 @@ export default function CreateExpenseReportForm() {
   const [departureDate, setDepartureDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
   const [items, setItems] = useState([
-    { date: "", description: "", amount: "", category: "" },
+    { type: ITEM_TYPES.NORMAL, date: "", description: "", amount: "", category: "" },
   ]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");

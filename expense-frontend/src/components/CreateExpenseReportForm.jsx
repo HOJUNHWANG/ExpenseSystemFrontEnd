@@ -86,17 +86,40 @@ export default function CreateExpenseReportForm() {
       newErrors.items = "At least one expense item is required.";
     } else {
       items.forEach((item, index) => {
-        if (!item.date) {
-          newErrors[`items.${index}.date`] = "Date is required.";
+        // 날짜 범위는 NORMAL/MILEAGE/MEAL 모두 공통으로 “입력되어 있다면 범위 체크”
+        const hasTripRange = departureDate && returnDate;
+
+        // 1) NORMAL
+        if (item.type === ITEM_TYPES.NORMAL) {
+          if (!item.date) newErrors[`items.${index}.date`] = "Date is required.";
+          if (!item.description?.trim()) newErrors[`items.${index}.description`] = "Description is required.";
+          if (!item.category) newErrors[`items.${index}.category`] = "Category is required.";
+          if (!item.amount || isNaN(Number(item.amount)) || Number(item.amount) <= 0) {
+            newErrors[`items.${index}.amount`] = "Amount must be a positive number.";
+          }
         }
-        if (!item.description.trim()) {
-          newErrors[`items.${index}.description`] = "Description is required.";
+
+        // 2) MILEAGE (추가했으면 miles는 필수)
+        if (item.type === ITEM_TYPES.MILEAGE) {
+          if (!item.miles || isNaN(Number(item.miles)) || Number(item.miles) <= 0) {
+            newErrors[`items.${index}.miles`] = "Miles must be a positive number.";
+          }
+          // 지금은 “선택사항”
+          // if (!item.date) newErrors[`items.${index}.date`] = "Date is required.";
         }
-        if (!item.category) {
-          newErrors[`items.${index}.category`] = "Category is required.";
+
+        // 3) MEAL (추가했으면 date는 필수, 그리고 lunch/dinner 최소 1개는 체크)
+        if (item.type === ITEM_TYPES.MEAL) {
+          if (!item.date) newErrors[`items.${index}.date`] = "Meal date is required.";
+          const count = (item.lunch ? 1 : 0) + (item.dinner ? 1 : 0);
+          if (count === 0) newErrors[`items.${index}.meal`] = "Select lunch and/or dinner.";
         }
-        if (!item.amount || isNaN(Number(item.amount)) || Number(item.amount) <= 0) {
-          newErrors[`items.${index}.amount`] = "Amount must be a positive number.";
+
+        // 날짜 범위 제한: date가 있는 아이템은 범위 안인지 확인
+        if (hasTripRange && item.date) {
+          if (item.date < departureDate || item.date > returnDate) {
+            newErrors[`items.${index}.date`] = "Date must be within the trip dates.";
+          }
         }
       });
     }
@@ -105,18 +128,90 @@ export default function CreateExpenseReportForm() {
     return Object.keys(newErrors).length === 0;
   };
 
+  /*
   const handleItemChange = (index, field, value) => {
     const newItems = [...items];
     newItems[index][field] = value;
     setItems(newItems);
   };
+  */
 
   const addItem = () => {
     setItems([...items, { date: "", description: "", amount: "", category: "" }]);
   };
 
+  const addNormalItem = () => {
+    setItems((prev) => [
+      ...prev,
+      { type: ITEM_TYPES.NORMAL, date: "", description: "", amount: "", category: "" },
+    ]);
+  };
+
+  const addMileageItem = () => {
+    setItems((prev) => {
+      // 한 번만 허용(원하면 여러 개 가능하게 바꿀 수도 있어)
+      if (prev.some((it) => it.type === ITEM_TYPES.MILEAGE)) return prev;
+      return [
+        ...prev,
+        {
+          type: ITEM_TYPES.MILEAGE,
+          date: "",          // 선택사항으로 둘 수도 있는데 일단 날짜도 받게 해도 OK
+          miles: "",
+          rate: MILEAGE_RATE,
+          amount: 0,
+          category: "Mileage",
+          description: "Mileage reimbursement",
+        },
+      ];
+    });
+  };
+
+  const addMealItem = () => {
+    setItems((prev) => [
+      ...prev,
+      {
+        type: ITEM_TYPES.MEAL,
+        date: "",
+        lunch: true,
+        dinner: true,
+        amount: 50, // 기본 lunch+dinner 2개 체크로 시작(원하면 0으로 시작해도 됨)
+        category: "Meal",
+        description: "Per diem (Lunch/Dinner)",
+      },
+    ]);
+  };
+
+  const recomputeMealAmount = (lunch, dinner) => {
+    const count = (lunch ? 1 : 0) + (dinner ? 1 : 0);
+    return count * MEAL_RATE;
+  };
+
+  const onMealToggle = (index, field, checked) => {
+    setItems((prev) =>
+        prev.map((it, i) => {
+          if (i !== index) return it;
+          const next = { ...it, [field]: checked };
+          next.amount = recomputeMealAmount(next.lunch, next.dinner);
+          return next;
+        })
+    );
+  };
+
   const removeItem = (index) => {
-    setItems(items.filter((_, i) => i !== index));
+    setItems((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const updateItem = (index, patch) => {
+    setItems((prev) =>
+        prev.map((it, i) => (i === index ? { ...it, ...patch } : it))
+    );
+  };
+
+  const onMileageChange = (index, value) => {
+    const miles = value;
+    const milesNum = Number(miles);
+    const amount = !miles || isNaN(milesNum) ? 0 : Number((milesNum * MILEAGE_RATE).toFixed(2));
+    updateItem(index, { miles, amount });
   };
 
   const handleSubmit = async (e) => {
@@ -131,13 +226,42 @@ export default function CreateExpenseReportForm() {
 
     const destination = `${city}, ${country}`;
 
+    const payloadItems = items.map((it) => {
+      if (it.type === ITEM_TYPES.NORMAL) {
+        return {
+          date: it.date,
+          description: it.description,
+          amount: Number(it.amount),
+          category: it.category,
+        };
+      }
+
+      if (it.type === ITEM_TYPES.MILEAGE) {
+        return {
+          date: it.date || departureDate, // 날짜 필수로 안 받을 거면 이렇게 fallback
+          description: `Mileage: ${it.miles} miles @ ${MILEAGE_RATE}`,
+          amount: Number(it.amount),
+          category: "Mileage",
+        };
+      }
+
+      // MEAL
+      const mealDesc = `Meal: ${it.lunch ? "Lunch" : ""}${it.lunch && it.dinner ? " + " : ""}${it.dinner ? "Dinner" : ""}`;
+      return {
+        date: it.date,
+        description: mealDesc,
+        amount: Number(it.amount),
+        category: "Meal",
+      };
+    });
+
     const payload = {
       submitterId: user.id,
       title,
       destination,
       departureDate,
       returnDate,
-      items: items.map((it) => ({
+      items: payloadItems.map((it) => ({
         date: it.date,
         description: it.description,
         amount: Number(it.amount),
@@ -158,7 +282,7 @@ export default function CreateExpenseReportForm() {
       }
 
       const id = await res.json();
-      setMessage(`✅ Created report with id = ${id}`);
+      setMessage(`✅ Report Successfully Created = ${id}`);
       // 필요하면 폼 초기화
     } catch (err) {
       console.error(err);
@@ -266,86 +390,166 @@ export default function CreateExpenseReportForm() {
       <h3 className="text-lg font-semibold mb-2">Items</h3>
 
       <div className="space-y-3 mb-4">
-        {items.map((item, idx) => (
-          <div
-            key={idx}
-            className="grid grid-cols-1 md:grid-cols-5 gap-2 border rounded-lg p-3"
-          >
-            <div>
-              <label className="block text-xs font-medium mb-1">Date</label>
-                <input
-                    type="date"
-                    className="w-full border rounded-lg px-2 py-1 text-sm"
-                    value={item.date}
-                    onChange={(e) => handleItemChange(idx, "date", e.target.value)}
-                    min={departureDate || undefined}
-                    max={returnDate || undefined}
-                    disabled={!departureDate || !returnDate}
-                />
-                {errors[`items.${idx}.date`] && (
-                    <p className="text-xs text-red-600 mt-1">
-                      {errors[`items.${idx}.date`]}
-                    </p>
-                )}
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-xs font-medium mb-1">
-                Description
-              </label>
-              <input
-                value={item.description}
-                onChange={(e) =>
-                  handleItemChange(idx, "description", e.target.value)
-                }
-                className="w-full border rounded-lg px-2 py-1 text-xs"
-                placeholder="EX: Uber to Airport"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Amount</label>
-              <input
-                type="number"
-                value={item.amount}
-                onChange={(e) =>
-                  handleItemChange(idx, "amount", e.target.value)
-                }
-                className="w-full border rounded-lg px-2 py-1 text-xs"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">
-                Category
-              </label>
-              <select
-                  className="w-full border rounded-lg px-2 py-1 text-sm"
-                  value={item.category}
-                  onChange={(e) => handleItemChange(idx, "category", e.target.value)}
-              >
-                <option value="">Select category</option>
-                {CATEGORY_OPTIONS.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                ))}
-              </select>
-              {errors[`items.${idx}.category`] && (
-                  <p className="text-xs text-red-600 mt-1">
-                    {errors[`items.${idx}.category`]}
-                  </p>
-              )}
-            </div>
-            <div className="md:col-span-5 flex justify-end">
-              {items.length > 1 && (
+        {items.map((item, index) => (
+            <div key={index} className="border rounded-lg p-3 mb-3 bg-white">
+              <div className="flex justify-between items-center mb-2">
+                <div className="text-xs font-semibold text-slate-600">
+                  {item.type === ITEM_TYPES.NORMAL && "Expense Item"}
+                  {item.type === ITEM_TYPES.MILEAGE && "Mileage"}
+                  {item.type === ITEM_TYPES.MEAL && "Meal"}
+                </div>
                 <button
-                  type="button"
-                  onClick={() => removeItem(idx)}
-                  className="text-xs text-red-500 hover:underline"
+                    type="button"
+                    onClick={() => removeItem(index)}
+                    className="text-xs text-red-600 hover:underline"
                 >
                   Remove
                 </button>
+              </div>
+
+              {/* NORMAL */}
+              {item.type === ITEM_TYPES.NORMAL && (
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    {/* date */}
+                    <div>
+                      <input
+                          type="date"
+                          className="w-full border rounded-lg px-2 py-1 text-sm"
+                          value={item.date}
+                          onChange={(e) => updateItem(index, { date: e.target.value })}
+                          min={departureDate || undefined}
+                          max={returnDate || undefined}
+                          disabled={!departureDate || !returnDate}
+                      />
+                      {errors[`items.${index}.date`] && <p className="text-xs text-red-600 mt-1">{errors[`items.${index}.date`]}</p>}
+                    </div>
+
+                    {/* description */}
+                    <div>
+                      <input
+                          type="text"
+                          className="w-full border rounded-lg px-2 py-1 text-sm"
+                          value={item.description}
+                          onChange={(e) => updateItem(index, { description: e.target.value })}
+                          placeholder="Description"
+                      />
+                      {errors[`items.${index}.description`] && <p className="text-xs text-red-600 mt-1">{errors[`items.${index}.description`]}</p>}
+                    </div>
+
+                    {/* category */}
+                    <div>
+                      <select
+                          className="w-full border rounded-lg px-2 py-1 text-sm"
+                          value={item.category}
+                          onChange={(e) => updateItem(index, { category: e.target.value })}
+                      >
+                        <option value="">Select category</option>
+                        {CATEGORY_OPTIONS.map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                      {errors[`items.${index}.category`] && <p className="text-xs text-red-600 mt-1">{errors[`items.${index}.category`]}</p>}
+                    </div>
+
+                    {/* amount */}
+                    <div>
+                      <input
+                          type="number"
+                          className="w-full border rounded-lg px-2 py-1 text-sm"
+                          value={item.amount}
+                          onChange={(e) => updateItem(index, { amount: e.target.value })}
+                          placeholder="Amount"
+                      />
+                      {errors[`items.${index}.amount`] && <p className="text-xs text-red-600 mt-1">{errors[`items.${index}.amount`]}</p>}
+                    </div>
+                  </div>
+              )}
+
+              {/* MILEAGE */}
+              {item.type === ITEM_TYPES.MILEAGE && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs text-slate-600 mb-1">Miles</label>
+                      <input
+                          type="number"
+                          className="w-full border rounded-lg px-2 py-1 text-sm"
+                          value={item.miles}
+                          onChange={(e) => onMileageChange(index, e.target.value)}
+                          placeholder="e.g. 120"
+                      />
+                      {errors[`items.${index}.miles`] && <p className="text-xs text-red-600 mt-1">{errors[`items.${index}.miles`]}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-xs text-slate-600 mb-1">Rate</label>
+                      <input
+                          type="text"
+                          className="w-full border rounded-lg px-2 py-1 text-sm bg-slate-50"
+                          value={item.rate}
+                          readOnly
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs text-slate-600 mb-1">Amount</label>
+                      <input
+                          type="text"
+                          className="w-full border rounded-lg px-2 py-1 text-sm bg-slate-50"
+                          value={item.amount}
+                          readOnly
+                      />
+                    </div>
+                  </div>
+              )}
+
+              {/* MEAL */}
+              {item.type === ITEM_TYPES.MEAL && (
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                    <div>
+                      <label className="block text-xs text-slate-600 mb-1">Date</label>
+                      <input
+                          type="date"
+                          className="w-full border rounded-lg px-2 py-1 text-sm"
+                          value={item.date}
+                          onChange={(e) => updateItem(index, { date: e.target.value })}
+                          min={departureDate || undefined}
+                          max={returnDate || undefined}
+                          disabled={!departureDate || !returnDate}
+                      />
+                      {errors[`items.${index}.date`] && <p className="text-xs text-red-600 mt-1">{errors[`items.${index}.date`]}</p>}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                          type="checkbox"
+                          checked={!!item.lunch}
+                          onChange={(e) => onMealToggle(index, "lunch", e.target.checked)}
+                      />
+                      <span className="text-sm">Lunch</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                          type="checkbox"
+                          checked={!!item.dinner}
+                          onChange={(e) => onMealToggle(index, "dinner", e.target.checked)}
+                      />
+                      <span className="text-sm">Dinner</span>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs text-slate-600 mb-1">Amount</label>
+                      <input
+                          type="text"
+                          className="w-full border rounded-lg px-2 py-1 text-sm bg-slate-50"
+                          value={item.amount}
+                          readOnly
+                      />
+                      {errors[`items.${index}.meal`] && <p className="text-xs text-red-600 mt-1">{errors[`items.${index}.meal`]}</p>}
+                    </div>
+                  </div>
               )}
             </div>
-          </div>
         ))}
       </div>
 
@@ -366,6 +570,33 @@ export default function CreateExpenseReportForm() {
           {loading ? "Submitting..." : "Submit Report"}
         </button>
       </div>
+
+      <div className="flex flex-wrap gap-2 mt-3">
+        <button
+            type="button"
+            onClick={addNormalItem}
+            className="px-3 py-2 rounded-lg text-sm border hover:bg-slate-50"
+        >
+          Add Item
+        </button>
+
+        <button
+            type="button"
+            onClick={addMileageItem}
+            className="px-3 py-2 rounded-lg text-sm border hover:bg-slate-50"
+        >
+          Add Mileage
+        </button>
+
+        <button
+            type="button"
+            onClick={addMealItem}
+            className="px-3 py-2 rounded-lg text-sm border hover:bg-slate-50"
+        >
+          Add Meal
+        </button>
+      </div>
+
     </form>
   );
 }

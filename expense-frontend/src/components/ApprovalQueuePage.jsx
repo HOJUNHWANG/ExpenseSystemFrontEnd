@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import { useLocation } from "react-router-dom";
 
 export default function ApprovalQueuePage() {
     const { user } = useAuth();
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const location = useLocation();
+    const [toast, setToast] = useState("");
 
     useEffect(() => {
         if (!user) return;
@@ -37,6 +40,27 @@ export default function ApprovalQueuePage() {
 
         fetchPending();
     }, [user]);
+
+    useEffect(() => {
+      const msg = location.state?.toast;
+      if (msg) {
+        setToast(msg);
+
+        // history state를 비워서 새로고침/뒤로가기 시 중복 토스트 방지
+        window.history.replaceState({}, document.title);
+
+        const t = setTimeout(() => setToast(""), 2500);
+        return () => clearTimeout(t);
+      }
+    }, [location.state]);
+
+    useEffect(() => { fetchPending(); }, [user, location.key]);
+
+    {toast && (
+      <div className="mb-3 rounded-lg bg-green-50 text-green-700 text-sm px-3 py-2">
+        {toast}
+      </div>
+    )}
 
     if (!user) {
         return (
@@ -99,15 +123,16 @@ export default function ApprovalQueuePage() {
                                 </td>
                                 <td className="px-3 py-2 text-right">
                                     <Link
-                                        to={`/reports/${r.id}`}
-                                        className="text-xs text-blue-600 hover:underline"
+                                      to={`/reports/${r.id}`}
+                                      state={{ from: "/approvals" }}
+                                      className="text-xs text-blue-600 hover:underline"
                                     >
-                                        View / Approve
+                                      View / Approve
                                     </Link>
                                 </td>
                             </tr>
                         ))}
-                        </tbody>
+                        </body>
                     </table>
                 </div>
             )}

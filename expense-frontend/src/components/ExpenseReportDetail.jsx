@@ -2,11 +2,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import { useLocation } from "react-router-dom";
+
 
 export default function ExpenseReportDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const location = useLocation();
+    const from = location.state?.from; // "/approvals" 같은 값
 
     const [report, setReport] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -77,7 +81,15 @@ export default function ExpenseReportDetail() {
             }
 
             setActionMessage(`Report successfully ${action}d.`);
+
+            // ✅ approvals에서 왔다면 approvals로 복귀
+            if (from === "/approvals") {
+              navigate("/approvals", { replace: true, state: { toast: `Successfully ${action}d.` } });
+              return;
+            }
+
             await fetchReport();
+
         } catch (err) {
             console.error(err);
             setError(err.message);

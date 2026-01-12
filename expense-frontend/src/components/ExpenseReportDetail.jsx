@@ -82,9 +82,12 @@ export default function ExpenseReportDetail() {
 
             setActionMessage(`Report successfully ${action}d.`);
 
-            // ✅ approvals에서 왔다면 approvals로 복귀
+            //approvals에서 왔다면 approvals로 복귀
             if (from === "/approvals") {
-              navigate("/approvals", { replace: true, state: { toast: `Successfully ${action}d.` } });
+              navigate("/approvals", {
+                replace: true,
+                state: { toast: `Successfully ${action}d.` },
+              });
               return;
             }
 

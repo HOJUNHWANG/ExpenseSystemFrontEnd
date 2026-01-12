@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function ApprovalQueuePage() {
     const { user } = useAuth();
@@ -9,6 +9,7 @@ export default function ApprovalQueuePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const location = useLocation();
+    const navigate = useNavigate();
     const [toast, setToast] = useState("");
 
     useEffect(() => {
@@ -46,13 +47,13 @@ export default function ApprovalQueuePage() {
       if (msg) {
         setToast(msg);
 
-        // history state를 비워서 새로고침/뒤로가기 시 중복 토스트 방지
-        window.history.replaceState({}, document.title);
+        //Router 방식으로 state만 제거
+        navigate(location.pathname, { replace: true, state: null });
 
         const t = setTimeout(() => setToast(""), 2500);
         return () => clearTimeout(t);
       }
-    }, [location.state]);
+    }, [location.key]); //location.state 대신 key로
 
     useEffect(() => { fetchPending(); }, [user, location.key]);
 

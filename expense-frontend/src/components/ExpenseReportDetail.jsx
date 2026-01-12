@@ -18,6 +18,7 @@ export default function ExpenseReportDetail() {
     const [actionMessage, setActionMessage] = useState("");
     const [processing, setProcessing] = useState(false);
     const [comment, setComment] = useState("");
+    const [actionMode, setActionMode] = useState(null); // "approve" | "reject" | null
 
     const fetchReport = async () => {
         setLoading(true);
@@ -53,14 +54,11 @@ export default function ExpenseReportDetail() {
             setError("You must be logged in to approve or reject.");
             return;
         }
-
-        if (!window.confirm(`Are you sure you want to ${action} this report?`)) {
-            return;
-        }
-
         setProcessing(true);
         setActionMessage("");
         setError("");
+        setActionMode(null);
+        setComment("");
 
         try {
             const res = await fetch(
@@ -300,21 +298,101 @@ export default function ExpenseReportDetail() {
 
                         <div className="flex gap-2">
                             <button
-                                type="button"
-                                disabled={!canTakeAction || processing}
-                                onClick={() => handleApproveOrReject("approve")}
-                                className="px-4 py-2 rounded-lg text-sm bg-green-600 text-white disabled:opacity-50"
+                              type="button"
+                              disabled={!canTakeAction || processing}
+                              onClick={() => {
+                                setActionMode("approve");
+                                setComment("");
+                              }}
+                              className="px-4 py-2 rounded-lg text-sm bg-green-600 text-white disabled:opacity-50"
                             >
-                                Approve
+                              Approve
                             </button>
+
                             <button
-                                type="button"
-                                disabled={!canTakeAction || processing}
-                                onClick={() => handleApproveOrReject("reject")}
-                                className="px-4 py-2 rounded-lg text-sm bg-red-600 text-white disabled:opacity-50"
+                              type="button"
+                              disabled={!canTakeAction || processing}
+                              onClick={() => {
+                                setActionMode("reject");
+                                setComment("");
+                              }}
+                              className="px-4 py-2 rounded-lg text-sm bg-red-600 text-white disabled:opacity-50"
                             >
-                                Reject
+                              Reject
                             </button>
+
+                            {actionMode && (
+                              <div className="mt-4 border rounded-lg p-4 bg-slate-50">
+                                <div className="flex justify-between items-center mb-2">
+                                  <p className="text-sm font-medium text-slate-700">
+                                    {actionMode === "approve" ? "Approve comment (optional)" : "Reject comment (required)"}
+                                  </p>
+                                  <button
+                                    type="button"
+                                    className="text-xs text-slate-600 hover:underline"
+                                    onClick={() => {
+                                      setActionMode(null);
+                                      setComment("");
+                                    }}
+                                    disabled={processing}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+
+                                <textarea
+                                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                                  rows={3}
+                                  placeholder={
+                                    actionMode === "approve"
+                                      ? "Add a comment (optional)"
+                                      : "Please provide a reason for rejection"
+                                  }
+                                  value={comment}
+                                  onChange={(e) => setComment(e.target.value)}
+                                  disabled={processing}
+                                />
+
+                                {actionMode === "reject" && !comment.trim() && (
+                                  <p className="text-xs text-red-600 mt-1">
+                                    Comment is required for rejection.
+                                  </p>
+                                )}
+
+                                <div className="flex gap-2 mt-3">
+                                  <button
+                                    type="button"
+                                    disabled={
+                                      processing ||
+                                      !canTakeAction ||
+                                      (actionMode === "reject" && !comment.trim())
+                                    }
+                                    onClick={() => handleApproveOrReject(actionMode)}
+                                    className={`px-4 py-2 rounded-lg text-sm text-white disabled:opacity-50 ${
+                                      actionMode === "approve" ? "bg-green-600" : "bg-red-600"
+                                    }`}
+                                  >
+                                    {processing
+                                      ? "Processing..."
+                                      : actionMode === "approve"
+                                      ? "Confirm Approve"
+                                      : "Confirm Reject"}
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    className="px-4 py-2 rounded-lg text-sm border"
+                                    onClick={() => {
+                                      setActionMode(null);
+                                      setComment("");
+                                    }}
+                                    disabled={processing}
+                                  >
+                                    Close
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                         </div>
 
                         {report?.status !== "SUBMITTED" && (

@@ -132,7 +132,7 @@ export default function ApprovalQueuePage() {
                                 </td>
                             </tr>
                         ))}
-                        </body>
+                        </tbody>
                     </table>
                 </div>
             )}

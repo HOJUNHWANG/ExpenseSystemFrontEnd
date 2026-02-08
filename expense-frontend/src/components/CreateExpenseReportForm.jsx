@@ -9,18 +9,26 @@ const CATEGORY_OPTIONS = [
   "Entertainment",
 ];
 
+// Suggested countries for the demo (free-text input via datalist below)
 const COUNTRY_OPTIONS = [
   "United States",
   "Canada",
   "United Kingdom",
   "Germany",
   "France",
-  "Korea",
+  "South Korea",
   "Japan",
   "China",
   "Australia",
   "Singapore",
 ];
+
+// Demo policy knobs (common corporate patterns)
+const POLICY = {
+  RECEIPT_THRESHOLD: 25, // require receipt above this (UI hint)
+  HOTEL_NIGHTLY_LIMIT: 300,
+  MEAL_DAILY_LIMIT: 75,
+};
 
 const ITEM_TYPES = {
   NORMAL: "Normal",
@@ -328,20 +336,20 @@ export default function CreateExpenseReportForm() {
 
           <div>
             <label className="block text-sm font-medium mb-1">Country</label>
-            <select
-                className="w-full border rounded-lg px-3 py-2 text-sm"
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-            >
-              <option value="">Select country</option>
+            <input
+              list="country-options"
+              className="w-full border rounded-lg px-3 py-2 text-sm"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              placeholder="e.g. United States"
+            />
+            <datalist id="country-options">
               {COUNTRY_OPTIONS.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
+                <option key={c} value={c} />
               ))}
-            </select>
+            </datalist>
             {errors.country && (
-                <p className="text-xs text-red-600 mt-1">{errors.country}</p>
+              <p className="text-xs text-red-600 mt-1">{errors.country}</p>
             )}
           </div>
         </div>
@@ -379,6 +387,14 @@ export default function CreateExpenseReportForm() {
       </div>
 
       <h3 className="text-lg font-semibold mb-2">Items</h3>
+      <div className="mb-4 rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 text-xs text-slate-600">
+        <div className="font-medium text-slate-700">Demo policy hints (typical corporate patterns)</div>
+        <ul className="list-disc pl-5 mt-1 space-y-1">
+          <li>Receipts are typically required for expenses over ${POLICY.RECEIPT_THRESHOLD}.</li>
+          <li>Hotels often have a nightly cap (demo: ${POLICY.HOTEL_NIGHTLY_LIMIT}/night).</li>
+          <li>Meals may be reimbursed via per diem (demo: ${MEAL_RATE}/meal, daily cap ${POLICY.MEAL_DAILY_LIMIT}).</li>
+        </ul>
+      </div>
 
       <div className="space-y-3 mb-4">
         {items.map((item, index) => (

@@ -97,6 +97,16 @@ jobs:
           echo "--- frontend log (tail) ---"
           tail -n 200 expense-frontend/web.log || true
 
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            expense-frontend/test-results
+            expense-frontend/playwright-report
+          if-no-files-found: ignore
+
       - name: Stop servers
         if: always()
         run: |

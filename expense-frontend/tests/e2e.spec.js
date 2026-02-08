@@ -18,6 +18,17 @@ async function resetDemo(page) {
 
 async function viewAs(page, label) {
   await page.getByRole("button", { name: label }).click();
+
+  const roleCodeByLabel = {
+    Employee: "EMPLOYEE",
+    Manager: "MANAGER",
+    Finance: "FINANCE",
+  };
+  const roleCode = roleCodeByLabel[label];
+  if (roleCode) {
+    // Wait until header reflects the active role
+    await expect(page.locator("header").getByText(new RegExp(`\\(${roleCode}\\)`))).toBeVisible();
+  }
 }
 
 test("smoke: reset demo works", async ({ page }) => {

@@ -137,28 +137,32 @@ export default function SearchPage() {
             </div>
 
             <div className="md:col-span-6 flex items-center gap-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium disabled:opacity-60"
-              >
-                {loading ? "Searching…" : "Search"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setQ("");
-                  setStatus("");
-                  setSort("activity_desc");
-                  setMinTotal("");
-                  setMaxTotal("");
-                  setResults([]);
-                  setError("");
-                }}
-                className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50"
-              >
-                Clear
-              </button>
+              {(() => {
+                const { Button } = require("../ui/Button.jsx");
+                return (
+                  <>
+                    <Button type="submit" variant="primary" size="sm" disabled={loading}>
+                      {loading ? "Searching…" : "Search"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setQ("");
+                        setStatus("");
+                        setSort("activity_desc");
+                        setMinTotal("");
+                        setMaxTotal("");
+                        setResults([]);
+                        setError("");
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  </>
+                );
+              })()}
             </div>
           </form>
         )}

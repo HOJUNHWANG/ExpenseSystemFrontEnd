@@ -248,19 +248,19 @@ export default function EditReportPage() {
             </div>
 
             <div className="flex items-center justify-end gap-2">
-              <Link
-                to={`/reports/${id}`}
-                className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50"
-              >
-                Cancel
-              </Link>
-              <button
-                type="submit"
-                disabled={saving || !canEdit}
-                className="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium disabled:opacity-60"
-              >
-                {saving ? "Saving…" : "Save changes"}
-              </button>
+              {(() => {
+                const { Button, ButtonLink } = require("../ui/Button.jsx");
+                return (
+                  <>
+                    <ButtonLink to={`/reports/${id}`} variant="secondary" size="sm">
+                      Cancel
+                    </ButtonLink>
+                    <Button type="submit" disabled={saving || !canEdit} variant="primary" size="sm">
+                      {saving ? "Saving…" : "Save changes"}
+                    </Button>
+                  </>
+                );
+              })()}
             </div>
           </form>
         )}

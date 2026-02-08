@@ -298,30 +298,30 @@ export default function SpecialApprovalPage() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setDecision(it.code, { decision: "APPROVE" })}
-                          className={
-                            "px-3 py-2 rounded-xl text-sm font-medium border " +
-                            (d === "APPROVE"
-                              ? "bg-green-600 text-white border-green-600"
-                              : "bg-white border-slate-200 hover:bg-slate-50")
-                          }
-                        >
-                          ✓ Approve
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDecision(it.code, { decision: "REJECT" })}
-                          className={
-                            "px-3 py-2 rounded-xl text-sm font-medium border " +
-                            (d === "REJECT"
-                              ? "bg-red-600 text-white border-red-600"
-                              : "bg-white border-slate-200 hover:bg-slate-50")
-                          }
-                        >
-                          ✕ Reject
-                        </button>
+                        {(() => {
+                        const { Button } = require("../ui/Button.jsx");
+                        return (
+                          <>
+                            <Button
+                              type="button"
+                              variant={d === "APPROVE" ? "primary" : "secondary"}
+                              size="sm"
+                              onClick={() => setDecision(it.code, { decision: "APPROVE" })}
+                              className={d === "APPROVE" ? "bg-green-600 border-green-600 hover:bg-green-700" : ""}
+                            >
+                              ✓ Approve
+                            </Button>
+                            <Button
+                              type="button"
+                              variant={d === "REJECT" ? "danger" : "secondary"}
+                              size="sm"
+                              onClick={() => setDecision(it.code, { decision: "REJECT" })}
+                            >
+                              ✕ Reject
+                            </Button>
+                          </>
+                        );
+                      })()}
                       </div>
                     </div>
 
@@ -376,21 +376,24 @@ export default function SpecialApprovalPage() {
                   : "All items decided."}
               </div>
 
-              <button
-                type="button"
-                disabled={saving || !(canApprove || canReject)}
-                onClick={submitDecision}
-                className={
-                  "px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-60 " +
-                  (anyReject ? "bg-red-600" : "bg-slate-900")
-                }
-              >
-                {saving
-                  ? "Submitting…"
-                  : anyReject
-                  ? "Reject special approval"
-                  : "Approve special approval"}
-              </button>
+              {(() => {
+              const { Button } = require("../ui/Button.jsx");
+              return (
+                <Button
+                  type="button"
+                  disabled={saving || !(canApprove || canReject)}
+                  onClick={submitDecision}
+                  variant={anyReject ? "danger" : "primary"}
+                  size="md"
+                >
+                  {saving
+                    ? "Submitting…"
+                    : anyReject
+                    ? "Reject special approval"
+                    : "Approve special approval"}
+                </Button>
+              );
+            })()}
             </div>
           </div>
         </div>

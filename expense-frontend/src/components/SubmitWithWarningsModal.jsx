@@ -93,19 +93,24 @@ export default function SubmitWithWarningsModal({
             {canSubmit ? "" : "Fill in all required reasons to continue."}
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={close}
-              className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50"
-            >
-              Cancel
-            </button>
-            <button
-              disabled={submitting || !canSubmit}
-              onClick={submit}
-              className="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium disabled:opacity-60"
-            >
-              {submitting ? "Submitting…" : "Submit with exceptions"}
-            </button>
+            {(() => {
+              const { Button } = require("../ui/Button.jsx");
+              return (
+                <>
+                  <Button onClick={close} variant="secondary" size="sm">
+                    Cancel
+                  </Button>
+                  <Button
+                    disabled={submitting || !canSubmit}
+                    onClick={submit}
+                    variant="primary"
+                    size="sm"
+                  >
+                    {submitting ? "Submitting…" : "Submit with exceptions"}
+                  </Button>
+                </>
+              );
+            })()}
           </div>
         </div>
       </div>

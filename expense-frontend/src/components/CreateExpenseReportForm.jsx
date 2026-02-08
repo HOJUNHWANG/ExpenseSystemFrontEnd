@@ -268,18 +268,11 @@ export default function CreateExpenseReportForm() {
     };
 
     try {
-      const res = await fetch("http://localhost:8080/api/expense-reports", {
+      const { apiFetch } = await import("../lib/api");
+      const id = await apiFetch("/api/expense-reports", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Failed to create report");
-      }
-
-      const id = await res.json();
       setMessage(`✅ Report Successfully Created`);
       // 필요하면 폼 초기화
     } catch (err) {

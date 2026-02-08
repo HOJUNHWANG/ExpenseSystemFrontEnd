@@ -20,16 +20,9 @@ export default function ApprovalQueuePage() {
     setError("");
 
     try {
-      const res = await fetch(
-        "http://localhost:8080/api/expense-reports/pending-approval"
+      const data = await (await import("../lib/api")).apiFetch(
+        "/api/expense-reports/pending-approval"
       );
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Failed to fetch approval queue");
-      }
-
-      const data = await res.json();
       setReports(data);
     } catch (err) {
       console.error(err);

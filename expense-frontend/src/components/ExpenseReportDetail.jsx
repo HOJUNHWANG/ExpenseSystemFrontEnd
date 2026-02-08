@@ -26,16 +26,8 @@ export default function ExpenseReportDetail() {
         setActionMessage("");
 
         try {
-            const res = await fetch(
-                `http://localhost:8080/api/expense-reports/${id}`
-            );
-
-            if (!res.ok) {
-                const text = await res.text();
-                throw new Error(text || "Failed to load report");
-            }
-
-            const data = await res.json();
+            const { apiFetch } = await import("../lib/api");
+            const data = await apiFetch(`/api/expense-reports/${id}`);
             setReport(data);
         } catch (err) {
             console.error(err);
@@ -61,22 +53,14 @@ export default function ExpenseReportDetail() {
         setComment("");
 
         try {
-            const res = await fetch(
-                `http://localhost:8080/api/expense-reports/${id}/${action}`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        approverId: user.id, // 🔹 로그인 유저를 approver로
-                        comment: comment || `${action} by ${user.name}`,
-                    }),
-                }
-            );
-
-            if (!res.ok) {
-                const text = await res.text();
-                throw new Error(text || `Failed to ${action} report`);
-            }
+            const { apiFetch } = await import("../lib/api");
+            await apiFetch(`/api/expense-reports/${id}/${action}`, {
+                method: "POST",
+                body: JSON.stringify({
+                    approverId: user.id,
+                    comment: comment || `${action} by ${user.name}`,
+                }),
+            });
 
             setActionMessage(`Report successfully ${action}d.`);
 

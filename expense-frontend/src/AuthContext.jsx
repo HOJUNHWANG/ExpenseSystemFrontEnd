@@ -1,7 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
+import { apiFetch } from "./lib/api";
 
 const AuthContext = createContext(null);
+
+export const DEMO_USERS = {
+    EMPLOYEE: { email: "jun@example.com", label: "Employee" },
+    MANAGER: { email: "manager@example.com", label: "Manager" },
+    FINANCE: { email: "finance@example.com", label: "Finance" },
+};
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(() => {
@@ -14,18 +21,34 @@ export function AuthProvider({ children }) {
         }
     });
 
-    const login = (userData) => {
+    const login = useCallback((userData) => {
         setUser(userData);
         localStorage.setItem("expense-user", JSON.stringify(userData));
-    };
+    }, []);
 
-    const logout = () => {
+    const logout = useCallback(() => {
         setUser(null);
         localStorage.removeItem("expense-user");
-    };
+    }, []);
+
+    // Demo-friendly login: fetch user by email (backend demo endpoint)
+    const loginWithEmail = useCallback(async (email) => {
+        const data = await apiFetch("/api/auth/login", {
+            method: "POST",
+            body: JSON.stringify({ email }),
+        });
+        login(data);
+        return data;
+    }, [login]);
+
+    const switchDemoRole = useCallback(async (role) => {
+        const entry = DEMO_USERS[role];
+        if (!entry) throw new Error(`Unknown role: ${role}`);
+        return loginWithEmail(entry.email);
+    }, [loginWithEmail]);
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, login, logout, loginWithEmail, switchDemoRole }}>
             {children}
         </AuthContext.Provider>
     );

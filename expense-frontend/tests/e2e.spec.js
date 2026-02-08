@@ -39,12 +39,13 @@ test("finance: reject requires per-item finance note", async ({ page }) => {
   await resetDemo(page);
   await viewAs(page, "Finance");
 
+  // Open Search (auto-loads results by default)
   await page.goto("/search");
-  await page.getByPlaceholder("e.g. NYC Trip").fill("Hotel Exception");
-  await page.getByRole("button", { name: "Search" }).click();
 
-  // Click the result view link (routes to special approval when status is FINANCE_SPECIAL_REVIEW)
-  await page.getByRole("link", { name: "View" }).first().click();
+  // Find the seeded Finance-special-review report and open it.
+  const row = page.getByRole("row", { name: /Draft — Hotel Exception \(needs Finance\)/ });
+  await expect(row).toBeVisible();
+  await row.getByRole("link", { name: "View" }).click();
 
   // We should be on special approval page
   await expect(page).toHaveURL(/\/special-approval\//);
@@ -68,9 +69,13 @@ test("manager: approve a submitted report from approval queue", async ({ page })
   await viewAs(page, "Manager");
 
   await page.goto("/approvals");
-  await page.getByText("Submitted — NYC Trip").click();
+
+  const row = page.getByRole("row", { name: /Submitted — NYC Trip/ });
+  await expect(row).toBeVisible();
+  await row.getByRole("link", { name: /View \/ Approve/ }).click();
 
   // On detail page, approve flow
+  await expect(page).toHaveURL(/\/reports\//);
   await page.getByRole("button", { name: "Approve" }).click();
   await page.getByRole("button", { name: "Confirm Approve" }).click();
 

@@ -24,12 +24,12 @@ function App() {
 
       {/* Header */}
       <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center gap-3">
-          <div className="flex items-center gap-4">
-            <Link to="/" className="font-semibold text-slate-800">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap md:flex-nowrap justify-between items-center gap-2">
+          <div className="flex items-center gap-4 min-w-0">
+            <Link to="/" className="font-semibold text-slate-800 whitespace-nowrap">
               Company Ops Demo
             </Link>
-            <nav className="flex gap-3 text-sm">
+            <nav className="hidden sm:flex gap-3 text-sm whitespace-nowrap">
               <Link to="/create" className="text-slate-600 hover:text-slate-900">
                 Create
               </Link>
@@ -50,11 +50,11 @@ function App() {
             </nav>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap md:flex-nowrap items-center justify-end gap-2">
             <DemoControls />
             <RoleSwitcher />
 
-            <div className="text-sm flex items-center gap-3 pl-2 border-l border-slate-200">
+            <div className="text-sm flex items-center gap-3 pl-2 border-l border-slate-200 whitespace-nowrap">
               {user ? (
                 <>
                   <span className="text-slate-700">

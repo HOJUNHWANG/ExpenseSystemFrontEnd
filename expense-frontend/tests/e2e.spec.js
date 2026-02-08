@@ -10,7 +10,9 @@ test.beforeEach(async ({ page }) => {
 async function resetDemo(page) {
   await page.goto("/dashboard");
   await page.getByRole("button", { name: "Reset demo" }).click();
-  await expect(page.getByText("Demo data reset.")).toBeVisible();
+
+  // The reset action triggers a re-login (default: EMPLOYEE) and shows the user in header.
+  await expect(page.getByText(/Jun Employee/i)).toBeVisible();
 }
 
 async function viewAs(page, label) {
@@ -26,7 +28,7 @@ test("finance: reject requires per-item finance note", async ({ page }) => {
   await viewAs(page, "Finance");
 
   await page.goto("/search");
-  await page.getByLabel("Query").fill("Hotel Exception");
+  await page.getByPlaceholder("e.g. NYC Trip").fill("Hotel Exception");
   await page.getByRole("button", { name: "Search" }).click();
 
   // Click the result view link (routes to special approval when status is FINANCE_SPECIAL_REVIEW)

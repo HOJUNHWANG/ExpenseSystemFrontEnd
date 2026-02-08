@@ -8,6 +8,8 @@ export default function SearchPage() {
   const [q, setQ] = useState("");
   const [minTotal, setMinTotal] = useState("");
   const [maxTotal, setMaxTotal] = useState("");
+  const [status, setStatus] = useState("");
+  const [sort, setSort] = useState("activity_desc");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [results, setResults] = useState([]);
@@ -25,8 +27,10 @@ export default function SearchPage() {
       params.set("requesterId", String(user.id));
       params.set("requesterRole", String(user.role));
       if (q.trim()) params.set("q", q.trim());
+      if (status) params.set("status", status);
       if (minTotal !== "") params.set("minTotal", String(Number(minTotal)));
       if (maxTotal !== "") params.set("maxTotal", String(Number(maxTotal)));
+      if (sort) params.set("sort", sort);
 
       const data = await apiFetch(`/api/expense-reports/search?${params.toString()}`);
       setResults(data || []);
@@ -61,7 +65,7 @@ export default function SearchPage() {
         )}
 
         {user && (
-          <form onSubmit={runSearch} className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+          <form onSubmit={runSearch} className="mt-4 grid grid-cols-1 md:grid-cols-6 gap-3">
             <div className="md:col-span-2">
               <label className="block text-xs font-medium text-slate-600 mb-1">Title contains</label>
               <input
@@ -71,6 +75,34 @@ export default function SearchPage() {
                 placeholder="e.g. NYC Trip"
               />
             </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Status</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
+              >
+                <option value="">Any</option>
+                <option value="SUBMITTED">SUBMITTED</option>
+                <option value="APPROVED">APPROVED</option>
+                <option value="REJECTED">REJECTED</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Sort</label>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
+              >
+                <option value="activity_desc">Recent activity</option>
+                <option value="total_desc">Total (high → low)</option>
+                <option value="total_asc">Total (low → high)</option>
+              </select>
+            </div>
+
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">Min total ($)</label>
               <input
@@ -92,7 +124,7 @@ export default function SearchPage() {
               />
             </div>
 
-            <div className="md:col-span-4 flex items-center gap-2">
+            <div className="md:col-span-6 flex items-center gap-2">
               <button
                 type="submit"
                 disabled={loading}
@@ -104,6 +136,8 @@ export default function SearchPage() {
                 type="button"
                 onClick={() => {
                   setQ("");
+                  setStatus("");
+                  setSort("activity_desc");
                   setMinTotal("");
                   setMaxTotal("");
                   setResults([]);

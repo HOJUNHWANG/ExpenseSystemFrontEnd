@@ -1,16 +1,38 @@
-# React + Vite
+# Company Ops Demo (Frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Public demo UI for a corporate expense workflow.
 
-Currently, two official plugins are available:
+## Features
+- Demo-friendly onboarding (Guided Demo)
+- Role Switcher (Employee / Manager / Finance) to complete approval flows as a solo visitor
+- Reset Demo (calls backend seed/reset endpoint)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Local development
 
-## React Compiler
+### Requirements
+- Node.js 18+
+- Backend running locally on `http://localhost:8080`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Run
+```bash
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+## Environment variables
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### `VITE_API_BASE_URL`
+Base URL for the backend API.
+
+Examples:
+- Local: `http://localhost:8080`
+- Render: `https://<your-backend>.onrender.com`
+
+## Deployment (Vercel)
+1. Import this repo into Vercel
+2. Set project root to `expense-frontend/`
+3. Add env var:
+   - `VITE_API_BASE_URL` = your backend public URL
+4. Deploy
+
+> Note: This is intended as a public portfolio demo. Do not use for sensitive data.

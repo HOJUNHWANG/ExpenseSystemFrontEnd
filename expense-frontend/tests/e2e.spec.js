@@ -43,7 +43,7 @@ test("finance: reject requires per-item finance note", async ({ page }) => {
   await page.goto("/search");
 
   // Find the seeded Finance-special-review report and open it.
-  const row = page.getByRole("row", { name: /Draft — Hotel Exception \(needs Finance\)/ });
+  const row = page.locator("tr", { hasText: "Draft — Hotel Exception (needs Finance)" });
   await expect(row).toBeVisible();
   await row.getByRole("link", { name: "View" }).click();
 
@@ -79,7 +79,8 @@ test("manager: approve a submitted report from approval queue", async ({ page })
   await page.getByRole("button", { name: "Approve" }).click();
   await page.getByRole("button", { name: "Confirm Approve" }).click();
 
-  // We should be redirected back to approvals with toast
-  await expect(page).toHaveURL(/\/approvals\?toast=approved/);
+  // ApprovalQueuePage consumes ?toast=approved and then replaces URL back to /approvals.
+  // So we only assert the toast is visible and we're on approvals.
+  await expect(page).toHaveURL(/\/approvals/);
   await expect(page.getByText("Successfully approved.")).toBeVisible();
 });

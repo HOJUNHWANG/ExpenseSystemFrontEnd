@@ -1,5 +1,6 @@
 // src/App.jsx
-import { Routes, Route, Link, Navigate } from "react-router-dom";
+import { Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import CreateExpenseReportForm from "./components/CreateExpenseReportForm";
 import ExpenseReportList from "./components/ExpenseReportList";
 import ExpenseReportDetail from "./components/ExpenseReportDetail";
@@ -19,8 +20,28 @@ import GuidedDemoModal from "./components/GuidedDemoModal.jsx";
 
 function App() {
   const { user, logout } = useAuth();
+  const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isApprover = user && (user.role === "MANAGER" || user.role === "FINANCE");
+
+  const navItems = useMemo(() => {
+    const base = [
+      { to: "/dashboard", label: "Dashboard" },
+      { to: "/welcome", label: "About" },
+      { to: "/create", label: "Create" },
+      { to: "/search", label: "Search" },
+      { to: "/reports", label: "My Reports" },
+      { to: "/reports/in-progress", label: "In progress" },
+    ];
+    if (isApprover) base.push({ to: "/approvals", label: "Approval Queue" });
+    return base;
+  }, [isApprover]);
+
+  useEffect(() => {
+    // Close menu on route change
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -29,35 +50,47 @@ function App() {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap md:flex-nowrap justify-between items-center gap-2">
-          <div className="flex items-center gap-4 min-w-0">
+          {mobileMenuOpen && (
+            <div className="w-full md:hidden mt-2 rounded-2xl border border-slate-200 bg-white shadow-sm p-3">
+              <div className="grid grid-cols-2 gap-2">
+                {navItems.map((it) => (
+                  <Link
+                    key={it.to}
+                    to={it.to}
+                    className={
+                      "text-sm px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 " +
+                      (location.pathname === it.to ? "bg-slate-50" : "bg-white")
+                    }
+                  >
+                    {it.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="flex items-center gap-3 min-w-0">
             <Link to="/" className="font-semibold text-slate-800 whitespace-nowrap">
               Company Ops Demo
             </Link>
-            <nav className="hidden sm:flex gap-3 text-sm whitespace-nowrap">
-              <Link to="/dashboard" className="text-slate-600 hover:text-slate-900">
-                Dashboard
-              </Link>
-              <Link to="/welcome" className="text-slate-600 hover:text-slate-900">
-                About
-              </Link>
-              <Link to="/create" className="text-slate-600 hover:text-slate-900">
-                Create
-              </Link>
-              <Link to="/search" className="text-slate-600 hover:text-slate-900">
-                Search
-              </Link>
-              <Link to="/reports" className="text-slate-600 hover:text-slate-900">
-                My Reports
-              </Link>
-              <Link to="/reports/in-progress" className="text-slate-600 hover:text-slate-900">
-                In progress
-              </Link>
-              {isApprover && (
-                <Link to="/approvals" className="text-slate-600 hover:text-slate-900">
-                  Approval Queue
+
+            {/* Desktop nav */}
+            <nav className="hidden md:flex gap-3 text-sm whitespace-nowrap">
+              {navItems.map((it) => (
+                <Link key={it.to} to={it.to} className="text-slate-600 hover:text-slate-900">
+                  {it.label}
                 </Link>
-              )}
+              ))}
             </nav>
+
+            {/* Mobile menu button */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              className="md:hidden inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? "Close" : "Menu"}
+            </button>
           </div>
 
           <div className="flex flex-wrap md:flex-nowrap items-center justify-end gap-2 min-w-0">

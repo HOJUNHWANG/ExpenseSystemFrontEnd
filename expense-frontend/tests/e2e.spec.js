@@ -63,10 +63,10 @@ test("finance: reject requires per-item finance note", async ({ page, request })
 
   await page.goto(`/special-approval/${target.id}`);
 
-  // Fill global finance comment (label is not associated via htmlFor, so use placeholder)
-  await page
-    .getByPlaceholder(/Optional overall comment\.|Please explain why this is rejected\./)
-    .fill("Policy exception rejected in test.");
+  // Fill global finance comment (only textarea on this page)
+  const commentBox = page.locator("textarea");
+  await expect(commentBox).toBeVisible();
+  await commentBox.fill("Policy exception rejected in test.");
 
   // Set first item to Reject (do not fill finance note)
   await page.getByRole("button", { name: /Reject/ }).first().click();

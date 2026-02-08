@@ -1,9 +1,10 @@
 // src/App.jsx
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, Navigate } from "react-router-dom";
 import CreateExpenseReportForm from "./components/CreateExpenseReportForm";
 import ExpenseReportList from "./components/ExpenseReportList";
 import ExpenseReportDetail from "./components/ExpenseReportDetail";
 import LoginPage from "./pages/LoginPage";
+import DashboardPage from "./pages/DashboardPage.jsx";
 import { useAuth } from "./AuthContext";
 import RequireAuth from "./RequireAuth.jsx";
 import WelcomePage from "./components/WelcomePage.jsx";
@@ -30,6 +31,9 @@ function App() {
               Company Ops Demo
             </Link>
             <nav className="hidden sm:flex gap-3 text-sm whitespace-nowrap">
+              <Link to="/dashboard" className="text-slate-600 hover:text-slate-900">
+                Dashboard
+              </Link>
               <Link to="/create" className="text-slate-600 hover:text-slate-900">
                 Create
               </Link>
@@ -78,7 +82,9 @@ function App() {
       {/* Content */}
       <main className="max-w-4xl mx-auto px-4 py-6">
         <Routes>
-          <Route path="/" element={<WelcomePage />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
 
           <Route
@@ -121,7 +127,7 @@ function App() {
               </RequireAuth>
             }
           />
-          <Route path="*" element={<WelcomePage />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
     </div>

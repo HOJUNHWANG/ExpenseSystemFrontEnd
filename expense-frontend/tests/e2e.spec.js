@@ -76,6 +76,12 @@ test("finance: reject requires per-item finance note", async ({ page, request })
   const target = (list || []).find((r) => r.title === "Draft — Hotel Exception (needs Finance)");
   expect(target).toBeTruthy();
 
+  // Sanity-check backend seed: special review must exist + have items
+  const sr = await request.get(`${apiBase}/api/expense-reports/${target.id}/special-review`);
+  expect(sr.ok()).toBeTruthy();
+  const srJson = await sr.json();
+  expect(Array.isArray(srJson?.items) && srJson.items.length > 0).toBeTruthy();
+
   // Set auth state directly (avoid RoleSwitcher timing flake)
   await page.goto("/dashboard");
   await page.evaluate((u) => {
@@ -99,6 +105,12 @@ test("finance: reject requires per-item finance note", async ({ page, request })
   await expect(page.getByText("Loading…")).toHaveCount(0);
 
   // Ensure review items rendered (otherwise no form controls exist)
+  await expect
+    .poll(async () => {
+      return await page.getByTestId(/special-item-/).count();
+    })
+    .toBeGreaterThan(0);
+
   const firstItem = page.getByTestId(/special-item-/).first();
   await expect(firstItem).toBeVisible();
 

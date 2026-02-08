@@ -53,11 +53,10 @@ test("smoke: reset demo works", async ({ page }) => {
 test("finance: reject requires per-item finance note", async ({ page, request }) => {
   test.setTimeout(90_000);
   await resetDemo(page);
-  await viewAs(page, "Finance");
 
   const apiBase = process.env.E2E_API_BASE_URL || "http://localhost:8080";
 
-  // Fetch seeded report id via API (more reliable than UI search/table matching)
+  // Get Finance user + seeded report id via API
   const login = await request.post(`${apiBase}/api/auth/login`, {
     data: { email: "finance@example.com" },
   });
@@ -77,8 +76,12 @@ test("finance: reject requires per-item finance note", async ({ page, request })
   const target = (list || []).find((r) => r.title === "Draft — Hotel Exception (needs Finance)");
   expect(target).toBeTruthy();
 
-  // Navigate via dashboard so header/auth state is definitely initialized
+  // Set auth state directly (avoid RoleSwitcher timing flake)
   await page.goto("/dashboard");
+  await page.evaluate((u) => {
+    localStorage.setItem("expense-user", JSON.stringify(u));
+  }, financeUser);
+  await page.reload();
   await expect(page.locator("header").getByText(/\(FINANCE\)/)).toBeVisible();
 
   await page.goto(`/special-approval/${target.id}`);

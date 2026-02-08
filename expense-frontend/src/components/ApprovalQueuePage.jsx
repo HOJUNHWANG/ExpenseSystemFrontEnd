@@ -100,9 +100,9 @@ export default function ApprovalQueuePage() {
             <thead className="bg-slate-50 text-slate-600">
               <tr>
                 <th className="text-left px-3 py-2">Title</th>
-                <th className="text-left px-3 py-2">Destination</th>
-                <th className="text-left px-3 py-2">Departure</th>
-                <th className="text-left px-3 py-2">Return</th>
+                <th className="text-left px-3 py-2 hidden md:table-cell">Destination</th>
+                <th className="text-left px-3 py-2 hidden lg:table-cell">Departure</th>
+                <th className="text-left px-3 py-2 hidden lg:table-cell">Return</th>
                 <th className="text-left px-3 py-2">Status</th>
                 <th className="text-left px-3 py-2"></th>
               </tr>
@@ -110,10 +110,17 @@ export default function ApprovalQueuePage() {
             <tbody>
               {reports.map((r) => (
                 <tr key={r.id} className="border-t hover:bg-slate-50">
-                  <td className="px-3 py-2">{r.title}</td>
-                  <td className="px-3 py-2">{r.destination}</td>
-                  <td className="px-3 py-2">{r.departureDate}</td>
-                  <td className="px-3 py-2">{r.returnDate}</td>
+                  <td className="px-3 py-2">
+                    <div className="font-medium text-slate-900">{r.title}</div>
+                    <div className="mt-0.5 text-xs text-slate-500 md:hidden">
+                      {(r.destination || "-")}
+                      {r.departureDate ? ` • ${r.departureDate}` : ""}
+                      {r.returnDate ? ` → ${r.returnDate}` : ""}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 hidden md:table-cell">{r.destination || "-"}</td>
+                  <td className="px-3 py-2 hidden lg:table-cell">{r.departureDate || "-"}</td>
+                  <td className="px-3 py-2 hidden lg:table-cell">{r.returnDate || "-"}</td>
                   <td className="px-3 py-2">
                     <StatusBadge status={r.status} />
                   </td>

@@ -241,7 +241,7 @@ export default function DashboardPage() {
               {activity.map((a) => (
                 <Link
                   key={a.id}
-                  to={`/reports/${a.id}`}
+                  to={a.status === "FINANCE_SPECIAL_REVIEW" ? `/special-approval/${a.id}` : `/reports/${a.id}`}
                   className="block rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 px-3 py-2"
                 >
                   <div className="flex items-center justify-between gap-3">

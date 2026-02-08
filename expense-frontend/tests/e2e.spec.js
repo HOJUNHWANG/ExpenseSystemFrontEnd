@@ -61,11 +61,20 @@ test("finance: reject requires per-item finance note", async ({ page, request })
   const target = (list || []).find((r) => r.title === "Draft — Hotel Exception (needs Finance)");
   expect(target).toBeTruthy();
 
+  // Navigate via dashboard so header/auth state is definitely initialized
+  await page.goto("/dashboard");
+  await expect(page.locator("header").getByText(/\(FINANCE\)/)).toBeVisible();
+
   await page.goto(`/special-approval/${target.id}`);
 
-  // Fill global finance comment (only textarea on this page)
-  const commentBox = page.locator("textarea");
-  await expect(commentBox).toBeVisible();
+  // Ensure we're not bounced to login
+  await expect(page).not.toHaveURL(/\/login/);
+
+  // Wait for the finance form to render
+  await expect(page.getByText(/Finance decision comment/i)).toBeVisible();
+
+  // Fill global finance comment
+  const commentBox = page.locator("textarea").first();
   await commentBox.fill("Policy exception rejected in test.");
 
   // Set first item to Reject (do not fill finance note)

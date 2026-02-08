@@ -28,6 +28,21 @@ async function viewAs(page, label) {
   if (roleCode) {
     // Wait until header reflects the active role
     await expect(page.locator("header").getByText(new RegExp(`\\(${roleCode}\\)`))).toBeVisible();
+
+    // Also wait for localStorage user to update (prevents race between click and navigation)
+    await expect
+      .poll(async () => {
+        return await page.evaluate(() => {
+          const raw = localStorage.getItem("expense-user");
+          if (!raw) return null;
+          try {
+            return JSON.parse(raw)?.role || null;
+          } catch {
+            return null;
+          }
+        });
+      })
+      .toBe(roleCode);
   }
 }
 
@@ -70,6 +85,9 @@ test("finance: reject requires per-item finance note", async ({ page, request })
 
   // Ensure we're not bounced to login
   await expect(page).not.toHaveURL(/\/login/);
+
+  // If auth didn't stick, the page shows a Finance-only message (no textarea). Fail early.
+  await expect(page.getByText("Only Finance can access this page.")).toHaveCount(0);
 
   // Basic page shell should render immediately for Finance
   await expect(page.getByRole("heading", { name: "Finance special approval" })).toBeVisible();

@@ -37,6 +37,9 @@ function App() {
               <Link to="/dashboard" className="text-slate-600 hover:text-slate-900">
                 Dashboard
               </Link>
+              <Link to="/welcome" className="text-slate-600 hover:text-slate-900">
+                About
+              </Link>
               <Link to="/create" className="text-slate-600 hover:text-slate-900">
                 Create
               </Link>

@@ -273,7 +273,7 @@ export default function DashboardPage() {
         </div>
       </Section>
 
-      <Section title="Demo tips">
+      <Section title="Demo tips" right={<Link to="/welcome" className="text-xs text-blue-600 hover:underline">About this demo</Link>}>
         <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-5 text-sm text-slate-700">
           <ul className="list-disc pl-5 space-y-1">
             <li>

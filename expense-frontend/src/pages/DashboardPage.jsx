@@ -249,8 +249,17 @@ export default function DashboardPage() {
                       <div className="text-sm font-medium text-slate-900 truncate">
                         {a.title}
                       </div>
-                      <div className="mt-0.5 text-xs text-slate-500">
-                        {a.activityLabel} • {a.status} • ${Number(a.totalAmount || 0).toLocaleString()}
+                      <div className="mt-0.5 text-xs text-slate-500 flex flex-wrap items-center gap-2">
+                        <span>{a.activityLabel}</span>
+                        <span className="text-slate-300">•</span>
+                        <StatusBadge status={a.status} />
+                        {a.flagged && (
+                          <span className="inline-flex items-center rounded-full border border-orange-100 bg-orange-50 px-2 py-0.5 text-[11px] font-medium text-orange-700">
+                            Flagged
+                          </span>
+                        )}
+                        <span className="text-slate-300">•</span>
+                        <span>${Number(a.totalAmount || 0).toLocaleString()}</span>
                       </div>
                     </div>
                     <div className="text-xs text-slate-500 whitespace-nowrap">

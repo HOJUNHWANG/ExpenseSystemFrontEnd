@@ -136,6 +136,17 @@ export default function ExpenseReportDetail() {
                 </div>
             )}
 
+            {report.flagged && report.policyFlags && report.policyFlags.length > 0 && (
+              <div className="rounded-2xl border border-orange-100 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+                <div className="font-medium">Policy flags</div>
+                <ul className="list-disc pl-5 mt-1 space-y-1 text-xs">
+                  {report.policyFlags.map((f, idx) => (
+                    <li key={idx}>{f}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                     <div className="font-medium text-slate-500">Status</div>

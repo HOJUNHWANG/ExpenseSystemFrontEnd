@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../AuthContext";
 import {Link, useNavigate} from "react-router-dom";
+import StatusBadge from "../ui/StatusBadge.jsx";
 
 export default function ExpenseReportList() {
   const { user } = useAuth();
@@ -106,17 +107,7 @@ export default function ExpenseReportList() {
                     {r.totalAmount?.toLocaleString() ?? 0}
                   </td>
                   <td className="px-3 py-2">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs ${
-                        r.status === "APPROVED"
-                          ? "bg-green-50 text-green-700"
-                          : r.status === "REJECTED"
-                          ? "bg-red-50 text-red-700"
-                          : "bg-slate-50 text-slate-700"
-                      }`}
-                    >
-                      {r.status}
-                    </span>
+                    <StatusBadge status={r.status} />
                   </td>
                     <td className="px-3 py-2 text-right">
                       <Link

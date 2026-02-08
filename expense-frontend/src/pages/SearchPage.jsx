@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { apiFetch } from "../lib/api";
+import StatusBadge from "../ui/StatusBadge.jsx";
 
 export default function SearchPage() {
   const { user } = useAuth();
@@ -40,6 +41,17 @@ export default function SearchPage() {
       setLoading(false);
     }
   };
+
+  // Default: show all reports within the user's scope when the page opens.
+  useEffect(() => {
+    if (!user) return;
+    // Only auto-run when no results yet and filters are in default state.
+    if (results.length > 0) return;
+    // eslint-disable-next-line no-void
+    void runSearch();
+    // We intentionally do not include `runSearch` in deps to avoid loops.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const subtitle = useMemo(() => {
     if (!user) return "Please login to search.";
@@ -95,7 +107,7 @@ export default function SearchPage() {
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
+                className="w-full border border-slate-200 rounded-xl px-3 py-2 pr-8 text-sm bg-white truncate"
               >
                 <option value="activity_desc">Recent activity</option>
                 <option value="total_desc">Total (high → low)</option>
@@ -189,9 +201,7 @@ export default function SearchPage() {
                     <td className="py-2">{r.destination || "-"}</td>
                     <td className="py-2 text-right">${Number(r.totalAmount || 0).toLocaleString()}</td>
                     <td className="py-2">
-                      <span className="inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium bg-slate-50 text-slate-700">
-                        {r.status}
-                      </span>
+                      <StatusBadge status={r.status} />
                     </td>
                     <td className="py-2 text-right">
                       <Link to={`/reports/${r.id}`} className="text-xs text-blue-600 hover:underline">

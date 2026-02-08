@@ -6,6 +6,68 @@ import { useLocation } from "react-router-dom";
 import StatusBadge from "../ui/StatusBadge.jsx";
 import SubmitWithWarningsModal from "./SubmitWithWarningsModal.jsx";
 
+function ChangesRequestedFeedback({ reportId, requesterId }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    if (!reportId || !requesterId) return;
+
+    const run = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const { apiFetch } = await import("../lib/api");
+        const d = await apiFetch(
+          `/api/expense-reports/${reportId}/submitter-feedback?requesterId=${requesterId}`
+        );
+        setData(d);
+      } catch (e) {
+        setError(e.message || "Failed to load finance feedback");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // eslint-disable-next-line no-void
+    void run();
+  }, [reportId, requesterId]);
+
+  return (
+    <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800">
+      <div className="font-medium">Finance requested changes</div>
+      {loading && <div className="mt-1 text-xs text-red-700">Loading feedback…</div>}
+      {error && <div className="mt-1 text-xs text-red-700">{error}</div>}
+
+      {!loading && !error && data && (
+        <>
+          <div className="mt-2 text-xs text-red-700">
+            <span className="font-medium">Comment:</span> {data.reviewerComment || "-"}
+          </div>
+          <div className="mt-2">
+            <div className="text-xs font-medium text-red-700">Per-warning decisions</div>
+            <ul className="list-disc pl-5 mt-1 space-y-1 text-xs text-red-700">
+              {(data.items || []).map((it) => (
+                <li key={it.id || it.code}>
+                  <span className="font-medium">{it.code}</span>: {it.message}
+                  {it.financeDecision === "REJECT" && it.financeReason
+                    ? ` — Finance reason: ${it.financeReason}`
+                    : ""}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
+      )}
+
+      <div className="mt-3 text-xs text-red-700">
+        Fix the issues, then re-submit. You can either remove the warnings or request special approval again.
+      </div>
+    </div>
+  );
+}
+
 
 export default function ExpenseReportDetail() {
     const { id } = useParams();
@@ -224,9 +286,13 @@ export default function ExpenseReportDetail() {
               </div>
             )}
 
+            {report?.status === "CHANGES_REQUESTED" && (
+              <ChangesRequestedFeedback reportId={id} requesterId={user?.id} />
+            )}
+
             {report.flagged && report.policyFlags && report.policyFlags.length > 0 && (
               <div className="rounded-2xl border border-orange-100 bg-orange-50 px-4 py-3 text-sm text-orange-800">
-                <div className="font-medium">Policy flags</div>
+                <div className="font-medium">Policy warnings</div>
                 <ul className="list-disc pl-5 mt-1 space-y-1 text-xs">
                   {report.policyFlags.map((f, idx) => (
                     <li key={idx}>{f}</li>

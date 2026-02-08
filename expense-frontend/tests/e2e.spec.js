@@ -51,10 +51,6 @@ test("smoke: reset demo works", async ({ page }) => {
 });
 
 test("finance: reject requires per-item finance note", async ({ page, request }) => {
-  // This rule is already covered deterministically by backend API smoke tests.
-  // UI E2E for this page has been flaky in CI due to auth/render timing.
-  // Keep it runnable locally, but skip in CI to keep PR checks stable.
-  test.skip(!!process.env.CI, "Flaky in CI; covered by backend smoke test");
   test.setTimeout(90_000);
   await resetDemo(page);
 
@@ -103,21 +99,22 @@ test("finance: reject requires per-item finance note", async ({ page, request })
   await expect(page.getByText("Loading…")).toHaveCount(0);
 
   // Ensure review items rendered (otherwise no form controls exist)
-  await expect(page.getByRole("button", { name: /Approve/ }).first()).toBeVisible();
+  const firstItem = page.getByTestId(/special-item-/).first();
+  await expect(firstItem).toBeVisible();
 
-  // Fill global finance comment
-  const commentBox = page.locator("textarea").first();
+  // Fill global finance comment (stable test id)
+  const commentBox = page.getByTestId("special-reviewer-comment");
   await expect(commentBox).toBeVisible();
   await commentBox.fill("Policy exception rejected in test.");
 
   // Set first item to Reject (do not fill finance note)
-  await page.getByRole("button", { name: /Reject/ }).first().click();
+  await firstItem.getByTestId(/special-reject-/).click();
 
   // Should show inline required message for finance note on rejected item
   await expect(page.getByText("Required when rejecting this item.")).toBeVisible();
 
   // Submit button should be disabled because reject reasons missing
-  const submitBtn = page.getByRole("button", { name: /Reject special approval|Approve special approval/ });
+  const submitBtn = page.getByTestId("special-submit");
   await expect(submitBtn).toBeDisabled();
 });
 

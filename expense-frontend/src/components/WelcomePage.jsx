@@ -13,14 +13,15 @@ export default function WelcomePage() {
   };
 
   return (
-    <div className="bg-white shadow-md rounded-xl p-6 space-y-6">
+    <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6 space-y-6">
       <div>
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-2xl font-semibold mb-2">Welcome to Company Ops Demo</h2>
             <p className="text-sm text-slate-600">
-              Public demo of an internal workflow tool. You can create an expense report as an
-              Employee, then switch roles to Manager/Finance to approve or reject.
+              This is a public portfolio demo of an internal expense workflow.
+              It includes a <span className="font-medium">Finance special approval gate</span> for policy exceptions,
+              so a solo visitor can experience a realistic corporate approval process.
             </p>
           </div>
           <div className="text-[11px] text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
@@ -33,10 +34,23 @@ export default function WelcomePage() {
         <h3 className="text-lg font-semibold mb-2">How to try it (solo-friendly)</h3>
         <ol className="list-decimal pl-5 text-sm text-slate-700 space-y-1">
           <li>Click <span className="font-semibold">Start guided demo</span> (optional)</li>
-          <li>Create &amp; submit a report as <span className="font-semibold">Employee</span></li>
-          <li>Use the <span className="font-semibold">View as</span> buttons to switch to <span className="font-semibold">Manager</span></li>
-          <li>Approve or reject from the <span className="font-semibold">Approval Queue</span></li>
+          <li>Create a report as <span className="font-semibold">Employee</span></li>
+          <li>Click <span className="font-semibold">Submit</span>. If there are policy warnings, you must provide a reason for each exception.</li>
+          <li>Switch role to <span className="font-semibold">Finance</span> to review special approvals</li>
+          <li>After Finance approval, switch to <span className="font-semibold">Manager</span> to approve/reject in the normal queue</li>
         </ol>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-semibold mb-2">Demo policy (simplified)</h3>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Receipts are typically required for expenses of <span className="font-medium">$25+</span>.</li>
+            <li>Hotel nightly cap: <span className="font-medium">$300/night</span> (demo).</li>
+            <li>Meals daily cap: <span className="font-medium">$75/day</span> (demo).</li>
+            <li>Item dates should fall within the trip date range.</li>
+          </ul>
+        </div>
       </div>
 
       <div>

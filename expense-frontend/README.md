@@ -1,11 +1,18 @@
 # Company Ops Demo (Frontend)
 
-Public demo UI for a corporate expense workflow.
+Public portfolio demo UI for a corporate expense workflow (Expense → Finance special approval for policy exceptions → Manager approval).
 
-## Features
-- Demo-friendly onboarding (Guided Demo)
-- Role Switcher (Employee / Manager / Finance) to complete approval flows as a solo visitor
-- Reset Demo (calls backend seed/reset endpoint)
+## Highlights
+- **Solo-friendly demo mode**: Role Switcher (Employee / Manager / Finance)
+- **Finance special approval gate** for policy exceptions
+- **Search + Recent Activity** dashboard
+- **Reset Demo** (seed data)
+
+## Demo policy (simplified)
+- Receipts typically required for expenses **$25+**
+- Hotel nightly cap (demo): **$300/night**
+- Meals daily cap (demo): **$75/day**
+- Item dates should be within trip date range
 
 ## Local development
 

@@ -158,43 +158,50 @@ export default function ExpenseReportDetail() {
                 </h2>
                 <div className="flex items-center gap-2">
                   {canSubmit && (
-                    <button
-                      onClick={() => {
-                        setSubmitError("");
-                        // If there are warnings, show modal to collect reasons.
-                        if (report?.policyWarnings && report.policyWarnings.length > 0) {
-                          setShowSubmitModal(true);
-                        } else {
-                          // submit directly
-                          // eslint-disable-next-line no-void
-                          void (async () => {
-                            try {
-                              setSubmitting(true);
-                              const { apiFetch } = await import("../lib/api");
-                              const st = await apiFetch(`/api/expense-reports/${id}/submit`, {
-                                method: "POST",
-                                body: JSON.stringify({ submitterId: user.id, reasons: [] }),
-                              });
-                              setSubmitting(false);
-                              if (st === "FINANCE_SPECIAL_REVIEW") {
-                                // submitter can view status; finance will review
-                                navigate(`/reports/${id}`);
-                              } else {
-                                navigate(`/reports/${id}`);
+                    <>
+                      <button
+                        onClick={() => navigate(`/reports/${id}/edit`)}
+                        className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSubmitError("");
+                          // If there are warnings, show modal to collect reasons.
+                          if (report?.policyWarnings && report.policyWarnings.length > 0) {
+                            setShowSubmitModal(true);
+                          } else {
+                            // submit directly
+                            // eslint-disable-next-line no-void
+                            void (async () => {
+                              try {
+                                setSubmitting(true);
+                                const { apiFetch } = await import("../lib/api");
+                                const st = await apiFetch(`/api/expense-reports/${id}/submit`, {
+                                  method: "POST",
+                                  body: JSON.stringify({ submitterId: user.id, reasons: [] }),
+                                });
+                                setSubmitting(false);
+                                await fetchReport();
+                                if (st === "FINANCE_SPECIAL_REVIEW") {
+                                  setActionMessage("Submitted for Finance special approval.");
+                                } else if (st === "SUBMITTED") {
+                                  setActionMessage("Submitted to approval queue.");
+                                }
+                              } catch (e) {
+                                setSubmitting(false);
+                                setSubmitError(e.message || "Submit failed");
                               }
-                              await fetchReport();
-                            } catch (e) {
-                              setSubmitting(false);
-                              setSubmitError(e.message || "Submit failed");
-                            }
-                          })();
-                        }
-                      }}
-                      disabled={submitting}
-                      className="px-3 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium disabled:opacity-60"
-                    >
-                      {submitting ? "Submitting…" : "Submit"}
-                    </button>
+                            })();
+                          }
+                        }}
+                        disabled={submitting}
+                        className="px-3 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium disabled:opacity-60"
+                      >
+                        {submitting ? "Submitting…" : "Submit"}
+                      </button>
+                    </>
                   )}
                   <button
                       onClick={() => navigate("/reports")}

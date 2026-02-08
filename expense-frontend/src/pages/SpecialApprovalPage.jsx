@@ -184,117 +184,192 @@ export default function SpecialApprovalPage() {
       </div>
 
       {!loading && review && (
-        <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-900">Exception checklist</h2>
-            <Pill tone={anyReject ? "red" : "green"}>{anyReject ? "Reject path" : "Approve path"}</Pill>
-          </div>
-
-          <div className="mt-4 space-y-3">
-            {items.map((it) => {
-              const d = decisions[it.code]?.decision || "";
-              const reason = decisions[it.code]?.financeReason || "";
-              const highlight = true;
-
-              return (
-                <div
-                  key={it.code}
-                  className={
-                    "rounded-2xl border p-4 " +
-                    (highlight ? "border-orange-100 bg-orange-50/40" : "border-slate-200 bg-white")
-                  }
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <Pill tone="orange">{it.code}</Pill>
-                        <div className="text-sm font-medium text-slate-900">{it.message}</div>
-                      </div>
-                      <div className="mt-2 text-xs text-slate-600">
-                        <span className="font-medium">Employee reason:</span> {it.employeeReason}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setDecision(it.code, { decision: "APPROVE" })}
-                        className={
-                          "px-3 py-2 rounded-xl text-sm font-medium border " +
-                          (d === "APPROVE"
-                            ? "bg-green-600 text-white border-green-600"
-                            : "bg-white border-slate-200 hover:bg-slate-50")
-                        }
-                      >
-                        ✓ Approve
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDecision(it.code, { decision: "REJECT" })}
-                        className={
-                          "px-3 py-2 rounded-xl text-sm font-medium border " +
-                          (d === "REJECT"
-                            ? "bg-red-600 text-white border-red-600"
-                            : "bg-white border-slate-200 hover:bg-slate-50")
-                        }
-                      >
-                        ✕ Reject
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="mt-3">
-                    <label className="block text-xs font-medium text-slate-600 mb-1">
-                      Finance note (optional)
-                    </label>
-                    <input
-                      value={reason}
-                      onChange={(e) => setDecision(it.code, { financeReason: e.target.value })}
-                      className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-                      placeholder="Optional note for this exception"
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-4">
-            <label className="block text-xs font-medium text-slate-600 mb-1">
-              Finance decision comment {anyReject ? "(required for reject)" : "(optional)"}
-            </label>
-            <textarea
-              value={reviewerComment}
-              onChange={(e) => setReviewerComment(e.target.value)}
-              rows={3}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-              placeholder={anyReject ? "Please explain why this is rejected." : "Optional overall comment."}
-            />
-            {anyReject && !reviewerComment.trim() && (
-              <div className="mt-1 text-xs text-red-600">Required when any item is rejected.</div>
-            )}
-          </div>
-
-          <div className="mt-5 flex items-center justify-between">
-            <div className="text-xs text-slate-500">
-              {allDecided ? "All items decided." : "Please decide approve/reject for all items."}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Left: contextual highlights */}
+          <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-900">Highlighted sections</h2>
+              <Pill tone="orange">Exception areas</Pill>
             </div>
 
-            <button
-              type="button"
-              disabled={saving || !(canApprove || canReject)}
-              onClick={submitDecision}
-              className={
-                "px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-60 " +
-                (anyReject ? "bg-red-600" : "bg-slate-900")
-              }
-            >
-              {saving
-                ? "Submitting…"
-                : anyReject
-                ? "Reject special approval"
-                : "Approve special approval"}
-            </button>
+            <div className="mt-4 space-y-3">
+              {/* Trip section */}
+              <div className={
+                "rounded-2xl border p-4 " +
+                (items.some((x) => x.code === "TRIP_DATES_INVALID")
+                  ? "border-orange-100 bg-orange-50/40"
+                  : "border-slate-200 bg-white")
+              }>
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium text-slate-900">Trip</div>
+                  {items.some((x) => x.code === "TRIP_DATES_INVALID") && <Pill tone="orange">TRIP_DATES_INVALID</Pill>}
+                </div>
+                <div className="mt-2 text-xs text-slate-600">
+                  Departure: {report?.departureDate || "-"} • Return: {report?.returnDate || "-"}
+                </div>
+              </div>
+
+              {/* Items section */}
+              <div className={
+                "rounded-2xl border p-4 " +
+                (items.some((x) => x.code !== "TRIP_DATES_INVALID")
+                  ? "border-orange-100 bg-orange-50/40"
+                  : "border-slate-200 bg-white")
+              }>
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium text-slate-900">Items</div>
+                  {items.some((x) => x.code !== "TRIP_DATES_INVALID") && <Pill tone="orange">Policy exceptions</Pill>}
+                </div>
+
+                <div className="mt-3 overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="text-xs text-slate-500">
+                      <tr>
+                        <th className="text-left font-medium py-2">Date</th>
+                        <th className="text-left font-medium py-2">Description</th>
+                        <th className="text-left font-medium py-2">Category</th>
+                        <th className="text-right font-medium py-2">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(report?.items || []).map((it, idx) => {
+                        const isHotelCap = items.some((x) => x.code === "HOTEL_ABOVE_CAP") && String(it.category || "").toLowerCase().includes("lodg") && Number(it.amount) > 300;
+                        const isReceipt = items.some((x) => x.code === "RECEIPT_REQUIRED") && Number(it.amount) >= 25;
+                        const isMealCap = items.some((x) => x.code === "MEALS_ABOVE_DAILY_CAP") && (String(it.category || "").toLowerCase().includes("meal") || String(it.description || "").toLowerCase().includes("per diem"));
+                        const highlight = isHotelCap || isReceipt || isMealCap;
+                        return (
+                          <tr key={idx} className={"border-t border-slate-100 " + (highlight ? "bg-orange-50/40" : "")}
+                          >
+                            <td className="py-2">{it.date || "-"}</td>
+                            <td className="py-2">{it.description}</td>
+                            <td className="py-2">{it.category}</td>
+                            <td className="py-2 text-right">${Number(it.amount || 0).toLocaleString()}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {items.some((x) => x.code === "RECEIPT_REQUIRED") && <Pill tone="orange">RECEIPT_REQUIRED</Pill>}
+                  {items.some((x) => x.code === "HOTEL_ABOVE_CAP") && <Pill tone="orange">HOTEL_ABOVE_CAP</Pill>}
+                  {items.some((x) => x.code === "MEALS_ABOVE_DAILY_CAP") && <Pill tone="orange">MEALS_ABOVE_DAILY_CAP</Pill>}
+                  {items.some((x) => x.code === "ITEM_DATE_OUTSIDE_TRIP") && <Pill tone="orange">ITEM_DATE_OUTSIDE_TRIP</Pill>}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: decisions checklist */}
+          <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-900">Exception checklist</h2>
+              <Pill tone={anyReject ? "red" : "green"}>{anyReject ? "Reject path" : "Approve path"}</Pill>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {items.map((it) => {
+                const d = decisions[it.code]?.decision || "";
+                const reason = decisions[it.code]?.financeReason || "";
+
+                return (
+                  <div
+                    key={it.code}
+                    className={"rounded-2xl border p-4 border-orange-100 bg-orange-50/40"}
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <Pill tone="orange">{it.code}</Pill>
+                          <div className="text-sm font-medium text-slate-900">{it.message}</div>
+                        </div>
+                        <div className="mt-2 text-xs text-slate-600">
+                          <span className="font-medium">Employee reason:</span> {it.employeeReason}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setDecision(it.code, { decision: "APPROVE" })}
+                          className={
+                            "px-3 py-2 rounded-xl text-sm font-medium border " +
+                            (d === "APPROVE"
+                              ? "bg-green-600 text-white border-green-600"
+                              : "bg-white border-slate-200 hover:bg-slate-50")
+                          }
+                        >
+                          ✓ Approve
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDecision(it.code, { decision: "REJECT" })}
+                          className={
+                            "px-3 py-2 rounded-xl text-sm font-medium border " +
+                            (d === "REJECT"
+                              ? "bg-red-600 text-white border-red-600"
+                              : "bg-white border-slate-200 hover:bg-slate-50")
+                          }
+                        >
+                          ✕ Reject
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="mt-3">
+                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                        Finance note (optional)
+                      </label>
+                      <input
+                        value={reason}
+                        onChange={(e) => setDecision(it.code, { financeReason: e.target.value })}
+                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                        placeholder="Optional note for this exception"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-xs font-medium text-slate-600 mb-1">
+                Finance decision comment {anyReject ? "(required for reject)" : "(optional)"}
+              </label>
+              <textarea
+                value={reviewerComment}
+                onChange={(e) => setReviewerComment(e.target.value)}
+                rows={3}
+                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                placeholder={anyReject ? "Please explain why this is rejected." : "Optional overall comment."}
+              />
+              {anyReject && !reviewerComment.trim() && (
+                <div className="mt-1 text-xs text-red-600">Required when any item is rejected.</div>
+              )}
+            </div>
+
+            <div className="mt-5 flex items-center justify-between">
+              <div className="text-xs text-slate-500">
+                {allDecided ? "All items decided." : "Please decide approve/reject for all items."}
+              </div>
+
+              <button
+                type="button"
+                disabled={saving || !(canApprove || canReject)}
+                onClick={submitDecision}
+                className={
+                  "px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-60 " +
+                  (anyReject ? "bg-red-600" : "bg-slate-900")
+                }
+              >
+                {saving
+                  ? "Submitting…"
+                  : anyReject
+                  ? "Reject special approval"
+                  : "Approve special approval"}
+              </button>
+            </div>
           </div>
         </div>
       )}

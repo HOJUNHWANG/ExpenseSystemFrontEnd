@@ -12,7 +12,8 @@ async function resetDemo(page) {
   await page.getByRole("button", { name: "Reset demo" }).click();
 
   // The reset action triggers a re-login (default: EMPLOYEE) and shows the user in header.
-  await expect(page.getByText(/Jun Employee/i)).toBeVisible();
+  // Scope to header to avoid strict-mode collisions.
+  await expect(page.locator("header").getByText("Jun Employee (EMPLOYEE)")).toBeVisible();
 }
 
 async function viewAs(page, label) {

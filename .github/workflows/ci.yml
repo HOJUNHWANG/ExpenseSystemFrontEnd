@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  frontend-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout frontend
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: expense-frontend/package-lock.json
+
+      - name: Install frontend deps
+        working-directory: expense-frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: expense-frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Checkout backend (for local E2E)
+        run: |
+          git clone --depth 1 https://github.com/HOJUNHWANG/ExpenseSystemBackEnd.git backend
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Start backend
+        working-directory: backend
+        run: |
+          nohup mvn -q spring-boot:run > server.log 2>&1 &
+          echo $! > server.pid
+
+      - name: Wait for backend
+        working-directory: backend
+        run: |
+          for i in {1..60}; do
+            if curl -fsS http://localhost:8080/api/demo/reset -X POST >/dev/null; then
+              echo "Backend is up";
+              exit 0;
+            fi
+            sleep 2
+          done
+          echo "Backend failed to start";
+          tail -n 200 server.log || true
+          exit 1
+
+      - name: Start frontend dev server
+        working-directory: expense-frontend
+        env:
+          VITE_API_BASE_URL: http://localhost:8080
+        run: |
+          nohup npm run dev -- --host 127.0.0.1 --port 5173 > web.log 2>&1 &
+          echo $! > web.pid
+
+      - name: Wait for frontend
+        working-directory: expense-frontend
+        run: |
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:5173/ >/dev/null; then
+              echo "Frontend is up";
+              exit 0;
+            fi
+            sleep 2
+          done
+          echo "Frontend failed to start";
+          tail -n 200 web.log || true
+          exit 1
+
+      - name: Run Playwright tests
+        working-directory: expense-frontend
+        env:
+          E2E_BASE_URL: http://127.0.0.1:5173
+        run: npx playwright test
+
+      - name: Dump logs on failure
+        if: failure()
+        run: |
+          echo "--- backend log (tail) ---"
+          tail -n 200 backend/server.log || true
+          echo "--- frontend log (tail) ---"
+          tail -n 200 expense-frontend/web.log || true
+
+      - name: Stop servers
+        if: always()
+        run: |
+          if [ -f backend/server.pid ]; then kill $(cat backend/server.pid) || true; fi
+          if [ -f expense-frontend/web.pid ]; then kill $(cat expense-frontend/web.pid) || true; fi

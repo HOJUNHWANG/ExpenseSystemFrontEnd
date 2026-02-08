@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { useLocation } from "react-router-dom";
 import StatusBadge from "../ui/StatusBadge.jsx";
+import SubmitWithWarningsModal from "./SubmitWithWarningsModal.jsx";
 
 
 export default function ExpenseReportDetail() {
@@ -20,6 +21,10 @@ export default function ExpenseReportDetail() {
     const [processing, setProcessing] = useState(false);
     const [comment, setComment] = useState("");
     const [actionMode, setActionMode] = useState(null); // "approve" | "reject" | null
+
+    const [showSubmitModal, setShowSubmitModal] = useState(false);
+    const [submitError, setSubmitError] = useState("");
+    const [submitting, setSubmitting] = useState(false);
 
     const fetchReport = async () => {
         setLoading(true);
@@ -116,24 +121,100 @@ export default function ExpenseReportDetail() {
     const canApproveByRole = user && (user.role === "MANAGER" || user.role === "FINANCE");
     const canTakeAction = canApproveByRole && !isOwner && report?.status === "SUBMITTED";
 
+    const canSubmit = isOwner && (report?.status === "DRAFT" || report?.status === "CHANGES_REQUESTED");
+
     return (
         <div className="bg-white shadow-md rounded-xl p-6 space-y-4">
-            <div className="flex items-center justify-between">
+            <SubmitWithWarningsModal
+              open={showSubmitModal}
+              warnings={report?.policyWarnings || []}
+              onClose={() => setShowSubmitModal(false)}
+              onSubmit={async (reasons) => {
+                setSubmitError("");
+                setSubmitting(true);
+                const { apiFetch } = await import("../lib/api");
+                const st = await apiFetch(`/api/expense-reports/${id}/submit`, {
+                  method: "POST",
+                  body: JSON.stringify({ submitterId: user.id, reasons }),
+                });
+                setSubmitting(false);
+                setShowSubmitModal(false);
+
+                // For submitter: just refresh the report status.
+                await fetchReport();
+
+                if (st === "FINANCE_SPECIAL_REVIEW") {
+                  // optional: show a toast; for now just keep on detail page
+                  setActionMessage("Submitted for Finance special approval.");
+                } else if (st === "SUBMITTED") {
+                  setActionMessage("Submitted to approval queue.");
+                }
+              }}
+            />
+
+            <div className="flex items-center justify-between gap-3">
                 <h2 className="text-xl font-semibold">
                     Expense Report #{report.id} – {report.title}
                 </h2>
-                <button
-                    onClick={() => navigate("/reports")}
-                    className="text-sm text-blue-600 hover:underline"
-                >
-                    ← Back to list
-                </button>
+                <div className="flex items-center gap-2">
+                  {canSubmit && (
+                    <button
+                      onClick={() => {
+                        setSubmitError("");
+                        // If there are warnings, show modal to collect reasons.
+                        if (report?.policyWarnings && report.policyWarnings.length > 0) {
+                          setShowSubmitModal(true);
+                        } else {
+                          // submit directly
+                          // eslint-disable-next-line no-void
+                          void (async () => {
+                            try {
+                              setSubmitting(true);
+                              const { apiFetch } = await import("../lib/api");
+                              const st = await apiFetch(`/api/expense-reports/${id}/submit`, {
+                                method: "POST",
+                                body: JSON.stringify({ submitterId: user.id, reasons: [] }),
+                              });
+                              setSubmitting(false);
+                              if (st === "FINANCE_SPECIAL_REVIEW") {
+                                // submitter can view status; finance will review
+                                navigate(`/reports/${id}`);
+                              } else {
+                                navigate(`/reports/${id}`);
+                              }
+                              await fetchReport();
+                            } catch (e) {
+                              setSubmitting(false);
+                              setSubmitError(e.message || "Submit failed");
+                            }
+                          })();
+                        }
+                      }}
+                      disabled={submitting}
+                      className="px-3 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium disabled:opacity-60"
+                    >
+                      {submitting ? "Submitting…" : "Submit"}
+                    </button>
+                  )}
+                  <button
+                      onClick={() => navigate("/reports")}
+                      className="text-sm text-blue-600 hover:underline"
+                  >
+                      ← Back
+                  </button>
+                </div>
             </div>
 
             {actionMessage && (
                 <div className="rounded-lg bg-green-50 text-green-700 text-sm px-3 py-2">
                     {actionMessage}
                 </div>
+            )}
+
+            {submitError && (
+              <div className="rounded-xl bg-red-50 border border-red-100 text-red-700 text-sm px-3 py-2">
+                {submitError}
+              </div>
             )}
 
             {report.flagged && report.policyFlags && report.policyFlags.length > 0 && (

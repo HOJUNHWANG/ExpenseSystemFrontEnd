@@ -31,6 +31,7 @@ export default function DashboardPage() {
 
   const [myReports, setMyReports] = useState([]);
   const [pendingApprovals, setPendingApprovals] = useState([]);
+  const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -44,6 +45,11 @@ export default function DashboardPage() {
       try {
         const reports = await apiFetch(`/api/expense-reports?submitterId=${user.id}`);
         setMyReports(reports || []);
+
+        const act = await apiFetch(
+          `/api/expense-reports/activity?requesterId=${user.id}&requesterRole=${user.role}&limit=8`
+        );
+        setActivity(act || []);
 
         if (isApprover) {
           const pending = await apiFetch(`/api/expense-reports/pending-approval`);
@@ -215,6 +221,49 @@ export default function DashboardPage() {
           </div>
         </Section>
       )}
+
+      <Section
+        title="Recent activity"
+        right={
+          <Link to="/search" className="text-xs text-blue-600 hover:underline">
+            Search reports
+          </Link>
+        }
+      >
+        <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
+          {loading && <div className="text-sm text-slate-600">Loading…</div>}
+
+          {!loading && activity.length === 0 && (
+            <div className="text-sm text-slate-600">No recent activity.</div>
+          )}
+
+          {!loading && activity.length > 0 && (
+            <div className="space-y-2">
+              {activity.map((a) => (
+                <Link
+                  key={a.id}
+                  to={`/reports/${a.id}`}
+                  className="block rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 px-3 py-2"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-slate-900 truncate">
+                        {a.title}
+                      </div>
+                      <div className="mt-0.5 text-xs text-slate-500">
+                        {a.activityLabel} • {a.status} • ${Number(a.totalAmount || 0).toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="text-xs text-slate-500 whitespace-nowrap">
+                      #{a.id}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </Section>
 
       <Section title="Demo tips">
         <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-5 text-sm text-slate-700">

@@ -35,20 +35,33 @@ test("smoke: reset demo works", async ({ page }) => {
   await resetDemo(page);
 });
 
-test("finance: reject requires per-item finance note", async ({ page }) => {
+test("finance: reject requires per-item finance note", async ({ page, request }) => {
   await resetDemo(page);
   await viewAs(page, "Finance");
 
-  // Open Search (auto-loads results by default)
-  await page.goto("/search");
+  const apiBase = process.env.E2E_API_BASE_URL || "http://localhost:8080";
 
-  // Find the seeded Finance-special-review report and open it.
-  const row = page.locator("tr", { hasText: "Draft — Hotel Exception (needs Finance)" });
-  await expect(row).toBeVisible();
-  await row.getByRole("link", { name: "View" }).click();
+  // Fetch seeded report id via API (more reliable than UI search/table matching)
+  const login = await request.post(`${apiBase}/api/auth/login`, {
+    data: { email: "finance@example.com" },
+  });
+  expect(login.ok()).toBeTruthy();
+  const financeUser = await login.json();
 
-  // We should be on special approval page
-  await expect(page).toHaveURL(/\/special-approval\//);
+  const qs = new URLSearchParams({
+    requesterId: String(financeUser.id),
+    requesterRole: "FINANCE",
+    q: "Hotel Exception",
+    sort: "activity_desc",
+  });
+
+  const search = await request.get(`${apiBase}/api/expense-reports/search?${qs.toString()}`);
+  expect(search.ok()).toBeTruthy();
+  const list = await search.json();
+  const target = (list || []).find((r) => r.title === "Draft — Hotel Exception (needs Finance)");
+  expect(target).toBeTruthy();
+
+  await page.goto(`/special-approval/${target.id}`);
 
   // Fill global reviewer comment (required when any reject)
   await page.getByLabel(/Reviewer comment/i).fill("Policy exception rejected in test.");

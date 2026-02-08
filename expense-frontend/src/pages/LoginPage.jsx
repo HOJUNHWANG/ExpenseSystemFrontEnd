@@ -7,7 +7,7 @@ export default function LoginPage() {
     const [email, setEmail] = useState("jun@example.com");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const { login } = useAuth();
+    const { loginWithEmail } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const from = location.state?.from?.pathname || "/reports";
@@ -18,21 +18,8 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            const res = await fetch("http://localhost:8080/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email }),
-            });
-
-            if (!res.ok) {
-                const text = await res.text();
-                throw new Error(text || "Failed to login");
-            }
-
-            const data = await res.json();
-            login(data);              // 🔹 전역 user 설정
+            await loginWithEmail(email);
             navigate(from, { replace: true });
-
         } catch (err) {
             console.error(err);
             setError(err.message);

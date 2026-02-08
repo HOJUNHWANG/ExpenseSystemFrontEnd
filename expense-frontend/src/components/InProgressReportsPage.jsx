@@ -17,16 +17,10 @@ export default function InProgressReportsPage() {
             setError("");
 
             try {
-                const res = await fetch(
-                    `http://localhost:8080/api/expense-reports?submitterId=${user.id}&status=SUBMITTED`
+                const { apiFetch } = await import("../lib/api");
+                const data = await apiFetch(
+                  `/api/expense-reports?submitterId=${user.id}&status=SUBMITTED`
                 );
-
-                if (!res.ok) {
-                    const text = await res.text();
-                    throw new Error(text || "Failed to fetch in-progress reports");
-                }
-
-                const data = await res.json();
                 setReports(data);
             } catch (err) {
                 console.error(err);

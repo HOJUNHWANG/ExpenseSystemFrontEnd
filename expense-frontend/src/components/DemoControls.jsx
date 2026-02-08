@@ -26,7 +26,7 @@ export default function DemoControls() {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 whitespace-nowrap">
       {toast && (
         <span className="text-[11px] text-slate-600 bg-slate-100 border border-slate-200 px-2 py-1 rounded-full">
           {toast}

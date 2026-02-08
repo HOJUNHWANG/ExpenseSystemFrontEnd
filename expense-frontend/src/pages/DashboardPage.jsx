@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { apiFetch } from "../lib/api";
+import StatusBadge from "../ui/StatusBadge.jsx";
 
 function StatCard({ title, value, hint, action }) {
   return (
@@ -196,9 +197,7 @@ export default function DashboardPage() {
                         <td className="py-2">{r.title}</td>
                         <td className="py-2">{r.destination || "-"}</td>
                         <td className="py-2">
-                          <span className="inline-flex items-center rounded-full bg-yellow-50 px-2 py-0.5 text-[11px] font-medium text-yellow-700">
-                            {r.status}
-                          </span>
+                          <StatusBadge status={r.status} />
                         </td>
                         <td className="py-2 text-right">
                           <Link

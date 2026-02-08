@@ -58,9 +58,11 @@ function App() {
             </nav>
           </div>
 
-          <div className="flex flex-wrap md:flex-nowrap items-center justify-end gap-2">
-            <DemoControls />
-            <RoleSwitcher />
+          <div className="flex flex-wrap md:flex-nowrap items-center justify-end gap-2 min-w-0">
+            <div className="flex items-center gap-2">
+              <DemoControls />
+              <RoleSwitcher />
+            </div>
 
             <div className="text-sm flex items-center gap-3 pl-2 border-l border-slate-200 whitespace-nowrap">
               {user ? (

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import StatusBadge from "../ui/StatusBadge.jsx";
 
 export default function ApprovalQueuePage() {
   const { user } = useAuth();
@@ -114,9 +115,7 @@ export default function ApprovalQueuePage() {
                   <td className="px-3 py-2">{r.departureDate}</td>
                   <td className="px-3 py-2">{r.returnDate}</td>
                   <td className="px-3 py-2">
-                    <span className="inline-flex items-center rounded-full bg-yellow-50 px-2 py-0.5 text-[11px] font-medium text-yellow-700">
-                      {r.status}
-                    </span>
+                    <StatusBadge status={r.status} />
                   </td>
                   <td className="px-3 py-2 text-right">
                     <Link

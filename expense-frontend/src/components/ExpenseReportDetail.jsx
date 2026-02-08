@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { useLocation } from "react-router-dom";
+import StatusBadge from "../ui/StatusBadge.jsx";
 
 
 export default function ExpenseReportDetail() {
@@ -139,17 +140,7 @@ export default function ExpenseReportDetail() {
                 <div>
                     <div className="font-medium text-slate-500">Status</div>
                     <div>
-            <span
-                className={`inline-flex rounded-full px-2 py-0.5 text-xs mt-1 ${
-                    report.status === "APPROVED"
-                        ? "bg-green-50 text-green-700"
-                        : report.status === "REJECTED"
-                            ? "bg-red-50 text-red-700"
-                            : "bg-slate-50 text-slate-700"
-                }`}
-            >
-              {report.status}
-            </span>
+            <StatusBadge status={report.status} className="mt-1" />
                     </div>
                 </div>
 

@@ -5,6 +5,7 @@ import ExpenseReportList from "./components/ExpenseReportList";
 import ExpenseReportDetail from "./components/ExpenseReportDetail";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage.jsx";
+import SearchPage from "./pages/SearchPage.jsx";
 import { useAuth } from "./AuthContext";
 import RequireAuth from "./RequireAuth.jsx";
 import WelcomePage from "./components/WelcomePage.jsx";
@@ -36,6 +37,9 @@ function App() {
               </Link>
               <Link to="/create" className="text-slate-600 hover:text-slate-900">
                 Create
+              </Link>
+              <Link to="/search" className="text-slate-600 hover:text-slate-900">
+                Search
               </Link>
               <Link to="/reports" className="text-slate-600 hover:text-slate-900">
                 My Reports
@@ -84,6 +88,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
 

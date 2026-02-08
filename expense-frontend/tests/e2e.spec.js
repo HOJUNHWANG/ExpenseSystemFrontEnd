@@ -98,6 +98,9 @@ test("finance: reject requires per-item finance note", async ({ page, request })
   // Wait for data fetch to finish
   await expect(page.getByText("Loading…")).toHaveCount(0);
 
+  // Ensure review items rendered (otherwise no form controls exist)
+  await expect(page.getByRole("button", { name: /Approve/ }).first()).toBeVisible();
+
   // Fill global finance comment
   const commentBox = page.locator("textarea").first();
   await expect(commentBox).toBeVisible();

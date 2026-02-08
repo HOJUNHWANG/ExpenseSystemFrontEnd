@@ -49,10 +49,7 @@ function App() {
               <Link to="/reports" className="text-slate-600 hover:text-slate-900">
                 My Reports
               </Link>
-              <Link
-                to="/reports/in-progress"
-                className="text-slate-600 hover:text-slate-900"
-              >
+              <Link to="/reports/in-progress" className="text-slate-600 hover:text-slate-900">
                 In progress
               </Link>
               {isApprover && (
@@ -64,12 +61,12 @@ function App() {
           </div>
 
           <div className="flex flex-wrap md:flex-nowrap items-center justify-end gap-2 min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-2 py-1">
               <DemoControls />
               <RoleSwitcher />
             </div>
 
-            <div className="text-sm flex items-center gap-3 pl-2 border-l border-slate-200 whitespace-nowrap">
+            <div className="text-sm flex items-center gap-3 pl-3 border-l border-slate-200 whitespace-nowrap">
               {user ? (
                 <>
                   <span className="text-slate-700">

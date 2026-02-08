@@ -80,7 +80,15 @@ export default function SpecialApprovalPage() {
   }, [items, decisions]);
 
   const canApprove = allDecided && !anyReject;
-  const canReject = allDecided && anyReject && reviewerComment.trim().length > 0;
+  const missingRejectReasons = useMemo(() => {
+    return items
+      .filter((it) => decisions[it.code]?.decision === "REJECT")
+      .filter((it) => !(decisions[it.code]?.financeReason || "").trim())
+      .map((it) => it.code);
+  }, [items, decisions]);
+
+  const canReject =
+    allDecided && anyReject && reviewerComment.trim().length > 0 && missingRejectReasons.length === 0;
 
   const setDecision = (code, patch) => {
     setDecisions((prev) => ({
@@ -319,14 +327,22 @@ export default function SpecialApprovalPage() {
 
                     <div className="mt-3">
                       <label className="block text-xs font-medium text-slate-600 mb-1">
-                        Finance note (optional)
+                        Finance note {d === "REJECT" ? "(required)" : "(optional)"}
                       </label>
                       <input
                         value={reason}
                         onChange={(e) => setDecision(it.code, { financeReason: e.target.value })}
-                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-                        placeholder="Optional note for this exception"
+                        className={
+                          "w-full border rounded-xl px-3 py-2 text-sm " +
+                          (d === "REJECT" && !reason.trim()
+                            ? "border-red-200 bg-red-50"
+                            : "border-slate-200")
+                        }
+                        placeholder={d === "REJECT" ? "Required for rejection" : "Optional note for this exception"}
                       />
+                      {d === "REJECT" && !reason.trim() && (
+                        <div className="mt-1 text-xs text-red-600">Required when rejecting this item.</div>
+                      )}
                     </div>
                   </div>
                 );
@@ -351,7 +367,13 @@ export default function SpecialApprovalPage() {
 
             <div className="mt-5 flex items-center justify-between">
               <div className="text-xs text-slate-500">
-                {allDecided ? "All items decided." : "Please decide approve/reject for all items."}
+                {!allDecided
+                  ? "Please decide approve/reject for all items."
+                  : anyReject && reviewerComment.trim().length === 0
+                  ? "Add a rejection comment to continue."
+                  : anyReject && missingRejectReasons.length > 0
+                  ? `Add finance notes for rejected items: ${missingRejectReasons.join(", ")}`
+                  : "All items decided."}
               </div>
 
               <button

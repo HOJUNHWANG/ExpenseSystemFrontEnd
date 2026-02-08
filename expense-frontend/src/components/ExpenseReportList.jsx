@@ -79,11 +79,11 @@ export default function ExpenseReportList() {
           <table className="min-w-full text-sm">
             <thead>
               <tr className="border-b bg-slate-50">
-                <th className="px-3 py-2 text-left font-medium">ID</th>
+                <th className="px-3 py-2 text-left font-medium hidden md:table-cell">ID</th>
                 <th className="px-3 py-2 text-left font-medium">Title</th>
-                <th className="px-3 py-2 text-left font-medium">Destination</th>
-                <th className="px-3 py-2 text-left font-medium">Departure</th>
-                <th className="px-3 py-2 text-left font-medium">Return</th>
+                <th className="px-3 py-2 text-left font-medium hidden md:table-cell">Destination</th>
+                <th className="px-3 py-2 text-left font-medium hidden lg:table-cell">Departure</th>
+                <th className="px-3 py-2 text-left font-medium hidden lg:table-cell">Return</th>
                 <th className="px-3 py-2 text-right font-medium">Total</th>
                 <th className="px-3 py-2 text-left font-medium">Status</th>
                 <th className="px-3 py-2 text-right font-medium">Actions</th>
@@ -96,13 +96,20 @@ export default function ExpenseReportList() {
                       className="border-b hover:bg-slate-50 cursor-pointer"
                       onClick={() => navigate(`/reports/${r.id}`)}
                   >
-                  <td className="px-3 py-2">{r.id}</td>
-                  <td className="px-3 py-2">{r.title}</td>
+                  <td className="px-3 py-2 hidden md:table-cell">{r.id}</td>
                   <td className="px-3 py-2">
+                    <div className="font-medium text-slate-900">{r.title}</div>
+                    <div className="mt-0.5 text-xs text-slate-500 md:hidden">
+                      {(r.destination || "-")}
+                      {r.departureDate ? ` • ${r.departureDate}` : ""}
+                      {r.returnDate ? ` → ${r.returnDate}` : ""}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 hidden md:table-cell">
                     {r.destination || <span className="text-slate-400">-</span>}
                   </td>
-                  <td className="px-3 py-2">{r.departureDate || "-"}</td>
-                  <td className="px-3 py-2">{r.returnDate || "-"}</td>
+                  <td className="px-3 py-2 hidden lg:table-cell">{r.departureDate || "-"}</td>
+                  <td className="px-3 py-2 hidden lg:table-cell">{r.returnDate || "-"}</td>
                   <td className="px-3 py-2 text-right">
                     {r.totalAmount?.toLocaleString() ?? 0}
                   </td>

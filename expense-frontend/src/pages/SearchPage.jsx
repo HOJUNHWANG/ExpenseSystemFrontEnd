@@ -192,23 +192,28 @@ export default function SearchPage() {
               <thead className="text-xs text-slate-500">
                 <tr>
                   <th className="text-left font-medium py-2">Title</th>
-                  <th className="text-left font-medium py-2">Destination</th>
+                  <th className="text-left font-medium py-2 hidden md:table-cell">Destination</th>
                   <th className="text-right font-medium py-2">Total</th>
                   <th className="text-left font-medium py-2">Status</th>
-                  <th className="text-left font-medium py-2">Flags</th>
+                  <th className="text-left font-medium py-2 hidden sm:table-cell">Flags</th>
                   <th className="text-right font-medium py-2">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {results.map((r) => (
                   <tr key={r.id} className="border-t border-slate-100">
-                    <td className="py-2">{r.title}</td>
-                    <td className="py-2">{r.destination || "-"}</td>
+                    <td className="py-2">
+                      <div className="font-medium text-slate-900">{r.title}</div>
+                      <div className="mt-0.5 text-xs text-slate-500 md:hidden">
+                        {(r.destination || "-")}
+                      </div>
+                    </td>
+                    <td className="py-2 hidden md:table-cell">{r.destination || "-"}</td>
                     <td className="py-2 text-right">${Number(r.totalAmount || 0).toLocaleString()}</td>
                     <td className="py-2">
                       <StatusBadge status={r.status} />
                     </td>
-                    <td className="py-2">
+                    <td className="py-2 hidden sm:table-cell">
                       {r.flagged ? (
                         <span className="inline-flex items-center rounded-full border border-orange-100 bg-orange-50 px-2 py-0.5 text-[11px] font-medium text-orange-700">
                           Flagged

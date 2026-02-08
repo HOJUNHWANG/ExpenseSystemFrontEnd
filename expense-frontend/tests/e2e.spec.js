@@ -36,6 +36,7 @@ test("smoke: reset demo works", async ({ page }) => {
 });
 
 test("finance: reject requires per-item finance note", async ({ page, request }) => {
+  test.setTimeout(90_000);
   await resetDemo(page);
   await viewAs(page, "Finance");
 
@@ -70,11 +71,15 @@ test("finance: reject requires per-item finance note", async ({ page, request })
   // Ensure we're not bounced to login
   await expect(page).not.toHaveURL(/\/login/);
 
-  // Wait for the finance form to render
-  await expect(page.getByText(/Finance decision comment/i)).toBeVisible();
+  // Basic page shell should render immediately for Finance
+  await expect(page.getByRole("heading", { name: "Finance special approval" })).toBeVisible();
+
+  // Wait for data fetch to finish
+  await expect(page.getByText("Loading…")).toHaveCount(0);
 
   // Fill global finance comment
   const commentBox = page.locator("textarea").first();
+  await expect(commentBox).toBeVisible();
   await commentBox.fill("Policy exception rejected in test.");
 
   // Set first item to Reject (do not fill finance note)

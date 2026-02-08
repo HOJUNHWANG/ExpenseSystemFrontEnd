@@ -191,6 +191,7 @@ export default function SearchPage() {
                   <th className="text-left font-medium py-2">Destination</th>
                   <th className="text-right font-medium py-2">Total</th>
                   <th className="text-left font-medium py-2">Status</th>
+                  <th className="text-left font-medium py-2">Flags</th>
                   <th className="text-right font-medium py-2">Action</th>
                 </tr>
               </thead>
@@ -202,6 +203,15 @@ export default function SearchPage() {
                     <td className="py-2 text-right">${Number(r.totalAmount || 0).toLocaleString()}</td>
                     <td className="py-2">
                       <StatusBadge status={r.status} />
+                    </td>
+                    <td className="py-2">
+                      {r.flagged ? (
+                        <span className="inline-flex items-center rounded-full border border-orange-100 bg-orange-50 px-2 py-0.5 text-[11px] font-medium text-orange-700">
+                          Flagged
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-400">-</span>
+                      )}
                     </td>
                     <td className="py-2 text-right">
                       <Link to={`/reports/${r.id}`} className="text-xs text-blue-600 hover:underline">

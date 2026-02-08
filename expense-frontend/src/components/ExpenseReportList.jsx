@@ -85,6 +85,7 @@ export default function ExpenseReportList() {
                 <th className="px-3 py-2 text-left font-medium">Return</th>
                 <th className="px-3 py-2 text-right font-medium">Total</th>
                 <th className="px-3 py-2 text-left font-medium">Status</th>
+                <th className="px-3 py-2 text-right font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>

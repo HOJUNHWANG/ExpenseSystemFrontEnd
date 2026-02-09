@@ -336,18 +336,16 @@ export default function CreateExpenseReportForm() {
 
           <div>
             <label className="block text-sm font-medium mb-1">Country</label>
-            <input
-              list="country-options"
-              className="w-full border rounded-lg px-3 py-2 text-sm"
+            <select
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-white"
               value={country}
               onChange={(e) => setCountry(e.target.value)}
-              placeholder="e.g. United States"
-            />
-            <datalist id="country-options">
+            >
+              <option value="">Select a country…</option>
               {COUNTRY_OPTIONS.map((c) => (
-                <option key={c} value={c} />
+                <option key={c} value={c}>{c}</option>
               ))}
-            </datalist>
+            </select>
             {errors.country && (
               <p className="text-xs text-red-600 mt-1">{errors.country}</p>
             )}

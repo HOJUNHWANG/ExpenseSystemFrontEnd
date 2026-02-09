@@ -9,6 +9,7 @@ export default function ExpenseReportList() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [status, setStatus] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,9 +20,9 @@ export default function ExpenseReportList() {
 
       try {
         const { apiFetch } = await import("../lib/api");
-        const data = await apiFetch(
-          `/api/expense-reports?submitterId=${user.id}`
-        );
+        const qs = new URLSearchParams({ submitterId: String(user.id) });
+        if (status) qs.set("status", status);
+        const data = await apiFetch(`/api/expense-reports?${qs.toString()}`);
         setReports(data);
       } catch (err) {
         console.error(err);
@@ -32,7 +33,7 @@ export default function ExpenseReportList() {
     };
 
     fetchReports();
-  }, [user]);
+  }, [user, status]);
 
   if (!user) {
     return (
@@ -47,18 +48,49 @@ export default function ExpenseReportList() {
     );
   }
 
+  const filters = [
+    { label: "All", value: "" },
+    { label: "Draft", value: "DRAFT" },
+    { label: "Manager review", value: "MANAGER_REVIEW" },
+    { label: "CFO review", value: "CFO_REVIEW" },
+    { label: "CEO review", value: "CEO_REVIEW" },
+    { label: "CFO special", value: "CFO_SPECIAL_REVIEW" },
+    { label: "Changes requested", value: "CHANGES_REQUESTED" },
+    { label: "Approved", value: "APPROVED" },
+    { label: "Rejected", value: "REJECTED" },
+  ];
+
   return (
     <div className="bg-white shadow-md rounded-xl p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-semibold mb-4">My Expense Reports</h1>
-      </div>
-      <div>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h1 className="text-xl font-semibold">My Expense Reports</h1>
         <Link
-            to="/create"
-            className="text-xs rounded-lg px-3 py-1 bg-blue-600 text-white hover:bg-blue-700"
+          to="/create"
+          className="text-xs rounded-lg px-3 py-2 bg-blue-600 text-white hover:bg-blue-700"
         >
           New report
         </Link>
+      </div>
+
+      <div className="mb-4 flex flex-wrap gap-2">
+        {filters.map((f) => {
+          const active = status === f.value;
+          return (
+            <button
+              key={f.label}
+              type="button"
+              onClick={() => setStatus(f.value)}
+              className={
+                "text-[11px] px-3 py-1.5 rounded-full border " +
+                (active
+                  ? "bg-slate-900 text-white border-slate-900"
+                  : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50")
+              }
+            >
+              {f.label}
+            </button>
+          );
+        })}
       </div>
       {loading && <p className="text-sm text-slate-600">Loading...</p>}
 

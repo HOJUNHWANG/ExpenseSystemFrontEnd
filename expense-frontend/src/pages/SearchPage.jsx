@@ -78,8 +78,8 @@ export default function SearchPage() {
         )}
 
         {user && (
-          <form onSubmit={runSearch} className="mt-4 grid grid-cols-1 md:grid-cols-6 gap-3">
-            <div className="md:col-span-2">
+          <form onSubmit={runSearch} className="mt-4 grid grid-cols-1 md:grid-cols-8 gap-3">
+            <div className="md:col-span-3">
               <label className="block text-xs font-medium text-slate-600 mb-1">Title contains</label>
               <input
                 value={q}
@@ -89,29 +89,45 @@ export default function SearchPage() {
               />
             </div>
 
-            <div>
+            <div className="md:col-span-5">
               <label className="block text-xs font-medium text-slate-600 mb-1">Status</label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
-              >
-                <option value="">Any</option>
-                <option value="MANAGER_REVIEW">MANAGER_REVIEW</option>
-                <option value="CFO_REVIEW">CFO_REVIEW</option>
-                <option value="CEO_REVIEW">CEO_REVIEW</option>
-                <option value="CFO_SPECIAL_REVIEW">CFO_SPECIAL_REVIEW</option>
-                <option value="APPROVED">APPROVED</option>
-                <option value="REJECTED">REJECTED</option>
-              </select>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { label: "Any", value: "" },
+                  { label: "Manager", value: "MANAGER_REVIEW" },
+                  { label: "CFO", value: "CFO_REVIEW" },
+                  { label: "CEO", value: "CEO_REVIEW" },
+                  { label: "CFO special", value: "CFO_SPECIAL_REVIEW" },
+                  { label: "Changes", value: "CHANGES_REQUESTED" },
+                  { label: "Approved", value: "APPROVED" },
+                  { label: "Rejected", value: "REJECTED" },
+                ].map((f) => {
+                  const active = status === f.value;
+                  return (
+                    <button
+                      key={f.label}
+                      type="button"
+                      onClick={() => setStatus(f.value)}
+                      className={
+                        "text-[11px] px-3 py-2 rounded-full border " +
+                        (active
+                          ? "bg-slate-900 text-white border-slate-900"
+                          : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50")
+                      }
+                    >
+                      {f.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-xs font-medium text-slate-600 mb-1">Sort</label>
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl px-3 py-2 pr-8 text-sm bg-white truncate"
+                className="w-full min-w-[11rem] border border-slate-200 rounded-xl px-3 py-2 pr-10 text-sm bg-white"
               >
                 <option value="activity_desc">Recent activity</option>
                 <option value="total_desc">Total (high → low)</option>
@@ -119,7 +135,7 @@ export default function SearchPage() {
               </select>
             </div>
 
-            <div>
+            <div className="md:col-span-1">
               <label className="block text-xs font-medium text-slate-600 mb-1">Min total ($)</label>
               <input
                 value={minTotal}
@@ -129,7 +145,7 @@ export default function SearchPage() {
                 inputMode="decimal"
               />
             </div>
-            <div>
+            <div className="md:col-span-1">
               <label className="block text-xs font-medium text-slate-600 mb-1">Max total ($)</label>
               <input
                 value={maxTotal}

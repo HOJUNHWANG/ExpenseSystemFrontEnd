@@ -42,9 +42,11 @@ const MEAL_RATE = 25;
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../AuthContext";
 import { evaluateDraftWarnings } from "../lib/policy";
+import { useBeforeUnload, useBlocker, useNavigate } from "react-router-dom";
 
 export default function CreateExpenseReportForm() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
   const [city, setCity] = useState("");
@@ -58,6 +60,9 @@ export default function CreateExpenseReportForm() {
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState({});
   const [policyToast, setPolicyToast] = useState("");
+
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [draftSaving, setDraftSaving] = useState(false);
 
   if (!user) {
     return (
@@ -82,6 +87,58 @@ export default function CreateExpenseReportForm() {
       })),
     });
   }, [country, departureDate, returnDate, items]);
+
+  const isDirty = useMemo(() => {
+    if (title.trim()) return true;
+    if (city.trim()) return true;
+    if (country.trim()) return true;
+    if (departureDate) return true;
+    if (returnDate) return true;
+
+    const meaningfulItems = (items || []).filter((it) => {
+      if (!it) return false;
+      if (it.type === ITEM_TYPES.NORMAL) {
+        return Boolean(it.date || it.description?.trim() || it.amount || it.category);
+      }
+      if (it.type === ITEM_TYPES.MILEAGE) {
+        return Boolean(it.miles || it.date);
+      }
+      if (it.type === ITEM_TYPES.MEAL) {
+        return Boolean(it.date || it.lunch || it.dinner);
+      }
+      return true;
+    });
+
+    // initial state has exactly 1 empty NORMAL row
+    if (meaningfulItems.length === 0) return false;
+    if (meaningfulItems.length === 1) {
+      const it = meaningfulItems[0];
+      if (it.type === ITEM_TYPES.NORMAL) {
+        const emptyNormal = !it.date && !it.description?.trim() && !it.amount && !it.category;
+        return !emptyNormal;
+      }
+    }
+    return true;
+  }, [title, city, country, departureDate, returnDate, items]);
+
+  useBeforeUnload(
+    useMemo(() => {
+      if (!isDirty) return undefined;
+      return (e) => {
+        e.preventDefault();
+        // Chrome requires returnValue to be set.
+        e.returnValue = "";
+      };
+    }, [isDirty])
+  );
+
+  const blocker = useBlocker(isDirty && !loading && !draftSaving);
+
+  useEffect(() => {
+    if (blocker.state === "blocked") {
+      setLeaveOpen(true);
+    }
+  }, [blocker.state]);
 
   useEffect(() => {
     if (!policyToast) return;
@@ -244,6 +301,90 @@ export default function CreateExpenseReportForm() {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
+  const buildPayloadItems = () => {
+    return items.map((it) => {
+      if (it.type === ITEM_TYPES.NORMAL) {
+        return {
+          date: it.date,
+          description: it.description,
+          amount: Number(it.amount),
+          category: it.category,
+        };
+      }
+
+      if (it.type === ITEM_TYPES.MILEAGE) {
+        return {
+          date: it.date || departureDate,
+          description: `Mileage: ${it.miles} miles x ${MILEAGE_RATE}`,
+          amount: Number(it.amount || 0),
+          category: "Mileage",
+        };
+      }
+
+      const mealDesc = `Meal: ${it.lunch ? "Lunch" : ""}${it.lunch && it.dinner ? " + " : ""}${it.dinner ? "Dinner" : ""}`;
+      return {
+        date: it.date,
+        description: mealDesc,
+        amount: Number(it.amount || 0),
+        category: "Meal",
+      };
+    });
+  };
+
+  const saveDraft = async () => {
+    setMessage("");
+    setDraftSaving(true);
+
+    const destination = city.trim() || country.trim() ? `${city}, ${country}` : "";
+
+    // Create uses a limited DTO in backend; create+update keeps this demo flexible.
+    const createPayload = {
+      submitterId: user.id,
+      title: title?.trim() ? title : "Draft — Untitled",
+      items: buildPayloadItems()
+        .filter((it) => it.amount && !isNaN(Number(it.amount)) && Number(it.amount) > 0)
+        .map((it) => ({
+          date: it.date,
+          description: it.description || "(draft)",
+          amount: Number(it.amount),
+          category: it.category || "Other",
+        })),
+    };
+
+    try {
+      const { apiFetch } = await import("../lib/api");
+      const id = await apiFetch("/api/expense-reports", {
+        method: "POST",
+        body: JSON.stringify(createPayload),
+      });
+
+      await apiFetch(`/api/expense-reports/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          submitterId: user.id,
+          title: title?.trim() ? title : "Draft — Untitled",
+          destination,
+          departureDate: departureDate || null,
+          returnDate: returnDate || null,
+          items: buildPayloadItems().map((it) => ({
+            date: it.date || departureDate || null,
+            description: it.description || "(draft)",
+            amount: Number(it.amount || 0),
+            category: it.category || "Other",
+          })),
+        }),
+      });
+
+      setPolicyToast("Draft saved.");
+      return { ok: true };
+    } catch (e) {
+      setMessage(`❌ Error: ${e.message || "Failed to save draft"}`);
+      return { ok: false };
+    } finally {
+      setDraftSaving(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -262,42 +403,13 @@ export default function CreateExpenseReportForm() {
 
     const destination = `${city}, ${country}`;
 
-    const payloadItems = items.map((it) => {  
-      if (it.type === ITEM_TYPES.NORMAL) {
-        return {
-          date: it.date,
-          description: it.description,
-          amount: Number(it.amount),
-          category: it.category,
-        };
-      }
-
-      if (it.type === ITEM_TYPES.MILEAGE) {
-        return {
-          date: it.date || departureDate, // 날짜 필수로 안 받을 거면 이렇게 fallback
-          description: `Mileage: ${it.miles} miles x ${MILEAGE_RATE}`,
-          amount: Number(it.amount),
-          category: "Mileage",
-        };
-      }
-
-      // MEAL
-      const mealDesc = `Meal: ${it.lunch ? "Lunch" : ""}${it.lunch && it.dinner ? " + " : ""}${it.dinner ? "Dinner" : ""}`;
-      return {
-        date: it.date,
-        description: mealDesc,
-        amount: Number(it.amount),
-        category: "Meal",
-      };
-    });
-
     const payload = {
       submitterId: user.id,
       title,
       destination,
       departureDate,
       returnDate,
-      items: payloadItems.map((it) => ({
+      items: buildPayloadItems().map((it) => ({
         date: it.date,
         description: it.description,
         amount: Number(it.amount),
@@ -319,7 +431,7 @@ export default function CreateExpenseReportForm() {
       });
 
       // Go to In progress
-      window.location.href = "/reports/in-progress";
+      navigate("/reports/in-progress");
     } catch (err) {
       console.error(err);
       setMessage(`❌ Error: ${err.message}`);
@@ -334,47 +446,13 @@ export default function CreateExpenseReportForm() {
     try {
       const destination = `${city}, ${country}`;
 
-      const payloadItems = items.map((it) => {
-        if (it.type === ITEM_TYPES.NORMAL) {
-          return {
-            date: it.date,
-            description: it.description,
-            amount: Number(it.amount),
-            category: it.category,
-          };
-        }
-        if (it.type === ITEM_TYPES.MILEAGE) {
-          return {
-            date: it.date || departureDate,
-            description: it.description || "Mileage reimbursement",
-            amount: Number(it.amount || 0),
-            category: "Mileage",
-          };
-        }
-        if (it.type === ITEM_TYPES.MEAL) {
-          const mealDesc = it.description || "Per diem";
-          return {
-            date: it.date,
-            description: mealDesc,
-            amount: Number(it.amount),
-            category: "Meal",
-          };
-        }
-        return {
-          date: it.date,
-          description: it.description,
-          amount: Number(it.amount || 0),
-          category: it.category || "Other",
-        };
-      });
-
       const payload = {
         submitterId: user.id,
         title,
         destination,
         departureDate,
         returnDate,
-        items: payloadItems.map((it) => ({
+        items: buildPayloadItems().map((it) => ({
           date: it.date,
           description: it.description,
           amount: Number(it.amount),
@@ -393,7 +471,7 @@ export default function CreateExpenseReportForm() {
         body: JSON.stringify({ submitterId: user.id, reasons: [] }),
       });
 
-      window.location.href = "/reports/in-progress";
+      navigate("/reports/in-progress");
     } catch (err) {
       console.error(err);
       setMessage(`❌ Error: ${err.message}`);
@@ -412,6 +490,53 @@ export default function CreateExpenseReportForm() {
       {message && (
         <div className="mb-4 text-sm rounded-lg p-3 bg-slate-100">
           {message}
+        </div>
+      )}
+
+      {leaveOpen && blocker.state === "blocked" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl p-6">
+            <div className="text-lg font-semibold text-slate-900">Leave this page?</div>
+            <div className="mt-2 text-sm text-slate-700">
+              You have unsaved changes. Save as a draft before leaving?
+            </div>
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setLeaveOpen(false);
+                  blocker.reset();
+                }}
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  // Discard changes and leave.
+                  setLeaveOpen(false);
+                  blocker.proceed();
+                }}
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50"
+              >
+                Leave without saving
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const res = await saveDraft();
+                  if (!res.ok) return;
+                  setLeaveOpen(false);
+                  blocker.proceed();
+                }}
+                disabled={draftSaving}
+                className="px-3 py-2 rounded-xl border border-slate-900 bg-slate-900 text-white text-sm hover:bg-slate-800 disabled:opacity-60"
+              >
+                {draftSaving ? "Saving…" : "Save draft & leave"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

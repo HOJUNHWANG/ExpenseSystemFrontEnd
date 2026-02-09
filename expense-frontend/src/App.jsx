@@ -53,7 +53,7 @@ function App() {
 
       {/* Header */}
       <header className="bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap md:flex-nowrap justify-between items-center gap-2">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col md:flex-row md:flex-nowrap md:justify-between md:items-center gap-2">
           {mobileMenuOpen && (
             <div className="w-full md:hidden mt-2 rounded-2xl border border-slate-200 bg-white shadow-sm p-3">
               <div className="grid grid-cols-2 gap-2">
@@ -72,7 +72,7 @@ function App() {
               </div>
             </div>
           )}
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 w-full md:w-auto">
             <Link to="/" className="font-semibold text-slate-800 whitespace-nowrap">
               Company Ops Demo
             </Link>
@@ -97,7 +97,7 @@ function App() {
             </button>
           </div>
 
-          <div className="flex flex-wrap md:flex-nowrap items-center justify-end gap-2 min-w-0">
+          <div className="flex flex-wrap md:flex-nowrap items-center justify-end gap-2 min-w-0 w-full md:w-auto md:ml-auto">
             <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-2 py-1">
               <DemoControls />
               <RoleSwitcher />

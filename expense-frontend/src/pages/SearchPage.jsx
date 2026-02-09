@@ -192,8 +192,8 @@ export default function SearchPage() {
                 <tr>
                   <th className="text-left font-medium py-2">Title</th>
                   <th className="text-left font-medium py-2 hidden md:table-cell">Destination</th>
-                  <th className="text-right font-medium py-2">Total</th>
-                  <th className="text-left font-medium py-2">Status</th>
+                  <th className="text-right font-medium py-2 pr-4">Total</th>
+                  <th className="text-left font-medium py-2 pl-4">Status</th>
                   <th className="text-left font-medium py-2 hidden sm:table-cell">Flags</th>
                   <th className="text-right font-medium py-2">Action</th>
                 </tr>
@@ -208,8 +208,8 @@ export default function SearchPage() {
                       </div>
                     </td>
                     <td className="py-2 hidden md:table-cell">{r.destination || "-"}</td>
-                    <td className="py-2 text-right">${Number(r.totalAmount || 0).toLocaleString()}</td>
-                    <td className="py-2">
+                    <td className="py-2 text-right pr-4">${Number(r.totalAmount || 0).toLocaleString()}</td>
+                    <td className="py-2 pl-4">
                       <StatusBadge status={r.status} />
                     </td>
                     <td className="py-2 hidden sm:table-cell">

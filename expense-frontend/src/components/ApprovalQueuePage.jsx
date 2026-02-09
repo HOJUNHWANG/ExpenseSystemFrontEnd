@@ -95,8 +95,8 @@ export default function ApprovalQueuePage() {
       )}
 
       {!loading && !error && reports.length > 0 && (
-        <div className="mt-2 border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="mt-2 border rounded-lg overflow-x-auto">
+          <table className="w-full text-sm min-w-[640px]">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
                 <th className="text-left px-3 py-2">Title</th>

@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage.jsx";
 import SearchPage from "./pages/SearchPage.jsx";
 import SpecialApprovalPage from "./pages/SpecialApprovalPage.jsx";
+import SpecialApprovalsInboxPage from "./pages/SpecialApprovalsInboxPage.jsx";
 import EditReportPage from "./pages/EditReportPage.jsx";
 import E2ELoginPage from "./pages/E2ELoginPage.jsx";
 import { useAuth } from "./AuthContext";
@@ -25,6 +26,7 @@ function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isApprover = user && (user.role === "MANAGER" || user.role === "FINANCE");
+  const isFinance = user && user.role === "FINANCE";
 
   const navItems = useMemo(() => {
     const base = [
@@ -36,8 +38,9 @@ function App() {
       { to: "/reports/in-progress", label: "In progress" },
     ];
     if (isApprover) base.push({ to: "/approvals", label: "Approval Queue" });
+    if (isFinance) base.push({ to: "/special-approvals", label: "Special approvals" });
     return base;
-  }, [isApprover]);
+  }, [isApprover, isFinance]);
 
   useEffect(() => {
     // Close menu on route change
@@ -128,6 +131,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/e2e/login" element={<E2ELoginPage />} />
           <Route path="/search" element={<RequireAuth><SearchPage /></RequireAuth>} />
+          <Route path="/special-approvals" element={<RequireAuth><SpecialApprovalsInboxPage /></RequireAuth>} />
           <Route path="/special-approval/:id" element={<RequireAuth><SpecialApprovalPage /></RequireAuth>} />
           <Route path="/reports/:id/edit" element={<RequireAuth><EditReportPage /></RequireAuth>} />
           <Route path="/welcome" element={<WelcomePage />} />

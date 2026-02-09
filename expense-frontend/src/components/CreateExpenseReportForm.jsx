@@ -242,19 +242,27 @@ export default function CreateExpenseReportForm() {
     updateItem(index, { miles, amount });
   };
 
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
 
     if (!validate()) {
-      return;  // 🔹 에러 있으면 submit 중단
+      return;
+    }
+
+    // If warnings exist, confirm first.
+    if (policyWarnings.length > 0) {
+      setConfirmOpen(true);
+      return;
     }
 
     setLoading(true);
 
     const destination = `${city}, ${country}`;
 
-    const payloadItems = items.map((it) => {
+    const payloadItems = items.map((it) => {  
       if (it.type === ITEM_TYPES.NORMAL) {
         return {
           date: it.date,
@@ -303,8 +311,89 @@ export default function CreateExpenseReportForm() {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      setMessage(`✅ Report Successfully Created`);
-      // 필요하면 폼 초기화
+
+      // Auto-submit after create (non-draft flow)
+      await apiFetch(`/api/expense-reports/${id}/submit`, {
+        method: "POST",
+        body: JSON.stringify({ submitterId: user.id, reasons: [] }),
+      });
+
+      // Go to In progress
+      window.location.href = "/reports/in-progress";
+    } catch (err) {
+      console.error(err);
+      setMessage(`❌ Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmSubmit = async () => {
+    setConfirmOpen(false);
+    setLoading(true);
+    try {
+      const destination = `${city}, ${country}`;
+
+      const payloadItems = items.map((it) => {
+        if (it.type === ITEM_TYPES.NORMAL) {
+          return {
+            date: it.date,
+            description: it.description,
+            amount: Number(it.amount),
+            category: it.category,
+          };
+        }
+        if (it.type === ITEM_TYPES.MILEAGE) {
+          return {
+            date: it.date || departureDate,
+            description: it.description || "Mileage reimbursement",
+            amount: Number(it.amount || 0),
+            category: "Mileage",
+          };
+        }
+        if (it.type === ITEM_TYPES.MEAL) {
+          const mealDesc = it.description || "Per diem";
+          return {
+            date: it.date,
+            description: mealDesc,
+            amount: Number(it.amount),
+            category: "Meal",
+          };
+        }
+        return {
+          date: it.date,
+          description: it.description,
+          amount: Number(it.amount || 0),
+          category: it.category || "Other",
+        };
+      });
+
+      const payload = {
+        submitterId: user.id,
+        title,
+        destination,
+        departureDate,
+        returnDate,
+        items: payloadItems.map((it) => ({
+          date: it.date,
+          description: it.description,
+          amount: Number(it.amount),
+          category: it.category,
+        })),
+      };
+
+      const { apiFetch } = await import("../lib/api");
+      const id = await apiFetch("/api/expense-reports", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      await apiFetch(`/api/expense-reports/${id}/submit`, {
+        method: "POST",
+        body: JSON.stringify({ submitterId: user.id, reasons: [] }),
+      });
+
+      window.location.href = "/reports/in-progress";
     } catch (err) {
       console.error(err);
       setMessage(`❌ Error: ${err.message}`);
@@ -320,15 +409,45 @@ export default function CreateExpenseReportForm() {
     >
       <h2 className="text-xl font-semibold mb-4">Create Expense Report</h2>
 
-      {policyToast && (
-        <div className="mb-3 text-sm rounded-lg p-3 bg-slate-900 text-white">
-          {policyToast}
-        </div>
-      )}
-
       {message && (
         <div className="mb-4 text-sm rounded-lg p-3 bg-slate-100">
           {message}
+        </div>
+      )}
+
+      {confirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl p-6">
+            <div className="text-lg font-semibold text-slate-900">Policy warnings</div>
+            <div className="mt-2 text-sm text-slate-700">
+              This report has policy warnings. Submitting will route it to <span className="font-medium">special review</span>.
+              Do you want to continue?
+            </div>
+            <ul className="mt-3 list-disc pl-5 text-sm text-slate-800 space-y-1">
+              {policyWarnings.map((w) => (
+                <li key={w.code}>
+                  <span className="font-medium">{w.code}</span> — {w.message}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmOpen(false)}
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50"
+              >
+                No, keep editing
+              </button>
+              <button
+                type="button"
+                onClick={confirmSubmit}
+                disabled={loading}
+                className="px-3 py-2 rounded-xl border border-slate-900 bg-slate-900 text-white text-sm hover:bg-slate-800 disabled:opacity-60"
+              >
+                Yes, submit
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -632,13 +751,6 @@ export default function CreateExpenseReportForm() {
         <button
           type="submit"
           disabled={loading}
-          onClick={() => {
-            if (policyWarnings.length > 0) {
-              setPolicyToast(
-                "Policy warnings detected. Submitting will route this report to special review."
-              );
-            }
-          }}
           className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm disabled:opacity-60"
         >
           {loading ? "Submitting..." : "Submit Report"}

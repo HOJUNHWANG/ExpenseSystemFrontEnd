@@ -18,10 +18,30 @@ export default function InProgressReportsPage() {
 
             try {
                 const { apiFetch } = await import("../lib/api");
-                const data = await apiFetch(
-                  `/api/expense-reports?submitterId=${user.id}&status=MANAGER_REVIEW`
-                );
-                setReports(data);
+
+                const statuses = [
+                    "MANAGER_REVIEW",
+                    "CFO_REVIEW",
+                    "CEO_REVIEW",
+                    "CFO_SPECIAL_REVIEW",
+                    "CEO_SPECIAL_REVIEW",
+                    "CHANGES_REQUESTED",
+                ];
+
+                const all = [];
+                for (const st of statuses) {
+                    try {
+                        const data = await apiFetch(
+                            `/api/expense-reports?submitterId=${user.id}&status=${encodeURIComponent(st)}`
+                        );
+                        (data || []).forEach((r) => all.push(r));
+                    } catch {
+                        // ignore
+                    }
+                }
+
+                all.sort((a, b) => Number(b.id) - Number(a.id));
+                setReports(all);
             } catch (err) {
                 console.error(err);
                 setError(err.message);

@@ -221,34 +221,35 @@ export default function ExpenseReportDetail() {
                 <div className="flex items-center gap-2">
                   {(canSubmit || isDraft) && (
                     <>
-                      <>
+                      <Button
+                        onClick={() => navigate(`/reports/${id}/edit`)}
+                        variant="secondary"
+                        size="sm"
+                      >
+                        Edit
+                      </Button>
+
+                      {isDraft && (
                         <Button
-                          onClick={() => navigate(`/reports/${id}/edit`)}
-                          variant="secondary"
+                          onClick={async () => {
+                            if (!confirm("Delete this draft? This cannot be undone.")) return;
+                            try {
+                              const { apiFetch } = await import("../lib/api");
+                              await apiFetch(`/api/expense-reports/${id}?requesterId=${user.id}`, { method: "DELETE" });
+                              navigate("/reports");
+                            } catch (e) {
+                              setSubmitError(e.message || "Delete failed");
+                            }
+                          }}
+                          variant="danger"
                           size="sm"
                         >
-                          Edit
+                          Delete
                         </Button>
-                        {isDraft && (
-                          <Button
-                            onClick={async () => {
-                              if (!confirm("Delete this draft? This cannot be undone.")) return;
-                              try {
-                                const { apiFetch } = await import("../lib/api");
-                                await apiFetch(`/api/expense-reports/${id}?requesterId=${user.id}`, { method: "DELETE" });
-                                navigate("/reports");
-                              } catch (e) {
-                                setSubmitError(e.message || "Delete failed");
-                              }
-                            }}
-                            variant="danger"
-                            size="sm"
-                          >
-                            Delete
-                          </Button>
-                        )}
-                        {canSubmit && (
-                          <Button
+                      )}
+
+                      {canSubmit && (
+                        <Button
                           onClick={() => {
                             setSubmitError("");
                             if (report?.policyWarnings && report.policyWarnings.length > 0) {
@@ -259,7 +260,7 @@ export default function ExpenseReportDetail() {
                                 try {
                                   setSubmitting(true);
                                   const { apiFetch } = await import("../lib/api");
-                                  const st = await apiFetch(`/api/expense-reports/${id}/submit`, {
+                                  await apiFetch(`/api/expense-reports/${id}/submit`, {
                                     method: "POST",
                                     body: JSON.stringify({ submitterId: user.id, reasons: [] }),
                                   });
@@ -279,7 +280,7 @@ export default function ExpenseReportDetail() {
                         >
                           {submitting ? "Submitting…" : "Submit"}
                         </Button>
-                      </>
+                      )}
                     </>
                   )}
                   <button

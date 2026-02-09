@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { apiFetch } from "../lib/api";
 import StatusBadge from "../ui/StatusBadge.jsx";
+import { Button } from "../ui/Button.jsx";
 
 export default function SearchPage() {
   const { user } = useAuth();
@@ -137,32 +138,27 @@ export default function SearchPage() {
             </div>
 
             <div className="md:col-span-6 flex items-center gap-2">
-              {(() => {
-                const { Button } = require("../ui/Button.jsx");
-                return (
-                  <>
-                    <Button type="submit" variant="primary" size="sm" disabled={loading}>
-                      {loading ? "Searching…" : "Search"}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => {
-                        setQ("");
-                        setStatus("");
-                        setSort("activity_desc");
-                        setMinTotal("");
-                        setMaxTotal("");
-                        setResults([]);
-                        setError("");
-                      }}
-                    >
-                      Clear
-                    </Button>
-                  </>
-                );
-              })()}
+              <>
+                <Button type="submit" variant="primary" size="sm" disabled={loading}>
+                  {loading ? "Searching…" : "Search"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setQ("");
+                    setStatus("");
+                    setSort("activity_desc");
+                    setMinTotal("");
+                    setMaxTotal("");
+                    setResults([]);
+                    setError("");
+                  }}
+                >
+                  Clear
+                </Button>
+              </>
             </div>
           </form>
         )}

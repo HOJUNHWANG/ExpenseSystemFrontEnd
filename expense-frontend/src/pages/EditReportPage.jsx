@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { apiFetch } from "../lib/api";
+import { Button, ButtonLink } from "../ui/Button.jsx";
 
 export default function EditReportPage() {
   const { id } = useParams();
@@ -248,19 +249,14 @@ export default function EditReportPage() {
             </div>
 
             <div className="flex items-center justify-end gap-2">
-              {(() => {
-                const { Button, ButtonLink } = require("../ui/Button.jsx");
-                return (
-                  <>
-                    <ButtonLink to={`/reports/${id}`} variant="secondary" size="sm">
-                      Cancel
-                    </ButtonLink>
-                    <Button type="submit" disabled={saving || !canEdit} variant="primary" size="sm">
-                      {saving ? "Saving…" : "Save changes"}
-                    </Button>
-                  </>
-                );
-              })()}
+              <>
+                <ButtonLink to={`/reports/${id}`} variant="secondary" size="sm">
+                  Cancel
+                </ButtonLink>
+                <Button type="submit" disabled={saving || !canEdit} variant="primary" size="sm">
+                  {saving ? "Saving…" : "Save changes"}
+                </Button>
+              </>
             </div>
           </form>
         )}

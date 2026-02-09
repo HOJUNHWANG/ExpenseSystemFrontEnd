@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { useLocation } from "react-router-dom";
 import StatusBadge from "../ui/StatusBadge.jsx";
+import { Button } from "../ui/Button.jsx";
 import SubmitWithWarningsModal from "./SubmitWithWarningsModal.jsx";
 
 function ChangesRequestedFeedback({ reportId, requesterId }) {
@@ -221,55 +222,50 @@ export default function ExpenseReportDetail() {
                 <div className="flex items-center gap-2">
                   {canSubmit && (
                     <>
-                      {(() => {
-                        const { Button } = require("../ui/Button.jsx");
-                        return (
-                          <>
-                            <Button
-                              onClick={() => navigate(`/reports/${id}/edit`)}
-                              variant="secondary"
-                              size="sm"
-                            >
-                              Edit
-                            </Button>
-                            <Button
-                              onClick={() => {
-                                setSubmitError("");
-                                if (report?.policyWarnings && report.policyWarnings.length > 0) {
-                                  setShowSubmitModal(true);
-                                } else {
-                                  // eslint-disable-next-line no-void
-                                  void (async () => {
-                                    try {
-                                      setSubmitting(true);
-                                      const { apiFetch } = await import("../lib/api");
-                                      const st = await apiFetch(`/api/expense-reports/${id}/submit`, {
-                                        method: "POST",
-                                        body: JSON.stringify({ submitterId: user.id, reasons: [] }),
-                                      });
-                                      setSubmitting(false);
-                                      await fetchReport();
-                                      if (st === "FINANCE_SPECIAL_REVIEW") {
-                                        setActionMessage("Submitted for Finance special approval.");
-                                      } else if (st === "SUBMITTED") {
-                                        setActionMessage("Submitted to approval queue.");
-                                      }
-                                    } catch (e) {
-                                      setSubmitting(false);
-                                      setSubmitError(e.message || "Submit failed");
-                                    }
-                                  })();
+                      <>
+                        <Button
+                          onClick={() => navigate(`/reports/${id}/edit`)}
+                          variant="secondary"
+                          size="sm"
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setSubmitError("");
+                            if (report?.policyWarnings && report.policyWarnings.length > 0) {
+                              setShowSubmitModal(true);
+                            } else {
+                              // eslint-disable-next-line no-void
+                              void (async () => {
+                                try {
+                                  setSubmitting(true);
+                                  const { apiFetch } = await import("../lib/api");
+                                  const st = await apiFetch(`/api/expense-reports/${id}/submit`, {
+                                    method: "POST",
+                                    body: JSON.stringify({ submitterId: user.id, reasons: [] }),
+                                  });
+                                  setSubmitting(false);
+                                  await fetchReport();
+                                  if (st === "FINANCE_SPECIAL_REVIEW") {
+                                    setActionMessage("Submitted for Finance special approval.");
+                                  } else if (st === "SUBMITTED") {
+                                    setActionMessage("Submitted to approval queue.");
+                                  }
+                                } catch (e) {
+                                  setSubmitting(false);
+                                  setSubmitError(e.message || "Submit failed");
                                 }
-                              }}
-                              disabled={submitting}
-                              variant="primary"
-                              size="sm"
-                            >
-                              {submitting ? "Submitting…" : "Submit"}
-                            </Button>
-                          </>
-                        );
-                      })()}
+                              })();
+                            }
+                          }}
+                          disabled={submitting}
+                          variant="primary"
+                          size="sm"
+                        >
+                          {submitting ? "Submitting…" : "Submit"}
+                        </Button>
+                      </>
                     </>
                   )}
                   <button

@@ -33,6 +33,7 @@ export default function DemoControls() {
         </span>
       )}
       <button
+        data-testid="demo-reset"
         onClick={resetDemo}
         disabled={busy}
         className="text-[11px] px-2 py-1 rounded-full border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-60"

@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
 
 async function resetDemo(page) {
   await page.goto("/dashboard");
-  await page.getByRole("button", { name: "Reset demo" }).click();
+  await page.getByTestId("demo-reset").click();
 
   // The reset action triggers a re-login (default: EMPLOYEE) and shows the user in header.
   // Scope to header to avoid strict-mode collisions.

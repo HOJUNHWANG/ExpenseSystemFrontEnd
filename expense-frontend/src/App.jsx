@@ -9,6 +9,7 @@ import DashboardPage from "./pages/DashboardPage.jsx";
 import SearchPage from "./pages/SearchPage.jsx";
 import SpecialApprovalPage from "./pages/SpecialApprovalPage.jsx";
 import EditReportPage from "./pages/EditReportPage.jsx";
+import E2ELoginPage from "./pages/E2ELoginPage.jsx";
 import { useAuth } from "./AuthContext";
 import RequireAuth from "./RequireAuth.jsx";
 import WelcomePage from "./components/WelcomePage.jsx";
@@ -125,7 +126,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/search" element={<SearchPage />} />
+          <Route path="/e2e/login" element={<E2ELoginPage />} />
+          <Route path="/search" element={<RequireAuth><SearchPage /></RequireAuth>} />
           <Route path="/special-approval/:id" element={<RequireAuth><SpecialApprovalPage /></RequireAuth>} />
           <Route path="/reports/:id/edit" element={<RequireAuth><EditReportPage /></RequireAuth>} />
           <Route path="/welcome" element={<WelcomePage />} />

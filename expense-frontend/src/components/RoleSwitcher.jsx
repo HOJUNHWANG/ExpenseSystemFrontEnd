@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth, DEMO_USERS } from "../AuthContext";
 
 export default function RoleSwitcher() {
   const { user, switchDemoRole } = useAuth();
+  const navigate = useNavigate();
   const [loadingRole, setLoadingRole] = useState(null);
 
   const currentRole = user?.role || "";
@@ -11,6 +13,9 @@ export default function RoleSwitcher() {
     try {
       setLoadingRole(role);
       await switchDemoRole(role);
+      // Role switching can leave some pages in a half-loaded state (race between auth + data fetch).
+      // For demo stability, always return to dashboard after switching roles.
+      navigate("/dashboard", { replace: true });
     } finally {
       setLoadingRole(null);
     }

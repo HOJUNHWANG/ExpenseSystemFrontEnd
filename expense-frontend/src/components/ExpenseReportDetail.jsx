@@ -186,7 +186,8 @@ export default function ExpenseReportDetail() {
       report?.status === "MANAGER_REVIEW" || report?.status === "CFO_REVIEW" || report?.status === "CEO_REVIEW"
     );
 
-    const canSubmit = isOwner && (report?.status === "DRAFT" || report?.status === "CHANGES_REQUESTED");
+    const canSubmit = isOwner && (report?.status === "CHANGES_REQUESTED");
+    const isDraft = isOwner && report?.status === "DRAFT";
 
     return (
         <div className="bg-white shadow-md rounded-xl p-6 space-y-4">
@@ -208,12 +209,8 @@ export default function ExpenseReportDetail() {
                 // For submitter: just refresh the report status.
                 await fetchReport();
 
-                if (st === "CFO_SPECIAL_REVIEW") {
-                  // optional: show a toast; for now just keep on detail page
-                  setActionMessage("Submitted for CFO special approval.");
-                } else {
-                  setActionMessage("Submitted for approval.");
-                }
+                // After submit, go to In progress list.
+                navigate("/reports/in-progress");
               }}
             />
 
@@ -222,7 +219,7 @@ export default function ExpenseReportDetail() {
                     Expense Report #{report.id} – {report.title}
                 </h2>
                 <div className="flex items-center gap-2">
-                  {canSubmit && (
+                  {(canSubmit || isDraft) && (
                     <>
                       <>
                         <Button
@@ -232,7 +229,26 @@ export default function ExpenseReportDetail() {
                         >
                           Edit
                         </Button>
-                        <Button
+                        {isDraft && (
+                          <Button
+                            onClick={async () => {
+                              if (!confirm("Delete this draft? This cannot be undone.")) return;
+                              try {
+                                const { apiFetch } = await import("../lib/api");
+                                await apiFetch(`/api/expense-reports/${id}?requesterId=${user.id}`, { method: "DELETE" });
+                                navigate("/reports");
+                              } catch (e) {
+                                setSubmitError(e.message || "Delete failed");
+                              }
+                            }}
+                            variant="danger"
+                            size="sm"
+                          >
+                            Delete
+                          </Button>
+                        )}
+                        {canSubmit && (
+                          <Button
                           onClick={() => {
                             setSubmitError("");
                             if (report?.policyWarnings && report.policyWarnings.length > 0) {
@@ -249,11 +265,7 @@ export default function ExpenseReportDetail() {
                                   });
                                   setSubmitting(false);
                                   await fetchReport();
-                                  if (st === "CFO_SPECIAL_REVIEW") {
-                                    setActionMessage("Submitted for CFO special approval.");
-                                  } else {
-                                    setActionMessage("Submitted for approval.");
-                                  }
+                                  navigate("/reports/in-progress");
                                 } catch (e) {
                                   setSubmitting(false);
                                   setSubmitError(e.message || "Submit failed");

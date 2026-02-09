@@ -22,7 +22,8 @@ async function viewAs(page, label) {
   const roleCodeByLabel = {
     Employee: "EMPLOYEE",
     Manager: "MANAGER",
-    Finance: "FINANCE",
+    CFO: "CFO",
+    CEO: "CEO",
   };
   const roleCode = roleCodeByLabel[label];
   if (roleCode) {
@@ -50,7 +51,7 @@ test("smoke: reset demo works", async ({ page }) => {
   await resetDemo(page);
 });
 
-test("finance: reject requires per-item finance note", async ({ page, request }) => {
+test("CFO: reject requires per-item note", async ({ page, request }) => {
   test.setTimeout(90_000);
   await resetDemo(page);
 
@@ -88,11 +89,11 @@ test("finance: reject requires per-item finance note", async ({ page, request })
   // Ensure we're not bounced to login
   await expect(page).not.toHaveURL(/\/login/);
 
-  // Basic page shell should render for Finance
-  await expect(page.getByRole("heading", { name: "Finance special approval" })).toBeVisible({ timeout: 30_000 });
+  // Basic page shell should render for CFO
+  await expect(page.getByRole("heading", { name: "Exception review" })).toBeVisible({ timeout: 30_000 });
 
-  // If auth didn't stick, the page shows a Finance-only message (no checklist). Fail early.
-  await expect(page.getByText("Only Finance can access this page.")).toHaveCount(0);
+  // If auth didn't stick, the page shows a CFO-only message (no checklist). Fail early.
+  await expect(page.getByText("Only CFO can access this page.")).toHaveCount(0);
 
   // Wait for data fetch to finish (CI can be slow)
   await expect(page.getByText("Loading…")).toHaveCount(0, { timeout: 30_000 });

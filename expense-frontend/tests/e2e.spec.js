@@ -82,39 +82,17 @@ test("finance: reject requires per-item finance note", async ({ page, request })
   const srJson = await sr.json();
   expect(Array.isArray(srJson?.items) && srJson.items.length > 0).toBeTruthy();
 
-  // Set auth state directly (avoid RoleSwitcher timing flake)
-  await page.goto("/dashboard");
-  await page.evaluate((u) => {
-    localStorage.setItem("expense-user", JSON.stringify(u));
-  }, financeUser);
-  await page.reload();
-  await expect(page.locator("header").getByText(/\(FINANCE\)/)).toBeVisible();
-
-  await page.goto(`/special-approval/${target.id}`);
-
-  // Ensure auth stuck after navigation (CI can be racy)
-  await expect
-    .poll(async () => {
-      return await page.evaluate(() => {
-        const raw = localStorage.getItem("expense-user");
-        if (!raw) return null;
-        try {
-          return JSON.parse(raw)?.role || null;
-        } catch {
-          return null;
-        }
-      });
-    })
-    .toBe("FINANCE");
+  // Use E2E login helper to make auth deterministic under CI.
+  await page.goto(`/e2e/login?email=${encodeURIComponent("finance@example.com")}&next=${encodeURIComponent(`/special-approval/${target.id}`)}`);
 
   // Ensure we're not bounced to login
   await expect(page).not.toHaveURL(/\/login/);
 
+  // Basic page shell should render for Finance
+  await expect(page.getByRole("heading", { name: "Finance special approval" })).toBeVisible({ timeout: 30_000 });
+
   // If auth didn't stick, the page shows a Finance-only message (no checklist). Fail early.
   await expect(page.getByText("Only Finance can access this page.")).toHaveCount(0);
-
-  // Basic page shell should render for Finance
-  await expect(page.getByRole("heading", { name: "Finance special approval" })).toBeVisible({ timeout: 20_000 });
 
   // Wait for data fetch to finish
   await expect(page.getByText("Loading…")).toHaveCount(0);

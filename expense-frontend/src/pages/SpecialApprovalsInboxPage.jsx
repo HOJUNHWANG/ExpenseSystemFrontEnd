@@ -10,7 +10,7 @@ export default function SpecialApprovalsInboxPage() {
   const [error, setError] = useState("");
   const [results, setResults] = useState([]);
 
-  const isFinance = user && user.role === "FINANCE";
+  const isFinance = user && user.role === "CFO";
 
   useEffect(() => {
     const run = async () => {
@@ -21,7 +21,7 @@ export default function SpecialApprovalsInboxPage() {
         const params = new URLSearchParams();
         params.set("requesterId", String(user.id));
         params.set("requesterRole", String(user.role));
-        params.set("status", "FINANCE_SPECIAL_REVIEW");
+        params.set("status", "CFO_SPECIAL_REVIEW");
         params.set("sort", "activity_desc");
 
         const data = await apiFetch(`/api/expense-reports/search?${params.toString()}`);

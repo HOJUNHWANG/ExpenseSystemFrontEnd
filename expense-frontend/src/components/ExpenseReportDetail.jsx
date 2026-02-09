@@ -181,8 +181,10 @@ export default function ExpenseReportDetail() {
     const total = report.totalAmount ?? 0;
 
     const isOwner = user && report && Number(report.submitterId) === Number(user.id);
-    const canApproveByRole = user && (user.role === "MANAGER" || user.role === "FINANCE");
-    const canTakeAction = canApproveByRole && !isOwner && report?.status === "SUBMITTED";
+    const canApproveByRole = user && (user.role === "MANAGER" || user.role === "CFO" || user.role === "CEO");
+    const canTakeAction = canApproveByRole && !isOwner && (
+      report?.status === "MANAGER_REVIEW" || report?.status === "CFO_REVIEW" || report?.status === "CEO_REVIEW"
+    );
 
     const canSubmit = isOwner && (report?.status === "DRAFT" || report?.status === "CHANGES_REQUESTED");
 
@@ -206,11 +208,11 @@ export default function ExpenseReportDetail() {
                 // For submitter: just refresh the report status.
                 await fetchReport();
 
-                if (st === "FINANCE_SPECIAL_REVIEW") {
+                if (st === "CFO_SPECIAL_REVIEW") {
                   // optional: show a toast; for now just keep on detail page
-                  setActionMessage("Submitted for Finance special approval.");
-                } else if (st === "SUBMITTED") {
-                  setActionMessage("Submitted to approval queue.");
+                  setActionMessage("Submitted for CFO special approval.");
+                } else {
+                  setActionMessage("Submitted for approval.");
                 }
               }}
             />
@@ -247,10 +249,10 @@ export default function ExpenseReportDetail() {
                                   });
                                   setSubmitting(false);
                                   await fetchReport();
-                                  if (st === "FINANCE_SPECIAL_REVIEW") {
-                                    setActionMessage("Submitted for Finance special approval.");
-                                  } else if (st === "SUBMITTED") {
-                                    setActionMessage("Submitted to approval queue.");
+                                  if (st === "CFO_SPECIAL_REVIEW") {
+                                    setActionMessage("Submitted for CFO special approval.");
+                                  } else {
+                                    setActionMessage("Submitted for approval.");
                                   }
                                 } catch (e) {
                                   setSubmitting(false);
@@ -538,7 +540,7 @@ export default function ExpenseReportDetail() {
                             )}
                         </div>
 
-                        {report?.status !== "SUBMITTED" && (
+                        {!(report?.status === "MANAGER_REVIEW" || report?.status === "CFO_REVIEW" || report?.status === "CEO_REVIEW") && (
                             <p className="text-xs text-slate-500 mt-2">
                                 This report is already {report.status.toLowerCase()}.
                             </p>

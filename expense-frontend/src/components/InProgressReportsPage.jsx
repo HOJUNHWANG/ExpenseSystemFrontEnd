@@ -19,7 +19,7 @@ export default function InProgressReportsPage() {
             try {
                 const { apiFetch } = await import("../lib/api");
                 const data = await apiFetch(
-                  `/api/expense-reports?submitterId=${user.id}&status=SUBMITTED`
+                  `/api/expense-reports?submitterId=${user.id}&status=MANAGER_REVIEW`
                 );
                 setReports(data);
             } catch (err) {

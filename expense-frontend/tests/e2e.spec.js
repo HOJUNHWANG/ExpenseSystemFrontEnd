@@ -65,7 +65,7 @@ test("finance: reject requires per-item finance note", async ({ page, request })
 
   const qs = new URLSearchParams({
     requesterId: String(financeUser.id),
-    requesterRole: "FINANCE",
+    requesterRole: "CFO",
     q: "Hotel Exception",
     sort: "activity_desc",
   });

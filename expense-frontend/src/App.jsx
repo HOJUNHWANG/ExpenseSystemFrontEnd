@@ -25,8 +25,8 @@ function App() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const isApprover = user && (user.role === "MANAGER" || user.role === "FINANCE");
-  const isFinance = user && user.role === "FINANCE";
+  const isApprover = user && (user.role === "MANAGER" || user.role === "CFO" || user.role === "CEO");
+  const isFinance = user && user.role === "CFO";
 
   const navItems = useMemo(() => {
     const base = [

@@ -16,7 +16,7 @@ export default function SearchPage() {
   const [error, setError] = useState("");
   const [results, setResults] = useState([]);
 
-  const canSearchAll = user && (user.role === "MANAGER" || user.role === "FINANCE");
+  const canSearchAll = user && (user.role === "MANAGER" || user.role === "CFO" || user.role === "CEO");
 
   const runSearch = async (e) => {
     e?.preventDefault?.();
@@ -97,7 +97,10 @@ export default function SearchPage() {
                 className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
               >
                 <option value="">Any</option>
-                <option value="SUBMITTED">SUBMITTED</option>
+                <option value="MANAGER_REVIEW">MANAGER_REVIEW</option>
+                <option value="CFO_REVIEW">CFO_REVIEW</option>
+                <option value="CEO_REVIEW">CEO_REVIEW</option>
+                <option value="CFO_SPECIAL_REVIEW">CFO_SPECIAL_REVIEW</option>
                 <option value="APPROVED">APPROVED</option>
                 <option value="REJECTED">REJECTED</option>
               </select>
@@ -220,7 +223,7 @@ export default function SearchPage() {
                     </td>
                     <td className="py-2 text-right">
                       <Link
-                        to={r.status === "FINANCE_SPECIAL_REVIEW" ? `/special-approval/${r.id}` : `/reports/${r.id}`}
+                        to={r.status === "CFO_SPECIAL_REVIEW" ? `/special-approval/${r.id}` : `/reports/${r.id}`}
                         className="text-xs text-blue-600 hover:underline"
                       >
                         View

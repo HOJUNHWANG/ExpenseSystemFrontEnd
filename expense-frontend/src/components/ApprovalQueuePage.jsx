@@ -22,7 +22,7 @@ export default function ApprovalQueuePage() {
 
     try {
       const data = await (await import("../lib/api")).apiFetch(
-        "/api/expense-reports/pending-approval"
+        `/api/expense-reports/pending-approval?requesterRole=${encodeURIComponent(user.role)}`
       );
       setReports(data);
     } catch (err) {
@@ -75,7 +75,7 @@ export default function ApprovalQueuePage() {
         <div>
           <h1 className="text-xl font-semibold">Approval Queue</h1>
           <p className="text-xs text-slate-500">
-            Expense reports that are currently SUBMITTED and waiting for approval.
+            Expense reports that are waiting for your approval.
           </p>
         </div>
       </div>

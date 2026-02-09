@@ -36,7 +36,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const isApprover = user && (user.role === "MANAGER" || user.role === "FINANCE");
+  const isApprover = user && (user.role === "MANAGER" || user.role === "CFO" || user.role === "CEO");
 
   useEffect(() => {
     const run = async () => {
@@ -53,7 +53,7 @@ export default function DashboardPage() {
         setActivity(act || []);
 
         if (isApprover) {
-          const pending = await apiFetch(`/api/expense-reports/pending-approval`);
+          const pending = await apiFetch(`/api/expense-reports/pending-approval?requesterRole=${encodeURIComponent(user.role)}`);
           setPendingApprovals(pending || []);
         } else {
           setPendingApprovals([]);
@@ -69,7 +69,9 @@ export default function DashboardPage() {
   }, [user, isApprover]);
 
   const myCounts = useMemo(() => {
-    const submitted = myReports.filter((r) => r.status === "SUBMITTED").length;
+    const submitted = myReports.filter((r) => (
+      r.status === "MANAGER_REVIEW" || r.status === "CFO_REVIEW" || r.status === "CEO_REVIEW" || r.status === "CFO_SPECIAL_REVIEW"
+    )).length;
     const approved = myReports.filter((r) => r.status === "APPROVED").length;
     const rejected = myReports.filter((r) => r.status === "REJECTED").length;
     return { total: myReports.length, submitted, approved, rejected };
@@ -140,9 +142,9 @@ export default function DashboardPage() {
           }
         />
         <StatCard
-          title="Submitted"
+          title="In review"
           value={loading ? "…" : myCounts.submitted}
-          hint="Waiting for approval"
+          hint="Waiting for approvals"
         />
         <StatCard
           title="Approved"
@@ -170,7 +172,7 @@ export default function DashboardPage() {
               <div>
                 <div className="text-sm font-medium text-slate-900">Pending approvals</div>
                 <div className="mt-1 text-xs text-slate-500">
-                  Reports currently in SUBMITTED status.
+                  Reports currently waiting for approval.
                 </div>
               </div>
               <div className="text-2xl font-semibold text-slate-900">{loading ? "…" : pendingCount}</div>
@@ -241,7 +243,7 @@ export default function DashboardPage() {
               {activity.map((a) => (
                 <Link
                   key={a.id}
-                  to={a.status === "FINANCE_SPECIAL_REVIEW" ? `/special-approval/${a.id}` : `/reports/${a.id}`}
+                  to={a.status === "CFO_SPECIAL_REVIEW" ? `/special-approval/${a.id}` : `/reports/${a.id}`}
                   className="block rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 px-3 py-2"
                 >
                   <div className="flex items-center justify-between gap-3">

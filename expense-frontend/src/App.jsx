@@ -53,7 +53,7 @@ function App() {
 
       {/* Header */}
       <header className="bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col md:flex-row md:flex-nowrap md:justify-between md:items-center gap-2">
+        <div className="max-w-6xl mx-auto px-4 py-3 grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-2 items-center">
           {mobileMenuOpen && (
             <div className="w-full md:hidden mt-2 rounded-2xl border border-slate-200 bg-white shadow-sm p-3">
               <div className="grid grid-cols-2 gap-2">
@@ -78,7 +78,7 @@ function App() {
             </Link>
 
             {/* Desktop nav */}
-            <nav className="hidden md:flex gap-3 text-sm whitespace-nowrap">
+            <nav className="hidden md:flex gap-3 text-sm whitespace-nowrap overflow-x-auto no-scrollbar">
               {navItems.map((it) => (
                 <Link key={it.to} to={it.to} className="text-slate-600 hover:text-slate-900">
                   {it.label}

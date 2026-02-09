@@ -33,7 +33,7 @@ export default function SpecialApprovalPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const isFinance = user && user.role === "CFO";
+  const isCfo = user && user.role === "CFO";
 
   const load = async () => {
     setLoading(true);
@@ -55,7 +55,7 @@ export default function SpecialApprovalPage() {
       setDecisions(init);
       setReviewerComment(sr.reviewerComment || "");
     } catch (e) {
-      setError(e.message || "Failed to load special approval");
+      setError(e.message || "Failed to load exception review");
     } finally {
       setLoading(false);
     }
@@ -130,17 +130,17 @@ export default function SpecialApprovalPage() {
   if (!user) {
     return (
       <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
-        <h1 className="text-xl font-semibold text-slate-900">Special approval</h1>
-        <p className="mt-2 text-sm text-slate-600">Please login as Finance to review policy exceptions.</p>
+        <h1 className="text-xl font-semibold text-slate-900">Policy exceptions</h1>
+        <p className="mt-2 text-sm text-slate-600">Please login as CFO to review policy exceptions.</p>
       </div>
     );
   }
 
-  if (!isFinance) {
+  if (!isCfo) {
     return (
       <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
-        <h1 className="text-xl font-semibold text-slate-900">Special approval</h1>
-        <p className="mt-2 text-sm text-slate-600">Only Finance can access this page.</p>
+        <h1 className="text-xl font-semibold text-slate-900">Policy exceptions</h1>
+        <p className="mt-2 text-sm text-slate-600">Only CFO can access this page.</p>
         <div className="mt-4">
           <Link to="/dashboard" className="text-sm text-blue-600 hover:underline">Back to Dashboard</Link>
         </div>
@@ -153,7 +153,7 @@ export default function SpecialApprovalPage() {
       <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-xl font-semibold text-slate-900">Finance special approval</h1>
+            <h1 className="text-xl font-semibold text-slate-900">Exception review</h1>
             <p className="mt-1 text-sm text-slate-600">
               Review policy exceptions before this report enters the normal approval queue.
             </p>
@@ -242,10 +242,17 @@ export default function SpecialApprovalPage() {
                     </thead>
                     <tbody>
                       {(report?.items || []).map((it, idx) => {
-                        const isHotelCap = items.some((x) => x.code === "HOTEL_ABOVE_CAP") && String(it.category || "").toLowerCase().includes("lodg") && Number(it.amount) > 300;
-                        const isReceipt = items.some((x) => x.code === "RECEIPT_REQUIRED") && Number(it.amount) >= 25;
-                        const isMealCap = items.some((x) => x.code === "MEALS_ABOVE_DAILY_CAP") && (String(it.category || "").toLowerCase().includes("meal") || String(it.description || "").toLowerCase().includes("per diem"));
-                        const highlight = isHotelCap || isReceipt || isMealCap;
+                        const isHotelCap = items.some((x) => x.code === "HOTEL_ABOVE_CAP")
+                          && String(it.category || "").toLowerCase().includes("hotel")
+                          && Number(it.amount) > 250;
+                        const isMealCap = items.some((x) => x.code === "MEALS_ABOVE_DAILY_CAP")
+                          && (String(it.category || "").toLowerCase().includes("meal") || String(it.description || "").toLowerCase().includes("per diem"));
+                        const isEntertainmentCap = items.some((x) => x.code === "ENTERTAINMENT_ABOVE_CAP")
+                          && String(it.category || "").toLowerCase().includes("entertain")
+                          && Number(it.amount) > 100;
+                        const isAirfareCap = items.some((x) => x.code === "AIRFARE_ABOVE_CAP")
+                          && String(it.category || "").toLowerCase().includes("airfare");
+                        const highlight = isHotelCap || isMealCap || isEntertainmentCap || isAirfareCap;
                         return (
                           <tr key={idx} className={"border-t border-slate-100 " + (highlight ? "bg-orange-50/40" : "")}
                           >
@@ -261,9 +268,10 @@ export default function SpecialApprovalPage() {
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {items.some((x) => x.code === "RECEIPT_REQUIRED") && <Pill tone="orange">RECEIPT_REQUIRED</Pill>}
                   {items.some((x) => x.code === "HOTEL_ABOVE_CAP") && <Pill tone="orange">HOTEL_ABOVE_CAP</Pill>}
                   {items.some((x) => x.code === "MEALS_ABOVE_DAILY_CAP") && <Pill tone="orange">MEALS_ABOVE_DAILY_CAP</Pill>}
+                  {items.some((x) => x.code === "ENTERTAINMENT_ABOVE_CAP") && <Pill tone="orange">ENTERTAINMENT_ABOVE_CAP</Pill>}
+                  {items.some((x) => x.code === "AIRFARE_ABOVE_CAP") && <Pill tone="orange">AIRFARE_ABOVE_CAP</Pill>}
                   {items.some((x) => x.code === "ITEM_DATE_OUTSIDE_TRIP") && <Pill tone="orange">ITEM_DATE_OUTSIDE_TRIP</Pill>}
                 </div>
               </div>

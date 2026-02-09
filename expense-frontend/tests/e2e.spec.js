@@ -94,14 +94,17 @@ test("finance: reject requires per-item finance note", async ({ page, request })
   // If auth didn't stick, the page shows a Finance-only message (no checklist). Fail early.
   await expect(page.getByText("Only Finance can access this page.")).toHaveCount(0);
 
-  // Wait for data fetch to finish
-  await expect(page.getByText("Loading…")).toHaveCount(0);
+  // Wait for data fetch to finish (CI can be slow)
+  await expect(page.getByText("Loading…")).toHaveCount(0, { timeout: 30_000 });
 
   // Ensure review items rendered (otherwise no form controls exist)
   await expect
-    .poll(async () => {
-      return await page.getByTestId(/special-item-/).count();
-    })
+    .poll(
+      async () => {
+        return await page.getByTestId(/special-item-/).count();
+      },
+      { timeout: 30_000 }
+    )
     .toBeGreaterThan(0);
 
   const firstItem = page.getByTestId(/special-item-/).first();

@@ -27,7 +27,7 @@ export default function SpecialApprovalsInboxPage() {
         const data = await apiFetch(`/api/expense-reports/search?${params.toString()}`);
         setResults(data || []);
       } catch (e) {
-        setError(e.message || "Failed to load special approvals");
+        setError(e.message || "Failed to load policy exceptions");
       } finally {
         setLoading(false);
       }
@@ -39,14 +39,14 @@ export default function SpecialApprovalsInboxPage() {
 
   const subtitle = useMemo(() => {
     if (!user) return "Please login.";
-    if (!isFinance) return "Only Finance can access this inbox.";
-    return "Reports with policy exceptions waiting for Finance special approval.";
+    if (!isFinance) return "Only CFO can access this inbox.";
+    return "Reports with policy exceptions waiting for exception review.";
   }, [user, isFinance]);
 
   if (!user) {
     return (
       <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
-        <h1 className="text-xl font-semibold text-slate-900">Special approvals</h1>
+        <h1 className="text-xl font-semibold text-slate-900">Policy exceptions</h1>
         <p className="mt-2 text-sm text-slate-600">Please login to view this page.</p>
       </div>
     );
@@ -55,8 +55,8 @@ export default function SpecialApprovalsInboxPage() {
   if (!isFinance) {
     return (
       <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
-        <h1 className="text-xl font-semibold text-slate-900">Special approvals</h1>
-        <p className="mt-2 text-sm text-slate-600">Only Finance can access this page.</p>
+        <h1 className="text-xl font-semibold text-slate-900">Policy exceptions</h1>
+        <p className="mt-2 text-sm text-slate-600">Only CFO can access this page.</p>
         <div className="mt-4">
           <Link to="/dashboard" className="text-sm text-blue-600 hover:underline">
             Back to Dashboard
@@ -71,7 +71,7 @@ export default function SpecialApprovalsInboxPage() {
       <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-xl font-semibold text-slate-900">Special approvals</h1>
+            <h1 className="text-xl font-semibold text-slate-900">Policy exceptions</h1>
             <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
           </div>
           <Link to="/dashboard" className="text-xs text-blue-600 hover:underline">
@@ -95,7 +95,7 @@ export default function SpecialApprovalsInboxPage() {
         {loading && <div className="mt-3 text-sm text-slate-600">Loading…</div>}
 
         {!loading && results.length === 0 && (
-          <div className="mt-3 text-sm text-slate-600">No reports waiting for special approval.</div>
+          <div className="mt-3 text-sm text-slate-600">No reports waiting for exception review.</div>
         )}
 
         {!loading && results.length > 0 && (

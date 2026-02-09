@@ -31,14 +31,14 @@ function App() {
   const navItems = useMemo(() => {
     const base = [
       { to: "/dashboard", label: "Dashboard" },
-      { to: "/welcome", label: "About" },
+      { to: "/", label: "Welcome" },
       { to: "/create", label: "Create" },
       { to: "/search", label: "Search" },
       { to: "/reports", label: "My Reports" },
       { to: "/reports/in-progress", label: "In progress" },
     ];
-    if (isApprover) base.push({ to: "/approvals", label: "Approval Queue" });
-    if (isFinance) base.push({ to: "/special-approvals", label: "Special approvals" });
+    if (isApprover) base.push({ to: "/approvals", label: "Approval queue" });
+    if (isFinance) base.push({ to: "/special-approvals", label: "Policy exceptions" });
     return base;
   }, [isApprover, isFinance]);
 
@@ -127,14 +127,14 @@ function App() {
       {/* Content */}
       <main className="max-w-4xl mx-auto px-4 py-6">
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<WelcomePage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/e2e/login" element={<E2ELoginPage />} />
           <Route path="/search" element={<RequireAuth><SearchPage /></RequireAuth>} />
           <Route path="/special-approvals" element={<RequireAuth><SpecialApprovalsInboxPage /></RequireAuth>} />
           <Route path="/special-approval/:id" element={<RequireAuth><SpecialApprovalPage /></RequireAuth>} />
           <Route path="/reports/:id/edit" element={<RequireAuth><EditReportPage /></RequireAuth>} />
-          <Route path="/welcome" element={<WelcomePage />} />
+          <Route path="/welcome" element={<Navigate to="/" replace />} />
           <Route path="/login" element={<LoginPage />} />
 
           <Route

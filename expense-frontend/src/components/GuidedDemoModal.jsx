@@ -66,7 +66,7 @@ export default function GuidedDemoModal() {
 
         <ol className="mt-4 space-y-2 text-sm text-slate-700 list-decimal pl-5">
           <li>Create or open an expense report as an Employee</li>
-          <li>Submit it (status becomes SUBMITTED)</li>
+          <li>Submit it (status enters the approval chain)</li>
           <li>Switch role to Manager to approve or reject</li>
           <li>Review the report details and approval timeline</li>
         </ol>

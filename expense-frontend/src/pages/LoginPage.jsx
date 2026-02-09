@@ -63,7 +63,8 @@ export default function LoginPage() {
                 <ul className="list-disc ml-5">
                     <li>jun@example.com (EMPLOYEE)</li>
                     <li>manager@example.com (MANAGER)</li>
-                    <li>finance@example.com (FINANCE)</li>
+                    <li>finance@example.com (CFO)</li>
+                    <li>ceo@example.com (CEO)</li>
                 </ul>
             </div>
         </div>

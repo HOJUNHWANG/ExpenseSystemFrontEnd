@@ -33,7 +33,7 @@ export default function SpecialApprovalPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const isFinance = user && user.role === "FINANCE";
+  const isFinance = user && user.role === "CFO";
 
   const load = async () => {
     setLoading(true);

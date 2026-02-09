@@ -7,7 +7,8 @@ const AuthContext = createContext(null);
 export const DEMO_USERS = {
     EMPLOYEE: { email: "jun@example.com", label: "Employee" },
     MANAGER: { email: "manager@example.com", label: "Manager" },
-    FINANCE: { email: "finance@example.com", label: "Finance" },
+    CFO: { email: "finance@example.com", label: "CFO" },
+  CEO: { email: "ceo@example.com", label: "CEO" },
 };
 
 export function AuthProvider({ children }) {

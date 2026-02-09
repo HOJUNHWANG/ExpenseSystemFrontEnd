@@ -39,8 +39,9 @@ const ITEM_TYPES = {
 const MILEAGE_RATE = 0.7;
 const MEAL_RATE = 25;
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../AuthContext";
+import { evaluateDraftWarnings } from "../lib/policy";
 
 export default function CreateExpenseReportForm() {
   const { user } = useAuth();
@@ -56,6 +57,7 @@ export default function CreateExpenseReportForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState({});
+  const [policyToast, setPolicyToast] = useState("");
 
   if (!user) {
     return (
@@ -66,6 +68,26 @@ export default function CreateExpenseReportForm() {
         </div>
     );
   }
+
+  const policyWarnings = useMemo(() => {
+    return evaluateDraftWarnings({
+      country,
+      departureDate,
+      returnDate,
+      items: (items || []).map((it) => ({
+        date: it.date,
+        description: it.description,
+        amount: it.amount,
+        category: it.category,
+      })),
+    });
+  }, [country, departureDate, returnDate, items]);
+
+  useEffect(() => {
+    if (!policyToast) return;
+    const t = setTimeout(() => setPolicyToast(""), 3500);
+    return () => clearTimeout(t);
+  }, [policyToast]);
 
   const validate = () => {
     const newErrors = {};
@@ -298,9 +320,31 @@ export default function CreateExpenseReportForm() {
     >
       <h2 className="text-xl font-semibold mb-4">Create Expense Report</h2>
 
+      {policyToast && (
+        <div className="mb-3 text-sm rounded-lg p-3 bg-slate-900 text-white">
+          {policyToast}
+        </div>
+      )}
+
       {message && (
         <div className="mb-4 text-sm rounded-lg p-3 bg-slate-100">
           {message}
+        </div>
+      )}
+
+      {policyWarnings.length > 0 && (
+        <div className="mb-4 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
+          <div className="text-sm font-medium text-orange-900">Policy warnings</div>
+          <div className="mt-1 text-xs text-orange-800">
+            Submitting this report will route it to a special review step.
+          </div>
+          <ul className="mt-2 list-disc pl-5 text-sm text-orange-900 space-y-1">
+            {policyWarnings.map((w) => (
+              <li key={w.code}>
+                <span className="font-medium">{w.code}</span> — {w.message}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -588,6 +632,13 @@ export default function CreateExpenseReportForm() {
         <button
           type="submit"
           disabled={loading}
+          onClick={() => {
+            if (policyWarnings.length > 0) {
+              setPolicyToast(
+                "Policy warnings detected. Submitting will route this report to special review."
+              );
+            }
+          }}
           className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm disabled:opacity-60"
         >
           {loading ? "Submitting..." : "Submit Report"}

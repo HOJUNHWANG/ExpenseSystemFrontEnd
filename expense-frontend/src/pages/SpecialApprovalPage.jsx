@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { apiFetch } from "../lib/api";
 import StatusBadge from "../ui/StatusBadge.jsx";
+import { Button } from "../ui/Button.jsx";
 
 function Pill({ children, tone = "slate" }) {
   const tones = {
@@ -299,32 +300,27 @@ export default function SpecialApprovalPage() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {(() => {
-                        const { Button } = require("../ui/Button.jsx");
-                        return (
-                          <>
-                            <Button
-                              data-testid={`special-approve-${it.code}`}
-                              type="button"
-                              variant={d === "APPROVE" ? "primary" : "secondary"}
-                              size="sm"
-                              onClick={() => setDecision(it.code, { decision: "APPROVE" })}
-                              className={d === "APPROVE" ? "bg-green-600 border-green-600 hover:bg-green-700" : ""}
-                            >
-                              ✓ Approve
-                            </Button>
-                            <Button
-                              data-testid={`special-reject-${it.code}`}
-                              type="button"
-                              variant={d === "REJECT" ? "danger" : "secondary"}
-                              size="sm"
-                              onClick={() => setDecision(it.code, { decision: "REJECT" })}
-                            >
-                              ✕ Reject
-                            </Button>
-                          </>
-                        );
-                      })()}
+                        <>
+                          <Button
+                            data-testid={`special-approve-${it.code}`}
+                            type="button"
+                            variant={d === "APPROVE" ? "primary" : "secondary"}
+                            size="sm"
+                            onClick={() => setDecision(it.code, { decision: "APPROVE" })}
+                            className={d === "APPROVE" ? "bg-green-600 border-green-600 hover:bg-green-700" : ""}
+                          >
+                            ✓ Approve
+                          </Button>
+                          <Button
+                            data-testid={`special-reject-${it.code}`}
+                            type="button"
+                            variant={d === "REJECT" ? "danger" : "secondary"}
+                            size="sm"
+                            onClick={() => setDecision(it.code, { decision: "REJECT" })}
+                          >
+                            ✕ Reject
+                          </Button>
+                        </>
                       </div>
                     </div>
 
@@ -381,25 +377,20 @@ export default function SpecialApprovalPage() {
                   : "All items decided."}
               </div>
 
-              {(() => {
-              const { Button } = require("../ui/Button.jsx");
-              return (
-                <Button
-                  data-testid="special-submit"
-                  type="button"
-                  disabled={saving || !(canApprove || canReject)}
-                  onClick={submitDecision}
-                  variant={anyReject ? "danger" : "primary"}
-                  size="md"
-                >
-                  {saving
-                    ? "Submitting…"
-                    : anyReject
-                    ? "Reject special approval"
-                    : "Approve special approval"}
-                </Button>
-              );
-            })()}
+              <Button
+                data-testid="special-submit"
+                type="button"
+                disabled={saving || !(canApprove || canReject)}
+                onClick={submitDecision}
+                variant={anyReject ? "danger" : "primary"}
+                size="md"
+              >
+                {saving
+                  ? "Submitting…"
+                  : anyReject
+                  ? "Reject special approval"
+                  : "Approve special approval"}
+              </Button>
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Button } from "../ui/Button.jsx";
 
 export default function SubmitWithWarningsModal({
   open,
@@ -93,24 +94,19 @@ export default function SubmitWithWarningsModal({
             {canSubmit ? "" : "Fill in all required reasons to continue."}
           </div>
           <div className="flex items-center gap-2">
-            {(() => {
-              const { Button } = require("../ui/Button.jsx");
-              return (
-                <>
-                  <Button onClick={close} variant="secondary" size="sm">
-                    Cancel
-                  </Button>
-                  <Button
-                    disabled={submitting || !canSubmit}
-                    onClick={submit}
-                    variant="primary"
-                    size="sm"
-                  >
-                    {submitting ? "Submitting…" : "Submit with exceptions"}
-                  </Button>
-                </>
-              );
-            })()}
+            <>
+              <Button onClick={close} variant="secondary" size="sm">
+                Cancel
+              </Button>
+              <Button
+                disabled={submitting || !canSubmit}
+                onClick={submit}
+                variant="primary"
+                size="sm"
+              >
+                {submitting ? "Submitting…" : "Submit with exceptions"}
+              </Button>
+            </>
           </div>
         </div>
       </div>

@@ -39,10 +39,34 @@ const ITEM_TYPES = {
 const MILEAGE_RATE = 0.7;
 const MEAL_RATE = 25;
 
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../AuthContext";
 import { evaluateDraftWarnings } from "../lib/policy";
-import { useBeforeUnload, useBlocker, useNavigate } from "react-router-dom";
+import { UNSAFE_NavigationContext, useBeforeUnload, useNavigate } from "react-router-dom";
+
+function useNavigationBlocker(when, onBlocked) {
+  const { navigator } = useContext(UNSAFE_NavigationContext);
+  const onBlockedRef = useRef(onBlocked);
+  onBlockedRef.current = onBlocked;
+
+  useEffect(() => {
+    if (!when) return;
+    if (!navigator?.block) return;
+
+    const unblock = navigator.block((tx) => {
+      const autoUnblockingTx = {
+        ...tx,
+        retry() {
+          unblock();
+          tx.retry();
+        },
+      };
+      onBlockedRef.current?.(autoUnblockingTx);
+    });
+
+    return unblock;
+  }, [navigator, when]);
+}
 
 export default function CreateExpenseReportForm() {
   const { user } = useAuth();
@@ -63,6 +87,7 @@ export default function CreateExpenseReportForm() {
 
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [draftSaving, setDraftSaving] = useState(false);
+  const pendingTxRef = useRef(null);
 
   if (!user) {
     return (
@@ -132,13 +157,10 @@ export default function CreateExpenseReportForm() {
     }, [isDirty])
   );
 
-  const blocker = useBlocker(isDirty && !loading && !draftSaving);
-
-  useEffect(() => {
-    if (blocker.state === "blocked") {
-      setLeaveOpen(true);
-    }
-  }, [blocker.state]);
+  useNavigationBlocker(isDirty && !loading && !draftSaving, (tx) => {
+    pendingTxRef.current = tx;
+    setLeaveOpen(true);
+  });
 
   useEffect(() => {
     if (!policyToast) return;
@@ -493,7 +515,7 @@ export default function CreateExpenseReportForm() {
         </div>
       )}
 
-      {leaveOpen && blocker.state === "blocked" && (
+      {leaveOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
           <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl p-6">
             <div className="text-lg font-semibold text-slate-900">Leave this page?</div>
@@ -505,7 +527,7 @@ export default function CreateExpenseReportForm() {
                 type="button"
                 onClick={() => {
                   setLeaveOpen(false);
-                  blocker.reset();
+                  pendingTxRef.current = null;
                 }}
                 className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50"
               >
@@ -514,9 +536,10 @@ export default function CreateExpenseReportForm() {
               <button
                 type="button"
                 onClick={async () => {
-                  // Discard changes and leave.
+                  const tx = pendingTxRef.current;
+                  pendingTxRef.current = null;
                   setLeaveOpen(false);
-                  blocker.proceed();
+                  tx?.retry();
                 }}
                 className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50"
               >
@@ -527,8 +550,10 @@ export default function CreateExpenseReportForm() {
                 onClick={async () => {
                   const res = await saveDraft();
                   if (!res.ok) return;
+                  const tx = pendingTxRef.current;
+                  pendingTxRef.current = null;
                   setLeaveOpen(false);
-                  blocker.proceed();
+                  tx?.retry();
                 }}
                 disabled={draftSaving}
                 className="px-3 py-2 rounded-xl border border-slate-900 bg-slate-900 text-white text-sm hover:bg-slate-800 disabled:opacity-60"

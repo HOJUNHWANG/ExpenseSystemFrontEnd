@@ -11,6 +11,8 @@ export default function EditReportPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
 
   const [title, setTitle] = useState("");
@@ -73,6 +75,22 @@ export default function EditReportPage() {
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
   };
 
+  const buildPayload = () => {
+    return {
+      submitterId: user.id,
+      title,
+      destination,
+      departureDate: departureDate || null,
+      returnDate: returnDate || null,
+      items: items.map((it) => ({
+        date: it.date || null,
+        description: it.description,
+        amount: Number(it.amount || 0),
+        category: it.category,
+      })),
+    };
+  };
+
   const save = async (e) => {
     e?.preventDefault?.();
     if (!user) return;
@@ -80,23 +98,9 @@ export default function EditReportPage() {
     setSaving(true);
     setError("");
     try {
-      const payload = {
-        submitterId: user.id,
-        title,
-        destination,
-        departureDate: departureDate || null,
-        returnDate: returnDate || null,
-        items: items.map((it) => ({
-          date: it.date || null,
-          description: it.description,
-          amount: Number(it.amount || 0),
-          category: it.category,
-        })),
-      };
-
       await apiFetch(`/api/expense-reports/${id}`, {
         method: "PUT",
-        body: JSON.stringify(payload),
+        body: JSON.stringify(buildPayload()),
       });
 
       navigate(`/reports/${id}`);
@@ -104,6 +108,47 @@ export default function EditReportPage() {
       setError(e2.message || "Save failed");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const submit = async () => {
+    if (!user) return;
+
+    setSubmitting(true);
+    setError("");
+    try {
+      // Save latest edits first.
+      await apiFetch(`/api/expense-reports/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(buildPayload()),
+      });
+
+      await apiFetch(`/api/expense-reports/${id}/submit`, {
+        method: "POST",
+        body: JSON.stringify({ submitterId: user.id, reasons: [] }),
+      });
+
+      navigate("/reports/in-progress");
+    } catch (e2) {
+      setError(e2.message || "Submit failed");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const deleteDraft = async () => {
+    if (!user) return;
+    if (!confirm("Delete this draft? This cannot be undone.")) return;
+
+    setDeleting(true);
+    setError("");
+    try {
+      await apiFetch(`/api/expense-reports/${id}?requesterId=${user.id}`, { method: "DELETE" });
+      navigate("/reports");
+    } catch (e2) {
+      setError(e2.message || "Delete failed");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -248,15 +293,34 @@ export default function EditReportPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2">
-              <>
-                <ButtonLink to={`/reports/${id}`} variant="secondary" size="sm">
-                  Cancel
-                </ButtonLink>
-                <Button type="submit" disabled={saving || !canEdit} variant="primary" size="sm">
-                  {saving ? "Saving…" : "Save changes"}
-                </Button>
-              </>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <ButtonLink to={`/reports/${id}`} variant="secondary" size="sm">
+                Cancel
+              </ButtonLink>
+
+              <Button
+                type="button"
+                onClick={deleteDraft}
+                disabled={deleting}
+                variant="danger"
+                size="sm"
+              >
+                {deleting ? "Deleting…" : "Delete"}
+              </Button>
+
+              <Button type="submit" disabled={saving || !canEdit} variant="secondary" size="sm">
+                {saving ? "Saving…" : "Save draft"}
+              </Button>
+
+              <Button
+                type="button"
+                onClick={submit}
+                disabled={submitting || saving || !canEdit}
+                variant="primary"
+                size="sm"
+              >
+                {submitting ? "Submitting…" : "Submit"}
+              </Button>
             </div>
           </form>
         )}

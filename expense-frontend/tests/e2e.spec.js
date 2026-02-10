@@ -1,3 +1,4 @@
+/* eslint-env node */
 import { test, expect } from "@playwright/test";
 
 const LS_KEY = "expense-demo-guided-v1";
@@ -146,4 +147,104 @@ test("manager: approve a submitted report from approval queue", async ({ page })
   // So we only assert the toast is visible and we're on approvals.
   await expect(page).toHaveURL(/\/approvals/);
   await expect(page.getByText("Successfully approved.")).toBeVisible();
+});
+
+test("flow: exception reject -> edit/resubmit -> approvals", async ({ page, request }) => {
+  test.setTimeout(120_000);
+  await resetDemo(page);
+
+  const apiBase = process.env.E2E_API_BASE_URL || "http://localhost:8080";
+  const title = `E2E — Exception resubmit (${Date.now()})`;
+
+  // 1) Create + submit an exception report (API for speed/determinism)
+  const empLogin = await request.post(`${apiBase}/api/auth/login`, {
+    data: { email: "jun@example.com" },
+  });
+  expect(empLogin.ok()).toBeTruthy();
+  const employee = await empLogin.json();
+
+  const create = await request.post(`${apiBase}/api/expense-reports`, {
+    data: {
+      submitterId: employee.id,
+      title,
+      destination: "Boston, United States",
+      departureDate: "2026-01-10",
+      returnDate: "2026-01-10",
+      items: [{ date: "2026-01-10", description: "Hotel night", amount: 400, category: "Hotel" }],
+    },
+  });
+  expect(create.ok()).toBeTruthy();
+  const reportId = await create.json();
+
+  const submit = await request.post(`${apiBase}/api/expense-reports/${reportId}/submit`, {
+    data: { submitterId: employee.id, reasons: [] },
+  });
+  expect(submit.ok()).toBeTruthy();
+
+  // 2) CFO rejects exception review via UI
+  await page.goto(
+    `/e2e/login?email=${encodeURIComponent("finance@example.com")}&next=${encodeURIComponent(`/special-approval/${reportId}`)}`
+  );
+
+  await expect(page.getByRole("heading", { name: "Exception review" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText("Loading…")).toHaveCount(0, { timeout: 30_000 });
+
+  // Decide reject for all items + fill required notes
+  const items = page.getByTestId(/special-item-/);
+  await expect(items.first()).toBeVisible({ timeout: 30_000 });
+  const count = await items.count();
+  expect(count).toBeGreaterThan(0);
+
+  for (let i = 0; i < count; i++) {
+    const it = items.nth(i);
+    await it.getByTestId(/special-reject-/).click();
+    await it.getByTestId(/special-note-/).fill("Over cap for demo.");
+  }
+
+  await page.getByTestId("special-reviewer-comment").fill("Please reduce the amount and resubmit.");
+  await expect(page.getByTestId("special-submit")).toBeEnabled();
+  await page.getByTestId("special-submit").click();
+  await expect(page).toHaveURL(new RegExp(`/reports/${reportId}$`));
+
+  // 3) Employee edits the report and resubmits (UI)
+  await page.goto(
+    `/e2e/login?email=${encodeURIComponent("jun@example.com")}&next=${encodeURIComponent(`/reports/${reportId}`)}`
+  );
+
+  await expect(page.getByText(/CHANGES_REQUESTED/)).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("button", { name: "Edit" }).click();
+  await expect(page).toHaveURL(new RegExp(`/reports/${reportId}/edit$`));
+
+  // Update hotel amount to be under cap and submit.
+  await page.locator('input[inputmode="decimal"]').first().fill("240");
+  await page.getByRole("button", { name: "Submit" }).click();
+  await expect(page).toHaveURL(/\/reports\/in-progress/);
+
+  // 4) Manager approves in approvals queue
+  await page.goto(
+    `/e2e/login?email=${encodeURIComponent("manager@example.com")}&next=${encodeURIComponent(`/approvals`)}`
+  );
+  const mgrRow = page.getByRole("row").filter({ hasText: title });
+  await expect(mgrRow).toBeVisible({ timeout: 30_000 });
+  await mgrRow.getByRole("link", { name: /View \/ Approve/ }).click();
+  await page.getByRole("button", { name: "Approve" }).click();
+  await page.getByRole("button", { name: "Confirm Approve" }).click();
+  await expect(page.getByText("Successfully approved.")).toBeVisible();
+
+  // 5) CFO final-approves in approvals queue
+  await page.goto(
+    `/e2e/login?email=${encodeURIComponent("finance@example.com")}&next=${encodeURIComponent(`/approvals`)}`
+  );
+  const cfoRow = page.getByRole("row").filter({ hasText: title });
+  await expect(cfoRow).toBeVisible({ timeout: 30_000 });
+  await cfoRow.getByRole("link", { name: /View \/ Approve/ }).click();
+  await page.getByRole("button", { name: "Approve" }).click();
+  await page.getByRole("button", { name: "Confirm Approve" }).click();
+  await expect(page.getByText("Successfully approved.")).toBeVisible();
+
+  // 6) Employee sees APPROVED
+  await page.goto(
+    `/e2e/login?email=${encodeURIComponent("jun@example.com")}&next=${encodeURIComponent(`/reports/${reportId}`)}`
+  );
+  await expect(page.getByText(/APPROVED/)).toBeVisible({ timeout: 30_000 });
 });

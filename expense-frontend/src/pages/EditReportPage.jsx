@@ -10,6 +10,7 @@ import {
   buildPayloadItems,
   ConfirmSubmitModal,
   PolicyWarningsPanel,
+  FooterActionBar,
 } from "../components/ExpenseReportForm.jsx";
 
 function parseCountryFromDestination(destination) {
@@ -303,35 +304,21 @@ export default function EditReportPage() {
 
             <ItemsEditor items={items} setItems={setItems} departureDate={departureDate} />
 
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <ButtonLink to={`/reports/${id}`} variant="secondary" size="sm">
-                Cancel
-              </ButtonLink>
-
-              <Button
-                type="button"
-                onClick={deleteDraft}
-                disabled={deleting}
-                variant="danger"
-                size="sm"
-              >
-                {deleting ? "Deleting…" : "Delete"}
-              </Button>
-
-              <Button type="submit" disabled={saving || !canEdit} variant="secondary" size="sm">
-                {saving ? "Saving…" : "Save draft"}
-              </Button>
-
-              <Button
-                type="button"
-                onClick={submit}
-                disabled={submitting || saving || !canEdit}
-                variant="primary"
-                size="sm"
-              >
-                {submitting ? "Submitting…" : "Submit"}
-              </Button>
-            </div>
+            <FooterActionBar
+              onCancel={() => navigate(`/reports/${id}`)}
+              onDelete={deleteDraft}
+              showDelete={true}
+              onSaveDraft={() => save()}
+              onSubmit={submit}
+              busy={saving || submitting || deleting}
+              saving={saving}
+              submitting={submitting}
+              deleting={deleting}
+              canSaveDraft={canEdit}
+              canSubmit={canEdit && !saving}
+              submitLabel="Submit"
+              saveDraftLabel="Save draft"
+            />
           </form>
         )}
       </div>

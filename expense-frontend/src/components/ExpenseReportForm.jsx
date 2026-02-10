@@ -409,6 +409,97 @@ export function ItemsEditor({ items, setItems, departureDate }) {
   );
 }
 
+export function ReportHeaderFields({
+  values,
+  setValues,
+  mode,
+  errors,
+  countryOptions,
+}) {
+  const isCreate = mode === "create";
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label className="block text-sm font-medium mb-1">Title</label>
+        <input
+          type="text"
+          className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+          value={values.title}
+          onChange={(e) => setValues((v) => ({ ...v, title: e.target.value }))}
+        />
+        {errors?.title && <p className="text-xs text-red-600 mt-1">{errors.title}</p>}
+      </div>
+
+      {isCreate ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">City</label>
+            <input
+              type="text"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+              value={values.city}
+              onChange={(e) => setValues((v) => ({ ...v, city: e.target.value }))}
+              placeholder="e.g. Atlanta"
+            />
+            {errors?.city && <p className="text-xs text-red-600 mt-1">{errors.city}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Country</label>
+            <select
+              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
+              value={values.country}
+              onChange={(e) => setValues((v) => ({ ...v, country: e.target.value }))}
+            >
+              <option value="">Select a country…</option>
+              {(countryOptions || []).map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            {errors?.country && <p className="text-xs text-red-600 mt-1">{errors.country}</p>}
+          </div>
+        </div>
+      ) : (
+        <div>
+          <label className="block text-sm font-medium mb-1">Destination</label>
+          <input
+            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+            value={values.destination}
+            onChange={(e) => setValues((v) => ({ ...v, destination: e.target.value }))}
+            placeholder="e.g. New York, United States"
+          />
+        </div>
+      )}
+
+      <div className={isCreate ? "grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2" : "grid grid-cols-1 md:grid-cols-2 gap-4"}>
+        <div>
+          <label className="block text-sm font-medium mb-1">Departure date</label>
+          <input
+            type="date"
+            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+            value={values.departureDate}
+            onChange={(e) => setValues((v) => ({ ...v, departureDate: e.target.value }))}
+          />
+          {errors?.departureDate && <p className="text-xs text-red-600 mt-1">{errors.departureDate}</p>}
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Return date</label>
+          <input
+            type="date"
+            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+            value={values.returnDate}
+            onChange={(e) => setValues((v) => ({ ...v, returnDate: e.target.value }))}
+          />
+          {errors?.returnDate && <p className="text-xs text-red-600 mt-1">{errors.returnDate}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ExpenseReportFormShell({
   title,
   subtitle,

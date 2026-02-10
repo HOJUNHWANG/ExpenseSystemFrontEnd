@@ -1,5 +1,5 @@
 // src/App.jsx
-import { Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Link, Navigate, useLocation, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import CreateExpenseReportForm from "./components/CreateExpenseReportForm";
 import ExpenseReportList from "./components/ExpenseReportList";
@@ -20,6 +20,11 @@ import RoleSwitcher from "./components/RoleSwitcher.jsx";
 import DemoControls from "./components/DemoControls.jsx";
 import GuidedDemoModal from "./components/GuidedDemoModal.jsx";
 
+function LegacySpecialApprovalRedirect() {
+  const { id } = useParams();
+  return <Navigate to={`/policy-exceptions/${id}`} replace />;
+}
+
 function App() {
   const { user, logout } = useAuth();
   const location = useLocation();
@@ -38,7 +43,7 @@ function App() {
       { to: "/reports/in-progress", label: "In progress" },
     ];
     if (isApprover) base.push({ to: "/approvals", label: "Approval queue" });
-    if (isFinance) base.push({ to: "/special-approvals", label: "Policy exceptions" });
+    if (isFinance) base.push({ to: "/policy-exceptions", label: "Policy exceptions" });
     return base;
   }, [isApprover, isFinance]);
 
@@ -131,8 +136,13 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/e2e/login" element={<E2ELoginPage />} />
           <Route path="/search" element={<RequireAuth><SearchPage /></RequireAuth>} />
-          <Route path="/special-approvals" element={<RequireAuth><SpecialApprovalsInboxPage /></RequireAuth>} />
-          <Route path="/special-approval/:id" element={<RequireAuth><SpecialApprovalPage /></RequireAuth>} />
+          {/* New naming */}
+          <Route path="/policy-exceptions" element={<RequireAuth><SpecialApprovalsInboxPage /></RequireAuth>} />
+          <Route path="/policy-exceptions/:id" element={<RequireAuth><SpecialApprovalPage /></RequireAuth>} />
+
+          {/* Back-compat routes */}
+          <Route path="/special-approvals" element={<Navigate to="/policy-exceptions" replace />} />
+          <Route path="/special-approval/:id" element={<LegacySpecialApprovalRedirect />} />
           <Route path="/reports/:id/edit" element={<RequireAuth><EditReportPage /></RequireAuth>} />
           <Route path="/welcome" element={<Navigate to="/" replace />} />
           <Route path="/login" element={<LoginPage />} />

@@ -239,7 +239,7 @@ export default function SearchPage() {
                     </td>
                     <td className="py-2 text-right">
                       <Link
-                        to={r.status === "CFO_SPECIAL_REVIEW" ? `/special-approval/${r.id}` : `/reports/${r.id}`}
+                        to={r.status === "CFO_SPECIAL_REVIEW" ? `/policy-exceptions/${r.id}` : `/reports/${r.id}`}
                         className="text-xs text-blue-600 hover:underline"
                       >
                         View

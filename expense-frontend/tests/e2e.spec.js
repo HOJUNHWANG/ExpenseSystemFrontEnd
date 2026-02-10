@@ -85,7 +85,7 @@ test("CFO: reject requires per-item note", async ({ page, request }) => {
   expect(Array.isArray(srJson?.items) && srJson.items.length > 0).toBeTruthy();
 
   // Use E2E login helper to make auth deterministic under CI.
-  await page.goto(`/e2e/login?email=${encodeURIComponent("finance@example.com")}&next=${encodeURIComponent(`/special-approval/${target.id}`)}`);
+  await page.goto(`/e2e/login?email=${encodeURIComponent("finance@example.com")}&next=${encodeURIComponent(`/policy-exceptions/${target.id}`)}`);
 
   // Ensure we're not bounced to login
   await expect(page).not.toHaveURL(/\/login/);
@@ -183,7 +183,7 @@ test("flow: exception reject -> edit/resubmit -> approvals", async ({ page, requ
 
   // 2) CFO rejects exception review via UI
   await page.goto(
-    `/e2e/login?email=${encodeURIComponent("finance@example.com")}&next=${encodeURIComponent(`/special-approval/${reportId}`)}`
+    `/e2e/login?email=${encodeURIComponent("finance@example.com")}&next=${encodeURIComponent(`/policy-exceptions/${reportId}`)}`
   );
 
   await expect(page.getByRole("heading", { name: "Exception review" })).toBeVisible({ timeout: 30_000 });

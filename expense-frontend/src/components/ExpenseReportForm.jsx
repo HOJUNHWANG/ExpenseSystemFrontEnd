@@ -450,8 +450,14 @@ export function ReportHeaderFields({
             <label className="block text-sm font-medium mb-1">Country</label>
             <select
               className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
-              value={values.country}
-              onChange={(e) => setValues((v) => ({ ...v, country: e.target.value }))}
+              value={values.countrySelect || ""}
+              onChange={(e) =>
+                setValues((v) => {
+                  const next = { ...v, countrySelect: e.target.value };
+                  if (e.target.value !== "__OTHER__") next.countryOther = "";
+                  return next;
+                })
+              }
               onFocus={onCountryInteract}
               onMouseDown={onCountryInteract}
             >
@@ -461,7 +467,17 @@ export function ReportHeaderFields({
                   {c}
                 </option>
               ))}
+              <option value="__OTHER__">Other…</option>
             </select>
+            {values.countrySelect === "__OTHER__" && (
+              <input
+                type="text"
+                className="mt-2 w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                value={values.countryOther || ""}
+                onChange={(e) => setValues((v) => ({ ...v, countryOther: e.target.value }))}
+                placeholder="Type country"
+              />
+            )}
             {errors?.country && <p className="text-xs text-red-600 mt-1">{errors.country}</p>}
           </div>
         </div>

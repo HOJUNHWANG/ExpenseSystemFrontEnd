@@ -13,6 +13,7 @@ import {
   makeNormalItem,
   ConfirmSubmitModal,
   PolicyWarningsPanel,
+  FooterActionBar,
 } from "./ExpenseReportForm.jsx";
 
 // Suggested countries for the demo
@@ -535,15 +536,27 @@ export default function CreateExpenseReportForm() {
 
       <ItemsEditor items={items} setItems={setItems} departureDate={departureDate} />
 
-      <div className="mt-6">
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm disabled:opacity-60"
-        >
-          {loading ? "Submitting..." : "Submit Report"}
-        </button>
-      </div>
+      <FooterActionBar
+        onCancel={() => navigate("/dashboard")}
+        onDelete={null}
+        showDelete={false}
+        onSaveDraft={async () => {
+          // If user clicks save draft explicitly, save and go to My Reports.
+          const res = await saveDraft();
+          if (res.ok) navigate("/reports");
+        }}
+        onSubmit={() => {
+          // trigger the same submit flow as form submit
+          // eslint-disable-next-line no-void
+          void handleSubmit({ preventDefault: () => {} });
+        }}
+        busy={loading || draftSaving}
+        saving={draftSaving}
+        submitting={loading}
+        canSubmit={!loading}
+        submitLabel="Submit"
+        saveDraftLabel="Save draft"
+      />
     </form>
   );
 }

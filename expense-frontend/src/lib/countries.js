@@ -1,7 +1,49 @@
-import countries from "world-countries";
+// Curated country list for the public demo.
+// Keep this intentionally small for UX + bundle size.
 
-// world-countries contains objects with `name.common` among other fields.
-export const COUNTRY_OPTIONS = countries
-  .map((c) => c?.name?.common)
-  .filter(Boolean)
-  .sort((a, b) => a.localeCompare(b));
+export const MAJOR_COUNTRY_OPTIONS = [
+  // North America
+  "United States",
+  "Canada",
+  "Mexico",
+
+  // Europe
+  "United Kingdom",
+  "Ireland",
+  "France",
+  "Germany",
+  "Netherlands",
+  "Belgium",
+  "Switzerland",
+  "Austria",
+  "Spain",
+  "Portugal",
+  "Italy",
+  "Sweden",
+  "Norway",
+  "Denmark",
+  "Finland",
+  "Poland",
+  "Czechia",
+
+  // Asia
+  "South Korea",
+  "Japan",
+  "China",
+  "Singapore",
+  "Hong Kong",
+  "Taiwan",
+  "India",
+
+  // Oceania
+  "Australia",
+  "New Zealand",
+
+  // South America
+  "Brazil",
+
+  // Middle East
+  "United Arab Emirates",
+];
+
+export const OTHER_COUNTRY_VALUE = "__OTHER__";

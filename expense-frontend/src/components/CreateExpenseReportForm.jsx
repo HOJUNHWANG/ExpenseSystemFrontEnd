@@ -17,7 +17,7 @@ import {
   ReportHeaderFields,
 } from "./ExpenseReportForm.jsx";
 
-// Country options are lazy-loaded (code-split) to keep initial bundle small.
+import { MAJOR_COUNTRY_OPTIONS, OTHER_COUNTRY_VALUE } from "../lib/countries";
 
 
 // (Policy knobs removed here; policy is evaluated via lib/policy.js + backend PolicyEngine)
@@ -53,12 +53,12 @@ export default function CreateExpenseReportForm() {
   const [form, setForm] = useState({
     title: "",
     city: "",
-    country: "",
+    countrySelect: "",
+    countryOther: "",
     departureDate: "",
     returnDate: "",
   });
   const [items, setItems] = useState([makeNormalItem()]);
-  const [countryOptions, setCountryOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState({});
@@ -78,9 +78,15 @@ export default function CreateExpenseReportForm() {
     );
   }
 
+  const countryValue = useMemo(() => {
+    const select = form.countrySelect;
+    if (select === OTHER_COUNTRY_VALUE) return form.countryOther.trim();
+    return select.trim();
+  }, [form.countrySelect, form.countryOther]);
+
   const policyWarnings = useMemo(() => {
     return evaluateDraftWarnings({
-      country: form.country,
+      country: countryValue,
       departureDate: form.departureDate,
       returnDate: form.returnDate,
       items: (items || []).map((it) => ({
@@ -90,12 +96,12 @@ export default function CreateExpenseReportForm() {
         category: it.category,
       })),
     });
-  }, [form.country, form.departureDate, form.returnDate, items]);
+  }, [countryValue, form.departureDate, form.returnDate, items]);
 
   const isDirty = useMemo(() => {
     if (form.title.trim()) return true;
     if (form.city.trim()) return true;
-    if (form.country.trim()) return true;
+    if (countryValue.trim()) return true;
     if (form.departureDate) return true;
     if (form.returnDate) return true;
 
@@ -123,7 +129,7 @@ export default function CreateExpenseReportForm() {
       }
     }
     return true;
-  }, [form.title, form.city, form.country, form.departureDate, form.returnDate, items]);
+  }, [form.title, form.city, countryValue, form.departureDate, form.returnDate, items]);
 
   useBeforeUnload(
     useMemo(() => {
@@ -147,16 +153,6 @@ export default function CreateExpenseReportForm() {
     return () => clearTimeout(t);
   }, [policyToast]);
 
-  const ensureCountryOptions = () => {
-    if (countryOptions.length > 0) return;
-
-    import("../lib/countries").then((m) => {
-      const next = Array.isArray(m.COUNTRY_OPTIONS) ? m.COUNTRY_OPTIONS : [];
-      setCountryOptions(next);
-    });
-  };
-
-
   const validate = () => {
     const newErrors = {};
 
@@ -166,7 +162,7 @@ export default function CreateExpenseReportForm() {
     if (!form.city.trim()) {
       newErrors.city = "City is required.";
     }
-    if (!form.country.trim()) {
+    if (!countryValue.trim()) {
       newErrors.country = "Country is required.";
     }
     if (!form.departureDate) {
@@ -237,7 +233,7 @@ export default function CreateExpenseReportForm() {
     setMessage("");
     setDraftSaving(true);
 
-    const destination = form.city.trim() || form.country.trim() ? `${form.city}, ${form.country}` : "";
+    const destination = form.city.trim() || countryValue.trim() ? `${form.city}, ${countryValue}` : "";
 
     // Create uses a limited DTO in backend; create+update keeps this demo flexible.
     const createPayload = {
@@ -303,7 +299,7 @@ export default function CreateExpenseReportForm() {
 
     setLoading(true);
 
-    const destination = `${form.city}, ${form.country}`;
+    const destination = `${form.city}, ${countryValue}`;
 
     const payload = {
       submitterId: user.id,
@@ -346,7 +342,7 @@ export default function CreateExpenseReportForm() {
     setConfirmOpen(false);
     setLoading(true);
     try {
-      const destination = `${form.city}, ${form.country}`;
+      const destination = `${form.city}, ${countryValue}`;
 
       const payload = {
         submitterId: user.id,
@@ -462,8 +458,7 @@ export default function CreateExpenseReportForm() {
         values={form}
         setValues={setForm}
         errors={errors}
-        countryOptions={countryOptions}
-        onCountryInteract={ensureCountryOptions}
+        countryOptions={MAJOR_COUNTRY_OPTIONS}
       />
 
       <ItemsEditor items={items} setItems={setItems} departureDate={form.departureDate} />

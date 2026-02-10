@@ -17,19 +17,7 @@ import {
   ReportHeaderFields,
 } from "./ExpenseReportForm.jsx";
 
-// Suggested countries for the demo
-const COUNTRY_OPTIONS = [
-  "United States",
-  "Canada",
-  "United Kingdom",
-  "Germany",
-  "France",
-  "South Korea",
-  "Japan",
-  "China",
-  "Australia",
-  "Singapore",
-];
+import { COUNTRY_OPTIONS } from "../lib/countries";
 
 // (Policy knobs removed here; policy is evaluated via lib/policy.js + backend PolicyEngine)
 

@@ -293,7 +293,7 @@ export default function PolicyExceptionReviewPage() {
                 return (
                   <div
                     key={it.code}
-                    data-testid={`special-item-${it.code}`}
+                    data-testid={`exception-item-${it.code}`}
                     className={"rounded-2xl border p-4 border-orange-100 bg-orange-50/40"}
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -310,7 +310,7 @@ export default function PolicyExceptionReviewPage() {
                       <div className="flex items-center gap-2">
                         <>
                           <Button
-                            data-testid={`special-approve-${it.code}`}
+                            data-testid={`exception-approve-${it.code}`}
                             type="button"
                             variant={d === "APPROVE" ? "primary" : "secondary"}
                             size="sm"
@@ -320,7 +320,7 @@ export default function PolicyExceptionReviewPage() {
                             ✓ Approve
                           </Button>
                           <Button
-                            data-testid={`special-reject-${it.code}`}
+                            data-testid={`exception-reject-${it.code}`}
                             type="button"
                             variant={d === "REJECT" ? "danger" : "secondary"}
                             size="sm"
@@ -337,7 +337,7 @@ export default function PolicyExceptionReviewPage() {
                         Finance note {d === "REJECT" ? "(required)" : "(optional)"}
                       </label>
                       <input
-                        data-testid={`special-note-${it.code}`}
+                        data-testid={`exception-note-${it.code}`}
                         value={reason}
                         onChange={(e) => setDecision(it.code, { financeReason: e.target.value })}
                         className={
@@ -362,7 +362,7 @@ export default function PolicyExceptionReviewPage() {
                 Finance decision comment {anyReject ? "(required for reject)" : "(optional)"}
               </label>
               <textarea
-                data-testid="special-reviewer-comment"
+                data-testid="exception-reviewer-comment"
                 value={reviewerComment}
                 onChange={(e) => setReviewerComment(e.target.value)}
                 rows={3}
@@ -386,7 +386,7 @@ export default function PolicyExceptionReviewPage() {
               </div>
 
               <Button
-                data-testid="special-submit"
+                data-testid="exception-submit"
                 type="button"
                 disabled={saving || !(canApprove || canReject)}
                 onClick={submitDecision}

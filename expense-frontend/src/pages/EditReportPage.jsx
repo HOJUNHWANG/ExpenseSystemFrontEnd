@@ -4,7 +4,13 @@ import { useAuth } from "../AuthContext";
 import { apiFetch } from "../lib/api";
 import { Button, ButtonLink } from "../ui/Button.jsx";
 import { evaluateDraftWarnings } from "../lib/policy";
-import { ITEM_TYPES, ItemsEditor, buildPayloadItems } from "../components/ExpenseReportForm.jsx";
+import {
+  ITEM_TYPES,
+  ItemsEditor,
+  buildPayloadItems,
+  ConfirmSubmitModal,
+  PolicyWarningsPanel,
+} from "../components/ExpenseReportForm.jsx";
 
 function parseCountryFromDestination(destination) {
   if (!destination) return "";
@@ -246,57 +252,15 @@ export default function EditReportPage() {
 
         {!loading && !error && (
           <form onSubmit={save} className="mt-4 space-y-4">
-            {confirmOpen && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-                <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl p-6">
-                  <div className="text-lg font-semibold text-slate-900">Policy warnings</div>
-                  <div className="mt-2 text-sm text-slate-700">
-                    This report has policy warnings. Submitting will route it to <span className="font-medium">exception review</span>.
-                    Do you want to continue?
-                  </div>
-                  <ul className="mt-3 list-disc pl-5 text-sm text-slate-800 space-y-1">
-                    {policyWarnings.map((w) => (
-                      <li key={w.code}>
-                        <span className="font-medium">{w.code}</span> — {w.message}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-5 flex items-center justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setConfirmOpen(false)}
-                      className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50"
-                    >
-                      No, keep editing
-                    </button>
-                    <button
-                      type="button"
-                      onClick={confirmSubmit}
-                      disabled={submitting}
-                      className="px-3 py-2 rounded-xl border border-slate-900 bg-slate-900 text-white text-sm hover:bg-slate-800 disabled:opacity-60"
-                    >
-                      Yes, submit
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            <ConfirmSubmitModal
+              open={confirmOpen}
+              warnings={policyWarnings}
+              busy={submitting}
+              onCancel={() => setConfirmOpen(false)}
+              onConfirm={confirmSubmit}
+            />
 
-            {policyWarnings.length > 0 && (
-              <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
-                <div className="text-sm font-medium text-orange-900">Policy warnings</div>
-                <div className="mt-1 text-xs text-orange-800">
-                  Submitting this report will route it to an exception review step.
-                </div>
-                <ul className="mt-2 list-disc pl-5 text-sm text-orange-900 space-y-1">
-                  {policyWarnings.map((w) => (
-                    <li key={w.code}>
-                      <span className="font-medium">{w.code}</span> — {w.message}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <PolicyWarningsPanel warnings={policyWarnings} compact />
             <div>
               <label className="block text-sm font-medium mb-1">Title</label>
               <input

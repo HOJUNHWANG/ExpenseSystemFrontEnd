@@ -11,6 +11,8 @@ import {
   ItemsEditor,
   buildPayloadItems,
   makeNormalItem,
+  ConfirmSubmitModal,
+  PolicyWarningsPanel,
 } from "./ExpenseReportForm.jsx";
 
 // Suggested countries for the demo
@@ -439,57 +441,17 @@ export default function CreateExpenseReportForm() {
         </div>
       )}
 
-      {confirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl p-6">
-            <div className="text-lg font-semibold text-slate-900">Policy warnings</div>
-            <div className="mt-2 text-sm text-slate-700">
-              This report has policy warnings. Submitting will route it to <span className="font-medium">special review</span>.
-              Do you want to continue?
-            </div>
-            <ul className="mt-3 list-disc pl-5 text-sm text-slate-800 space-y-1">
-              {policyWarnings.map((w) => (
-                <li key={w.code}>
-                  <span className="font-medium">{w.code}</span> — {w.message}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-5 flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setConfirmOpen(false)}
-                className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50"
-              >
-                No, keep editing
-              </button>
-              <button
-                type="button"
-                onClick={confirmSubmit}
-                disabled={loading}
-                className="px-3 py-2 rounded-xl border border-slate-900 bg-slate-900 text-white text-sm hover:bg-slate-800 disabled:opacity-60"
-              >
-                Yes, submit
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmSubmitModal
+        open={confirmOpen}
+        warnings={policyWarnings}
+        busy={loading}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={confirmSubmit}
+      />
 
-      {policyWarnings.length > 0 && (
-        <div className="mb-4 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
-          <div className="text-sm font-medium text-orange-900">Policy warnings</div>
-          <div className="mt-1 text-xs text-orange-800">
-            Submitting this report will route it to a special review step.
-          </div>
-          <ul className="mt-2 list-disc pl-5 text-sm text-orange-900 space-y-1">
-            {policyWarnings.map((w) => (
-              <li key={w.code}>
-                <span className="font-medium">{w.code}</span> — {w.message}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <div className="mb-4">
+        <PolicyWarningsPanel warnings={policyWarnings} compact={false} />
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 

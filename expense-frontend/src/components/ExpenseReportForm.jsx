@@ -142,6 +142,63 @@ export function ConfirmSubmitModal({ open, warnings, busy, onCancel, onConfirm }
   );
 }
 
+export function FooterActionBar({
+  onCancel,
+  onDelete,
+  onSaveDraft,
+  onSubmit,
+  showDelete = false,
+  busy = false,
+  saving = false,
+  submitting = false,
+  deleting = false,
+  canSubmit = true,
+  canSaveDraft = true,
+  submitLabel = "Submit",
+  saveDraftLabel = "Save draft",
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
+      <button
+        type="button"
+        onClick={onCancel}
+        className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50"
+      >
+        Cancel
+      </button>
+
+      {showDelete && (
+        <button
+          type="button"
+          onClick={onDelete}
+          disabled={busy || deleting}
+          className="px-3 py-2 rounded-xl border border-red-100 bg-red-50 text-red-700 text-sm hover:bg-red-100 disabled:opacity-60"
+        >
+          {deleting ? "Deleting…" : "Delete"}
+        </button>
+      )}
+
+      <button
+        type="button"
+        onClick={onSaveDraft}
+        disabled={busy || saving || !canSaveDraft}
+        className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50 disabled:opacity-60"
+      >
+        {saving ? "Saving…" : saveDraftLabel}
+      </button>
+
+      <button
+        type="button"
+        onClick={onSubmit}
+        disabled={busy || submitting || !canSubmit}
+        className="px-3 py-2 rounded-xl border border-slate-900 bg-slate-900 text-white text-sm hover:bg-slate-800 disabled:opacity-60"
+      >
+        {submitting ? "Submitting…" : submitLabel}
+      </button>
+    </div>
+  );
+}
+
 export function ItemsEditor({ items, setItems, departureDate }) {
   const addNormalItem = () => setItems((prev) => [...prev, makeNormalItem()]);
   const addMileageItem = () =>

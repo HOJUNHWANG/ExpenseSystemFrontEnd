@@ -147,17 +147,14 @@ export default function CreateExpenseReportForm() {
     return () => clearTimeout(t);
   }, [policyToast]);
 
-  useEffect(() => {
-    let mounted = true;
-    // Lazy-load countries so it ends up in a separate chunk.
+  const ensureCountryOptions = () => {
+    if (countryOptions.length > 0) return;
+
     import("../lib/countries").then((m) => {
-      if (!mounted) return;
-      setCountryOptions(Array.isArray(m.COUNTRY_OPTIONS) ? m.COUNTRY_OPTIONS : []);
+      const next = Array.isArray(m.COUNTRY_OPTIONS) ? m.COUNTRY_OPTIONS : [];
+      setCountryOptions(next);
     });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  };
 
 
   const validate = () => {
@@ -466,6 +463,7 @@ export default function CreateExpenseReportForm() {
         setValues={setForm}
         errors={errors}
         countryOptions={countryOptions}
+        onCountryInteract={ensureCountryOptions}
       />
 
       <ItemsEditor items={items} setItems={setItems} departureDate={form.departureDate} />

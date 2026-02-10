@@ -415,6 +415,7 @@ export function ReportHeaderFields({
   mode,
   errors,
   countryOptions,
+  onCountryInteract,
 }) {
   const isCreate = mode === "create";
 
@@ -451,6 +452,8 @@ export function ReportHeaderFields({
               className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
               value={values.country}
               onChange={(e) => setValues((v) => ({ ...v, country: e.target.value }))}
+              onFocus={onCountryInteract}
+              onMouseDown={onCountryInteract}
             >
               <option value="">Select a country…</option>
               {(countryOptions || []).map((c) => (

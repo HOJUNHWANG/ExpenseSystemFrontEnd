@@ -17,7 +17,8 @@ import {
   ReportHeaderFields,
 } from "./ExpenseReportForm.jsx";
 
-import { COUNTRY_OPTIONS } from "../lib/countries";
+// Country options are lazy-loaded (code-split) to keep initial bundle small.
+
 
 // (Policy knobs removed here; policy is evaluated via lib/policy.js + backend PolicyEngine)
 
@@ -57,6 +58,7 @@ export default function CreateExpenseReportForm() {
     returnDate: "",
   });
   const [items, setItems] = useState([makeNormalItem()]);
+  const [countryOptions, setCountryOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState({});
@@ -144,6 +146,19 @@ export default function CreateExpenseReportForm() {
     const t = setTimeout(() => setPolicyToast(""), 3500);
     return () => clearTimeout(t);
   }, [policyToast]);
+
+  useEffect(() => {
+    let mounted = true;
+    // Lazy-load countries so it ends up in a separate chunk.
+    import("../lib/countries").then((m) => {
+      if (!mounted) return;
+      setCountryOptions(Array.isArray(m.COUNTRY_OPTIONS) ? m.COUNTRY_OPTIONS : []);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
 
   const validate = () => {
     const newErrors = {};
@@ -450,7 +465,7 @@ export default function CreateExpenseReportForm() {
         values={form}
         setValues={setForm}
         errors={errors}
-        countryOptions={COUNTRY_OPTIONS}
+        countryOptions={countryOptions}
       />
 
       <ItemsEditor items={items} setItems={setItems} departureDate={form.departureDate} />

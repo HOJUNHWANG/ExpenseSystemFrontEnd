@@ -396,8 +396,8 @@ export default function SpecialApprovalPage() {
                 {saving
                   ? "Submitting…"
                   : anyReject
-                  ? "Reject special approval"
-                  : "Approve special approval"}
+                  ? "Reject exceptions"
+                  : "Approve exceptions"}
               </Button>
             </div>
           </div>

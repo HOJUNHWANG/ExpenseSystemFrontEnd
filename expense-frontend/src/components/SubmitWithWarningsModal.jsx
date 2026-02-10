@@ -52,7 +52,7 @@ export default function SubmitWithWarningsModal({
             <h2 className="text-lg font-semibold text-slate-900">Policy warnings</h2>
             <p className="mt-1 text-sm text-slate-600">
               This report violates one or more policies. To continue, provide a reason for each exception.
-              The report will be routed to Finance for special approval.
+              The report will be routed to CFO for exception review.
             </p>
           </div>
           <button onClick={close} className="text-xs text-slate-500 hover:text-slate-900">

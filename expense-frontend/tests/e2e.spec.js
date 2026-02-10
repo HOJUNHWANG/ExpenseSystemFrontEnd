@@ -103,28 +103,28 @@ test("CFO: reject requires per-item note", async ({ page, request }) => {
   await expect
     .poll(
       async () => {
-        return await page.getByTestId(/special-item-/).count();
+        return await page.getByTestId(/exception-item-/).count();
       },
       { timeout: 30_000 }
     )
     .toBeGreaterThan(0);
 
-  const firstItem = page.getByTestId(/special-item-/).first();
+  const firstItem = page.getByTestId(/exception-item-/).first();
   await expect(firstItem).toBeVisible();
 
   // Fill global finance comment (stable test id)
-  const commentBox = page.getByTestId("special-reviewer-comment");
+  const commentBox = page.getByTestId("exception-reviewer-comment");
   await expect(commentBox).toBeVisible();
   await commentBox.fill("Policy exception rejected in test.");
 
   // Set first item to Reject (do not fill finance note)
-  await firstItem.getByTestId(/special-reject-/).click();
+  await firstItem.getByTestId(/exception-reject-/).click();
 
   // Should show inline required message for finance note on rejected item
   await expect(page.getByText("Required when rejecting this item.")).toBeVisible();
 
   // Submit button should be disabled because reject reasons missing
-  const submitBtn = page.getByTestId("special-submit");
+  const submitBtn = page.getByTestId("exception-submit");
   await expect(submitBtn).toBeDisabled();
 });
 
@@ -190,20 +190,20 @@ test("flow: exception reject -> edit/resubmit -> approvals", async ({ page, requ
   await expect(page.getByText("Loading…")).toHaveCount(0, { timeout: 30_000 });
 
   // Decide reject for all items + fill required notes
-  const items = page.getByTestId(/special-item-/);
+  const items = page.getByTestId(/exception-item-/);
   await expect(items.first()).toBeVisible({ timeout: 30_000 });
   const count = await items.count();
   expect(count).toBeGreaterThan(0);
 
   for (let i = 0; i < count; i++) {
     const it = items.nth(i);
-    await it.getByTestId(/special-reject-/).click();
-    await it.getByTestId(/special-note-/).fill("Over cap for demo.");
+    await it.getByTestId(/exception-reject-/).click();
+    await it.getByTestId(/exception-note-/).fill("Over cap for demo.");
   }
 
-  await page.getByTestId("special-reviewer-comment").fill("Please reduce the amount and resubmit.");
-  await expect(page.getByTestId("special-submit")).toBeEnabled();
-  await page.getByTestId("special-submit").click();
+  await page.getByTestId("exception-reviewer-comment").fill("Please reduce the amount and resubmit.");
+  await expect(page.getByTestId("exception-submit")).toBeEnabled();
+  await page.getByTestId("exception-submit").click();
   await expect(page).toHaveURL(new RegExp(`/reports/${reportId}$`));
 
   // 3) Employee edits the report and resubmits (UI)

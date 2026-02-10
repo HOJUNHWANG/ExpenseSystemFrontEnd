@@ -11,6 +11,7 @@ import {
   ConfirmSubmitModal,
   PolicyWarningsPanel,
   FooterActionBar,
+  ReportHeaderFields,
 } from "../components/ExpenseReportForm.jsx";
 
 function parseCountryFromDestination(destination) {
@@ -31,24 +32,26 @@ export default function EditReportPage() {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
 
-  const [title, setTitle] = useState("");
-  const [destination, setDestination] = useState("");
-  const [departureDate, setDepartureDate] = useState("");
-  const [returnDate, setReturnDate] = useState("");
+  const [form, setForm] = useState({
+    title: "",
+    destination: "",
+    departureDate: "",
+    returnDate: "",
+  });
   const [items, setItems] = useState([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const canEdit = useMemo(() => {
-    return user && title !== null;
-  }, [user, title]);
+    return user && form.title !== null;
+  }, [user, form.title]);
 
-  const country = useMemo(() => parseCountryFromDestination(destination), [destination]);
+  const country = useMemo(() => parseCountryFromDestination(form.destination), [form.destination]);
 
   const policyWarnings = useMemo(() => {
     return evaluateDraftWarnings({
       country,
-      departureDate,
-      returnDate,
+      departureDate: form.departureDate,
+      returnDate: form.returnDate,
       items: (items || []).map((it) => ({
         date: it.date,
         description: it.description,
@@ -56,7 +59,7 @@ export default function EditReportPage() {
         category: it.category,
       })),
     });
-  }, [country, departureDate, returnDate, items]);
+  }, [country, form.departureDate, form.returnDate, items]);
 
   useEffect(() => {
     const run = async () => {
@@ -73,10 +76,12 @@ export default function EditReportPage() {
           throw new Error("Only DRAFT/CHANGES_REQUESTED reports can be edited.");
         }
 
-        setTitle(r.title || "");
-        setDestination(r.destination || "");
-        setDepartureDate(r.departureDate || "");
-        setReturnDate(r.returnDate || "");
+        setForm({
+          title: r.title || "",
+          destination: r.destination || "",
+          departureDate: r.departureDate || "",
+          returnDate: r.returnDate || "",
+        });
         setItems(
           (r.items || []).map((it) => {
             const cat = it.category || "";
@@ -110,16 +115,16 @@ export default function EditReportPage() {
   }, [id, user]);
 
   const payloadItems = useMemo(() => {
-    return buildPayloadItems(items, departureDate);
-  }, [items, departureDate]);
+    return buildPayloadItems(items, form.departureDate);
+  }, [items, form.departureDate]);
 
   const buildPayload = () => {
     return {
       submitterId: user.id,
-      title,
-      destination,
-      departureDate: departureDate || null,
-      returnDate: returnDate || null,
+      title: form.title,
+      destination: form.destination,
+      departureDate: form.departureDate || null,
+      returnDate: form.returnDate || null,
       items: payloadItems.map((it) => ({
         date: it.date || null,
         description: it.description || "(draft)",
@@ -262,47 +267,14 @@ export default function EditReportPage() {
             />
 
             <PolicyWarningsPanel warnings={policyWarnings} compact />
-            <div>
-              <label className="block text-sm font-medium mb-1">Title</label>
-              <input
-                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-            </div>
+            <ReportHeaderFields
+              mode="edit"
+              values={form}
+              setValues={setForm}
+              errors={{}}
+            />
 
-            <div>
-              <label className="block text-sm font-medium mb-1">Destination</label>
-              <input
-                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                placeholder="e.g. New York, United States"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium mb-1">Departure date</label>
-                <input
-                  type="date"
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-                  value={departureDate}
-                  onChange={(e) => setDepartureDate(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Return date</label>
-                <input
-                  type="date"
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-                  value={returnDate}
-                  onChange={(e) => setReturnDate(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <ItemsEditor items={items} setItems={setItems} departureDate={departureDate} />
+            <ItemsEditor items={items} setItems={setItems} departureDate={form.departureDate} />
 
             <FooterActionBar
               onCancel={() => navigate(`/reports/${id}`)}

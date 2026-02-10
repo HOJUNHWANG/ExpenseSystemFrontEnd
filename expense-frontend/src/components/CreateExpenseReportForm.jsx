@@ -14,6 +14,7 @@ import {
   ConfirmSubmitModal,
   PolicyWarningsPanel,
   FooterActionBar,
+  ReportHeaderFields,
 } from "./ExpenseReportForm.jsx";
 
 // Suggested countries for the demo
@@ -60,11 +61,13 @@ export default function CreateExpenseReportForm() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [title, setTitle] = useState("");
-  const [city, setCity] = useState("");
-  const [country, setCountry] = useState("");
-  const [departureDate, setDepartureDate] = useState("");
-  const [returnDate, setReturnDate] = useState("");
+  const [form, setForm] = useState({
+    title: "",
+    city: "",
+    country: "",
+    departureDate: "",
+    returnDate: "",
+  });
   const [items, setItems] = useState([makeNormalItem()]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -87,9 +90,9 @@ export default function CreateExpenseReportForm() {
 
   const policyWarnings = useMemo(() => {
     return evaluateDraftWarnings({
-      country,
-      departureDate,
-      returnDate,
+      country: form.country,
+      departureDate: form.departureDate,
+      returnDate: form.returnDate,
       items: (items || []).map((it) => ({
         date: it.date,
         description: it.description,
@@ -97,14 +100,14 @@ export default function CreateExpenseReportForm() {
         category: it.category,
       })),
     });
-  }, [country, departureDate, returnDate, items]);
+  }, [form.country, form.departureDate, form.returnDate, items]);
 
   const isDirty = useMemo(() => {
-    if (title.trim()) return true;
-    if (city.trim()) return true;
-    if (country.trim()) return true;
-    if (departureDate) return true;
-    if (returnDate) return true;
+    if (form.title.trim()) return true;
+    if (form.city.trim()) return true;
+    if (form.country.trim()) return true;
+    if (form.departureDate) return true;
+    if (form.returnDate) return true;
 
     const meaningfulItems = (items || []).filter((it) => {
       if (!it) return false;
@@ -130,7 +133,7 @@ export default function CreateExpenseReportForm() {
       }
     }
     return true;
-  }, [title, city, country, departureDate, returnDate, items]);
+  }, [form.title, form.city, form.country, form.departureDate, form.returnDate, items]);
 
   useBeforeUnload(
     useMemo(() => {
@@ -157,22 +160,22 @@ export default function CreateExpenseReportForm() {
   const validate = () => {
     const newErrors = {};
 
-    if (!title.trim()) {
+    if (!form.title.trim()) {
       newErrors.title = "Title is required.";
     }
-    if (!city.trim()) {
+    if (!form.city.trim()) {
       newErrors.city = "City is required.";
     }
-    if (!country.trim()) {
+    if (!form.country.trim()) {
       newErrors.country = "Country is required.";
     }
-    if (!departureDate) {
+    if (!form.departureDate) {
       newErrors.departureDate = "Departure date is required.";
     }
-    if (!returnDate) {
+    if (!form.returnDate) {
       newErrors.returnDate = "Return date is required.";
     }
-    if (departureDate && returnDate && departureDate > returnDate) {
+    if (form.departureDate && form.returnDate && form.departureDate > form.returnDate) {
       newErrors.returnDate = "Return date must be after departure date.";
     }
 
@@ -181,7 +184,7 @@ export default function CreateExpenseReportForm() {
     } else {
       items.forEach((item, index) => {
         // 날짜 범위는 NORMAL/MILEAGE/MEAL 모두 공통으로 “입력되어 있다면 범위 체크”
-        const hasTripRange = departureDate && returnDate;
+        const hasTripRange = form.departureDate && form.returnDate;
 
         // 1) NORMAL
         if (item.type === ITEM_TYPES.NORMAL) {
@@ -211,7 +214,7 @@ export default function CreateExpenseReportForm() {
 
         // 날짜 범위 제한: date가 있는 아이템은 범위 안인지 확인
         if (hasTripRange && item.date) {
-          if (item.date < departureDate || item.date > returnDate) {
+          if (item.date < form.departureDate || item.date > form.returnDate) {
             newErrors[`items.${index}.date`] = "Date must be within the trip dates.";
           }
         }
@@ -227,19 +230,19 @@ export default function CreateExpenseReportForm() {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const payloadItems = useMemo(() => {
-    return buildPayloadItems(items, departureDate);
-  }, [items, departureDate]);
+    return buildPayloadItems(items, form.departureDate);
+  }, [items, form.departureDate]);
 
   const saveDraft = async () => {
     setMessage("");
     setDraftSaving(true);
 
-    const destination = city.trim() || country.trim() ? `${city}, ${country}` : "";
+    const destination = form.city.trim() || form.country.trim() ? `${form.city}, ${form.country}` : "";
 
     // Create uses a limited DTO in backend; create+update keeps this demo flexible.
     const createPayload = {
       submitterId: user.id,
-      title: title?.trim() ? title : "Draft — Untitled",
+      title: form.title?.trim() ? form.title : "Draft — Untitled",
       items: payloadItems
         .filter((it) => it.amount && !isNaN(Number(it.amount)) && Number(it.amount) > 0)
         .map((it) => ({
@@ -261,12 +264,12 @@ export default function CreateExpenseReportForm() {
         method: "PUT",
         body: JSON.stringify({
           submitterId: user.id,
-          title: title?.trim() ? title : "Draft — Untitled",
+          title: form.title?.trim() ? form.title : "Draft — Untitled",
           destination,
-          departureDate: departureDate || null,
-          returnDate: returnDate || null,
+          departureDate: form.departureDate || null,
+          returnDate: form.returnDate || null,
           items: payloadItems.map((it) => ({
-            date: it.date || departureDate || null,
+            date: it.date || form.departureDate || null,
             description: it.description || "(draft)",
             amount: Number(it.amount || 0),
             category: it.category || "Other",
@@ -300,14 +303,14 @@ export default function CreateExpenseReportForm() {
 
     setLoading(true);
 
-    const destination = `${city}, ${country}`;
+    const destination = `${form.city}, ${form.country}`;
 
     const payload = {
       submitterId: user.id,
-      title,
+      title: form.title,
       destination,
-      departureDate,
-      returnDate,
+      departureDate: form.departureDate,
+      returnDate: form.returnDate,
       items: payloadItems.map((it) => ({
         date: it.date,
         description: it.description,
@@ -343,14 +346,14 @@ export default function CreateExpenseReportForm() {
     setConfirmOpen(false);
     setLoading(true);
     try {
-      const destination = `${city}, ${country}`;
+      const destination = `${form.city}, ${form.country}`;
 
       const payload = {
         submitterId: user.id,
-        title,
+        title: form.title,
         destination,
-        departureDate,
-        returnDate,
+        departureDate: form.departureDate,
+        returnDate: form.returnDate,
         items: payloadItems.map((it) => ({
           date: it.date,
           description: it.description,
@@ -454,87 +457,15 @@ export default function CreateExpenseReportForm() {
         <PolicyWarningsPanel warnings={policyWarnings} compact={false} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <ReportHeaderFields
+        mode="create"
+        values={form}
+        setValues={setForm}
+        errors={errors}
+        countryOptions={COUNTRY_OPTIONS}
+      />
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Title</label>
-          <input
-              type="text"
-              className="w-full border rounded-lg px-3 py-2 text-sm"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-          />
-          {errors.title && (
-              <p className="text-xs text-red-600 mt-1">{errors.title}</p>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">City</label>
-            <input
-                type="text"
-                className="w-full border rounded-lg px-3 py-2 text-sm"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="e.g. Atlanta"
-            />
-            {errors.city && (
-                <p className="text-xs text-red-600 mt-1">{errors.city}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Country</label>
-            <select
-              className="w-full border rounded-lg px-3 py-2 text-sm bg-white"
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-            >
-              <option value="">Select a country…</option>
-              {COUNTRY_OPTIONS.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-            {errors.country && (
-              <p className="text-xs text-red-600 mt-1">{errors.country}</p>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Departure date</label>
-            <input
-                type="date"
-                className="w-full border rounded-lg px-3 py-2 text-sm"
-                value={departureDate}
-                onChange={(e) => setDepartureDate(e.target.value)}
-            />
-            {errors.departureDate && (
-                <p className="text-xs text-red-600 mt-1">
-                  {errors.departureDate}
-                </p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Return date</label>
-            <input
-                type="date"
-                className="w-full border rounded-lg px-3 py-2 text-sm"
-                value={returnDate}
-                onChange={(e) => setReturnDate(e.target.value)}
-            />
-            {errors.returnDate && (
-                <p className="text-xs text-red-600 mt-1">
-                  {errors.returnDate}
-                </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <ItemsEditor items={items} setItems={setItems} departureDate={departureDate} />
+      <ItemsEditor items={items} setItems={setItems} departureDate={form.departureDate} />
 
       <FooterActionBar
         onCancel={() => navigate("/dashboard")}

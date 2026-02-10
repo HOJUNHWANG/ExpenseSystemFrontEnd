@@ -470,13 +470,16 @@ export function ReportHeaderFields({
               <option value="__OTHER__">Other…</option>
             </select>
             {values.countrySelect === "__OTHER__" && (
-              <input
-                type="text"
-                className="mt-2 w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-                value={values.countryOther || ""}
-                onChange={(e) => setValues((v) => ({ ...v, countryOther: e.target.value }))}
-                placeholder="Type country"
-              />
+              <div className="mt-2">
+                <input
+                  type="text"
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                  value={values.countryOther || ""}
+                  onChange={(e) => setValues((v) => ({ ...v, countryOther: e.target.value }))}
+                  placeholder="Type your country (e.g., Argentina)"
+                />
+                <p className="mt-1 text-xs text-slate-500">Used only to build the destination label (City, Country).</p>
+              </div>
             )}
             {errors?.country && <p className="text-xs text-red-600 mt-1">{errors.country}</p>}
           </div>

@@ -63,7 +63,7 @@ function ChangesRequestedFeedback({ reportId, requesterId }) {
       )}
 
       <div className="mt-3 text-xs text-red-700">
-        Fix the issues, then re-submit. You can either remove the warnings or request special approval again.
+        Fix the issues, then re-submit. You can either remove the warnings or request exception review again.
       </div>
     </div>
   );

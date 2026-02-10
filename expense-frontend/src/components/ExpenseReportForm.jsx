@@ -1,0 +1,396 @@
+import { useMemo, useState } from "react";
+
+export const CATEGORY_OPTIONS = [
+  "Airfare",
+  "Hotel",
+  "Transportation",
+  "Mileage",
+  "Office",
+  "Entertainment",
+];
+
+export const ITEM_TYPES = {
+  NORMAL: "Normal",
+  MILEAGE: "MILEAGE",
+  MEAL: "Meal",
+};
+
+export const MILEAGE_RATE = 0.7;
+export const MEAL_RATE = 25;
+
+export function makeNormalItem() {
+  return { type: ITEM_TYPES.NORMAL, date: "", description: "", amount: "", category: "" };
+}
+
+export function makeMileageItem() {
+  return {
+    type: ITEM_TYPES.MILEAGE,
+    date: "",
+    miles: "",
+    rate: MILEAGE_RATE,
+    amount: 0,
+    category: "Mileage",
+    description: "Mileage reimbursement",
+  };
+}
+
+export function recomputeMealAmount(lunch, dinner) {
+  const count = (lunch ? 1 : 0) + (dinner ? 1 : 0);
+  return count * MEAL_RATE;
+}
+
+export function makeMealItem() {
+  return {
+    type: ITEM_TYPES.MEAL,
+    date: "",
+    lunch: true,
+    dinner: true,
+    amount: 50,
+    category: "Meal",
+    description: "Per diem (Lunch/Dinner)",
+  };
+}
+
+export function computeMileageAmount(miles) {
+  const milesNum = Number(miles);
+  const amount = !miles || isNaN(milesNum) ? 0 : Number((milesNum * MILEAGE_RATE).toFixed(2));
+  return amount;
+}
+
+export function buildPayloadItems(items, departureDate) {
+  return (items || []).map((it) => {
+    if (it.type === ITEM_TYPES.NORMAL) {
+      return {
+        date: it.date,
+        description: it.description,
+        amount: Number(it.amount || 0),
+        category: it.category,
+      };
+    }
+
+    if (it.type === ITEM_TYPES.MILEAGE) {
+      return {
+        date: it.date || departureDate,
+        description: `Mileage: ${it.miles || 0} miles x ${MILEAGE_RATE}`,
+        amount: Number(it.amount || 0),
+        category: "Mileage",
+      };
+    }
+
+    const mealDesc = `Meal: ${it.lunch ? "Lunch" : ""}${it.lunch && it.dinner ? " + " : ""}${it.dinner ? "Dinner" : ""}`;
+    return {
+      date: it.date,
+      description: mealDesc,
+      amount: Number(it.amount || 0),
+      category: "Meal",
+    };
+  });
+}
+
+export function PolicyWarningsPanel({ warnings, compact = false }) {
+  if (!warnings || warnings.length === 0) return null;
+  return (
+    <div className={compact ? "rounded-xl border border-orange-200 bg-orange-50 px-4 py-3" : "mb-4 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3"}>
+      <div className="text-sm font-medium text-orange-900">Policy warnings</div>
+      <div className="mt-1 text-xs text-orange-800">Submitting this report will route it to an exception review step.</div>
+      <ul className="mt-2 list-disc pl-5 text-sm text-orange-900 space-y-1">
+        {warnings.map((w) => (
+          <li key={w.code}>
+            <span className="font-medium">{w.code}</span> — {w.message}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export function ConfirmSubmitModal({ open, warnings, busy, onCancel, onConfirm }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+      <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl p-6">
+        <div className="text-lg font-semibold text-slate-900">Policy warnings</div>
+        <div className="mt-2 text-sm text-slate-700">
+          This report has policy warnings. Submitting will route it to <span className="font-medium">exception review</span>. Do you want to continue?
+        </div>
+        <ul className="mt-3 list-disc pl-5 text-sm text-slate-800 space-y-1">
+          {(warnings || []).map((w) => (
+            <li key={w.code}>
+              <span className="font-medium">{w.code}</span> — {w.message}
+            </li>
+          ))}
+        </ul>
+        <div className="mt-5 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50"
+          >
+            No, keep editing
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={busy}
+            className="px-3 py-2 rounded-xl border border-slate-900 bg-slate-900 text-white text-sm hover:bg-slate-800 disabled:opacity-60"
+          >
+            Yes, submit
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ItemsEditor({ items, setItems, departureDate }) {
+  const addNormalItem = () => setItems((prev) => [...prev, makeNormalItem()]);
+  const addMileageItem = () =>
+    setItems((prev) => {
+      if (prev.some((it) => it.type === ITEM_TYPES.MILEAGE)) return prev;
+      return [...prev, makeMileageItem()];
+    });
+  const addMealItem = () => setItems((prev) => [...prev, makeMealItem()]);
+
+  const removeItem = (index) => setItems((prev) => prev.filter((_, i) => i !== index));
+  const updateItem = (index, patch) => setItems((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)));
+
+  const onMealToggle = (index, field, checked) => {
+    setItems((prev) =>
+      prev.map((it, i) => {
+        if (i !== index) return it;
+        const next = { ...it, [field]: checked };
+        next.amount = recomputeMealAmount(next.lunch, next.dinner);
+        return next;
+      })
+    );
+  };
+
+  const onMileageChange = (index, value) => {
+    const miles = value;
+    updateItem(index, { miles, amount: computeMileageAmount(miles) });
+  };
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-slate-900">Items</h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={addNormalItem}
+            className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50"
+          >
+            Add expense
+          </button>
+          <button
+            type="button"
+            onClick={addMileageItem}
+            className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50"
+          >
+            Add mileage
+          </button>
+          <button
+            type="button"
+            onClick={addMealItem}
+            className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50"
+          >
+            Add meal
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-3 space-y-3">
+        {(items || []).map((it, idx) => (
+          <div key={idx} className="rounded-2xl border border-slate-200 p-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-xs text-slate-500">
+                Type: <span className="font-medium text-slate-900">{it.type}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => removeItem(idx)}
+                className="text-xs px-3 py-2 rounded-xl border border-red-100 bg-red-50 text-red-700 hover:bg-red-100"
+              >
+                Remove
+              </button>
+            </div>
+
+            {it.type === ITEM_TYPES.NORMAL && (
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Date</label>
+                  <input
+                    type="date"
+                    value={it.date}
+                    onChange={(e) => updateItem(idx, { date: e.target.value })}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Description</label>
+                  <input
+                    value={it.description}
+                    onChange={(e) => updateItem(idx, { description: e.target.value })}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Amount</label>
+                  <input
+                    value={it.amount}
+                    onChange={(e) => updateItem(idx, { amount: e.target.value })}
+                    inputMode="decimal"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Category</label>
+                  <select
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
+                    value={it.category}
+                    onChange={(e) => updateItem(idx, { category: e.target.value })}
+                  >
+                    <option value="">Select…</option>
+                    {CATEGORY_OPTIONS.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {it.type === ITEM_TYPES.MILEAGE && (
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Date</label>
+                  <input
+                    type="date"
+                    value={it.date}
+                    onChange={(e) => updateItem(idx, { date: e.target.value })}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Miles</label>
+                  <input
+                    value={it.miles || ""}
+                    onChange={(e) => onMileageChange(idx, e.target.value)}
+                    inputMode="decimal"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Rate</label>
+                  <input
+                    value={MILEAGE_RATE}
+                    readOnly
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Amount</label>
+                  <input
+                    value={Number(it.amount || 0).toFixed(2)}
+                    readOnly
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50"
+                  />
+                </div>
+              </div>
+            )}
+
+            {it.type === ITEM_TYPES.MEAL && (
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Date</label>
+                  <input
+                    type="date"
+                    value={it.date}
+                    onChange={(e) => updateItem(idx, { date: e.target.value })}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Meals</label>
+                  <div className="flex items-center gap-4 rounded-xl border border-slate-200 px-3 py-2">
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={!!it.lunch}
+                        onChange={(e) => onMealToggle(idx, "lunch", e.target.checked)}
+                      />
+                      Lunch
+                    </label>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={!!it.dinner}
+                        onChange={(e) => onMealToggle(idx, "dinner", e.target.checked)}
+                      />
+                      Dinner
+                    </label>
+                    <span className="ml-auto text-xs text-slate-500">${MEAL_RATE}/meal</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Amount</label>
+                  <input
+                    value={Number(it.amount || 0).toFixed(2)}
+                    readOnly
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {(items || []).length === 0 && <div className="text-sm text-slate-600">No items.</div>}
+      </div>
+    </div>
+  );
+}
+
+export default function ExpenseReportFormShell({
+  title,
+  subtitle,
+  message,
+  error,
+  busy,
+  warnings,
+  confirmOpen,
+  setConfirmOpen,
+  onConfirmSubmit,
+  children,
+}) {
+  const [localConfirmOpen, setLocalConfirmOpen] = useState(false);
+  const open = confirmOpen ?? localConfirmOpen;
+  const setOpen = setConfirmOpen ?? setLocalConfirmOpen;
+
+  return (
+    <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6 space-y-4">
+      <div>
+        <h1 className="text-xl font-semibold text-slate-900">{title}</h1>
+        {subtitle && <p className="mt-1 text-sm text-slate-600">{subtitle}</p>}
+      </div>
+
+      {message && <div className="text-sm rounded-lg p-3 bg-slate-100">{message}</div>}
+      {error && (
+        <div className="rounded-xl bg-red-50 border border-red-100 text-red-700 text-sm px-3 py-2">{error}</div>
+      )}
+
+      <ConfirmSubmitModal
+        open={open}
+        warnings={warnings}
+        busy={busy}
+        onCancel={() => setOpen(false)}
+        onConfirm={onConfirmSubmit}
+      />
+
+      <PolicyWarningsPanel warnings={warnings} compact />
+
+      {children}
+    </div>
+  );
+}

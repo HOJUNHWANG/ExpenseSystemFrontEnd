@@ -4,24 +4,7 @@ import { useAuth } from "../AuthContext";
 import { apiFetch } from "../lib/api";
 import { Button, ButtonLink } from "../ui/Button.jsx";
 import { evaluateDraftWarnings } from "../lib/policy";
-
-const CATEGORY_OPTIONS = [
-  "Airfare",
-  "Hotel",
-  "Transportation",
-  "Mileage",
-  "Office",
-  "Entertainment",
-];
-
-const ITEM_TYPES = {
-  NORMAL: "Normal",
-  MILEAGE: "MILEAGE",
-  MEAL: "Meal",
-};
-
-const MILEAGE_RATE = 0.7;
-const MEAL_RATE = 25;
+import { ITEM_TYPES, ItemsEditor, buildPayloadItems } from "../components/ExpenseReportForm.jsx";
 
 function parseCountryFromDestination(destination) {
   if (!destination) return "";
@@ -119,106 +102,9 @@ export default function EditReportPage() {
     void run();
   }, [id, user]);
 
-  const addNormalItem = () => {
-    setItems((prev) => [
-      ...prev,
-      { type: ITEM_TYPES.NORMAL, date: "", description: "", amount: "", category: "" },
-    ]);
-  };
-
-  const addMileageItem = () => {
-    setItems((prev) => {
-      if (prev.some((it) => it.type === ITEM_TYPES.MILEAGE)) return prev;
-      return [
-        ...prev,
-        {
-          type: ITEM_TYPES.MILEAGE,
-          date: "",
-          miles: "",
-          rate: MILEAGE_RATE,
-          amount: 0,
-          category: "Mileage",
-          description: "Mileage reimbursement",
-        },
-      ];
-    });
-  };
-
-  const recomputeMealAmount = (lunch, dinner) => {
-    const count = (lunch ? 1 : 0) + (dinner ? 1 : 0);
-    return count * MEAL_RATE;
-  };
-
-  const addMealItem = () => {
-    setItems((prev) => [
-      ...prev,
-      {
-        type: ITEM_TYPES.MEAL,
-        date: "",
-        lunch: true,
-        dinner: true,
-        amount: 50,
-        category: "Meal",
-        description: "Per diem (Lunch/Dinner)",
-      },
-    ]);
-  };
-
-  const onMealToggle = (index, field, checked) => {
-    setItems((prev) =>
-      prev.map((it, i) => {
-        if (i !== index) return it;
-        const next = { ...it, [field]: checked };
-        next.amount = recomputeMealAmount(next.lunch, next.dinner);
-        return next;
-      })
-    );
-  };
-
-  const onMileageChange = (index, value) => {
-    const miles = value;
-    const milesNum = Number(miles);
-    const amount = !miles || isNaN(milesNum) ? 0 : Number((milesNum * MILEAGE_RATE).toFixed(2));
-    updateItem(index, { miles, amount });
-  };
-
-  const removeItem = (idx) => {
-    setItems((prev) => prev.filter((_, i) => i !== idx));
-  };
-
-  const updateItem = (idx, patch) => {
-    setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
-  };
-
-  const buildPayloadItems = () => {
-    return items.map((it) => {
-      if (it.type === ITEM_TYPES.NORMAL) {
-        return {
-          date: it.date,
-          description: it.description,
-          amount: Number(it.amount || 0),
-          category: it.category,
-        };
-      }
-
-      if (it.type === ITEM_TYPES.MILEAGE) {
-        return {
-          date: it.date || departureDate,
-          description: `Mileage: ${it.miles || 0} miles x ${MILEAGE_RATE}`,
-          amount: Number(it.amount || 0),
-          category: "Mileage",
-        };
-      }
-
-      const mealDesc = `Meal: ${it.lunch ? "Lunch" : ""}${it.lunch && it.dinner ? " + " : ""}${it.dinner ? "Dinner" : ""}`;
-      return {
-        date: it.date,
-        description: mealDesc,
-        amount: Number(it.amount || 0),
-        category: "Meal",
-      };
-    });
-  };
+  const payloadItems = useMemo(() => {
+    return buildPayloadItems(items, departureDate);
+  }, [items, departureDate]);
 
   const buildPayload = () => {
     return {
@@ -227,7 +113,7 @@ export default function EditReportPage() {
       destination,
       departureDate: departureDate || null,
       returnDate: returnDate || null,
-      items: buildPayloadItems().map((it) => ({
+      items: payloadItems.map((it) => ({
         date: it.date || null,
         description: it.description || "(draft)",
         amount: Number(it.amount || 0),
@@ -451,176 +337,7 @@ export default function EditReportPage() {
               </div>
             </div>
 
-            <div>
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-sm font-semibold text-slate-900">Items</h2>
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={addNormalItem}
-                    className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50"
-                  >
-                    Add expense
-                  </button>
-                  <button
-                    type="button"
-                    onClick={addMileageItem}
-                    className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50"
-                  >
-                    Add mileage
-                  </button>
-                  <button
-                    type="button"
-                    onClick={addMealItem}
-                    className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50"
-                  >
-                    Add meal
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-3 space-y-3">
-                {items.map((it, idx) => (
-                  <div key={idx} className="rounded-2xl border border-slate-200 p-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="text-xs text-slate-500">
-                        Type: <span className="font-medium text-slate-900">{it.type}</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeItem(idx)}
-                        className="text-xs px-3 py-2 rounded-xl border border-red-100 bg-red-50 text-red-700 hover:bg-red-100"
-                      >
-                        Remove
-                      </button>
-                    </div>
-
-                    {it.type === ITEM_TYPES.NORMAL && (
-                      <div className="mt-3 grid grid-cols-1 md:grid-cols-4 gap-3">
-                        <div>
-                          <label className="block text-xs font-medium text-slate-600 mb-1">Date</label>
-                          <input
-                            type="date"
-                            value={it.date}
-                            onChange={(e) => updateItem(idx, { date: e.target.value })}
-                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-xs font-medium text-slate-600 mb-1">Description</label>
-                          <input
-                            value={it.description}
-                            onChange={(e) => updateItem(idx, { description: e.target.value })}
-                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-slate-600 mb-1">Amount</label>
-                          <input
-                            value={it.amount}
-                            onChange={(e) => updateItem(idx, { amount: e.target.value })}
-                            inputMode="decimal"
-                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-slate-600 mb-1">Category</label>
-                          <select
-                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
-                            value={it.category}
-                            onChange={(e) => updateItem(idx, { category: e.target.value })}
-                          >
-                            <option value="">Select…</option>
-                            {CATEGORY_OPTIONS.map((c) => (
-                              <option key={c} value={c}>{c}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    )}
-
-                    {it.type === ITEM_TYPES.MILEAGE && (
-                      <div className="mt-3 grid grid-cols-1 md:grid-cols-4 gap-3">
-                        <div>
-                          <label className="block text-xs font-medium text-slate-600 mb-1">Date</label>
-                          <input
-                            type="date"
-                            value={it.date}
-                            onChange={(e) => updateItem(idx, { date: e.target.value })}
-                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-slate-600 mb-1">Miles</label>
-                          <input
-                            value={it.miles || ""}
-                            onChange={(e) => onMileageChange(idx, e.target.value)}
-                            inputMode="decimal"
-                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-slate-600 mb-1">Rate</label>
-                          <input
-                            value={MILEAGE_RATE}
-                            readOnly
-                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-slate-600 mb-1">Amount</label>
-                          <input
-                            value={Number(it.amount || 0).toFixed(2)}
-                            readOnly
-                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {it.type === ITEM_TYPES.MEAL && (
-                      <div className="mt-3 grid grid-cols-1 md:grid-cols-4 gap-3">
-                        <div>
-                          <label className="block text-xs font-medium text-slate-600 mb-1">Date</label>
-                          <input
-                            type="date"
-                            value={it.date}
-                            onChange={(e) => updateItem(idx, { date: e.target.value })}
-                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-xs font-medium text-slate-600 mb-1">Meals</label>
-                          <div className="flex items-center gap-4 rounded-xl border border-slate-200 px-3 py-2">
-                            <label className="flex items-center gap-2 text-sm">
-                              <input type="checkbox" checked={!!it.lunch} onChange={(e) => onMealToggle(idx, "lunch", e.target.checked)} />
-                              Lunch
-                            </label>
-                            <label className="flex items-center gap-2 text-sm">
-                              <input type="checkbox" checked={!!it.dinner} onChange={(e) => onMealToggle(idx, "dinner", e.target.checked)} />
-                              Dinner
-                            </label>
-                            <span className="ml-auto text-xs text-slate-500">${MEAL_RATE}/meal</span>
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-slate-600 mb-1">Amount</label>
-                          <input
-                            value={Number(it.amount || 0).toFixed(2)}
-                            readOnly
-                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-
-                {items.length === 0 && (
-                  <div className="text-sm text-slate-600">No items.</div>
-                )}
-              </div>
-            </div>
+            <ItemsEditor items={items} setItems={setItems} departureDate={departureDate} />
 
             <div className="flex flex-wrap items-center justify-end gap-2">
               <ButtonLink to={`/reports/${id}`} variant="secondary" size="sm">

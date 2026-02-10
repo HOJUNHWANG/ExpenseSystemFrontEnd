@@ -20,7 +20,7 @@ function Pill({ children, tone = "slate" }) {
   );
 }
 
-export default function SpecialApprovalPage() {
+export default function PolicyExceptionReviewPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();

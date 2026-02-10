@@ -4,7 +4,7 @@ import { useAuth } from "../AuthContext";
 import { apiFetch } from "../lib/api";
 import StatusBadge from "../ui/StatusBadge.jsx";
 
-export default function SpecialApprovalsInboxPage() {
+export default function PolicyExceptionsInboxPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

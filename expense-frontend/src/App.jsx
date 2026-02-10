@@ -7,8 +7,8 @@ import ExpenseReportDetail from "./components/ExpenseReportDetail";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage.jsx";
 import SearchPage from "./pages/SearchPage.jsx";
-import SpecialApprovalPage from "./pages/SpecialApprovalPage.jsx";
-import SpecialApprovalsInboxPage from "./pages/SpecialApprovalsInboxPage.jsx";
+import PolicyExceptionReviewPage from "./pages/PolicyExceptionReviewPage.jsx";
+import PolicyExceptionsInboxPage from "./pages/PolicyExceptionsInboxPage.jsx";
 import EditReportPage from "./pages/EditReportPage.jsx";
 import E2ELoginPage from "./pages/E2ELoginPage.jsx";
 import { useAuth } from "./AuthContext";
@@ -137,8 +137,8 @@ function App() {
           <Route path="/e2e/login" element={<E2ELoginPage />} />
           <Route path="/search" element={<RequireAuth><SearchPage /></RequireAuth>} />
           {/* New naming */}
-          <Route path="/policy-exceptions" element={<RequireAuth><SpecialApprovalsInboxPage /></RequireAuth>} />
-          <Route path="/policy-exceptions/:id" element={<RequireAuth><SpecialApprovalPage /></RequireAuth>} />
+          <Route path="/policy-exceptions" element={<RequireAuth><PolicyExceptionsInboxPage /></RequireAuth>} />
+          <Route path="/policy-exceptions/:id" element={<RequireAuth><PolicyExceptionReviewPage /></RequireAuth>} />
 
           {/* Back-compat routes */}
           <Route path="/special-approvals" element={<Navigate to="/policy-exceptions" replace />} />

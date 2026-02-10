@@ -179,7 +179,7 @@ export default function WelcomePage() {
             Approval queue
           </Link>
           <Link
-            to="/special-approvals"
+            to="/policy-exceptions"
             className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50"
           >
             Policy exceptions

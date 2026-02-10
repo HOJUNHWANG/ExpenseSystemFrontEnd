@@ -124,7 +124,7 @@ export default function SpecialApprovalsInboxPage() {
                     </td>
                     <td className="py-2 text-right">
                       <Link
-                        to={`/special-approval/${r.id}`}
+                        to={`/policy-exceptions/${r.id}`}
                         className="text-xs text-blue-600 hover:underline"
                       >
                         Review

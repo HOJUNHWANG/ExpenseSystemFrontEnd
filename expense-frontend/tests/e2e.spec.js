@@ -224,7 +224,7 @@ test("flow: exception reject -> edit/resubmit -> approvals", async ({ page, requ
   await page.goto(
     `/e2e/login?email=${encodeURIComponent("manager@example.com")}&next=${encodeURIComponent(`/approvals`)}`
   );
-  const mgrRow = page.getByRole("row", { name: new RegExp(title) });
+  const mgrRow = page.getByRole("row").filter({ hasText: title });
   await expect(mgrRow).toBeVisible({ timeout: 30_000 });
   await mgrRow.getByRole("link", { name: /View \/ Approve/ }).click();
   await page.getByRole("button", { name: "Approve" }).click();
@@ -235,7 +235,7 @@ test("flow: exception reject -> edit/resubmit -> approvals", async ({ page, requ
   await page.goto(
     `/e2e/login?email=${encodeURIComponent("finance@example.com")}&next=${encodeURIComponent(`/approvals`)}`
   );
-  const cfoRow = page.getByRole("row", { name: new RegExp(title) });
+  const cfoRow = page.getByRole("row").filter({ hasText: title });
   await expect(cfoRow).toBeVisible({ timeout: 30_000 });
   await cfoRow.getByRole("link", { name: /View \/ Approve/ }).click();
   await page.getByRole("button", { name: "Approve" }).click();

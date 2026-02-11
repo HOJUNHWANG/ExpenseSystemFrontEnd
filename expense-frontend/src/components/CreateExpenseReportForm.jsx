@@ -461,7 +461,15 @@ export default function CreateExpenseReportForm() {
         countryOptions={MAJOR_COUNTRY_OPTIONS}
       />
 
-      <ItemsEditor items={items} setItems={setItems} departureDate={form.departureDate} />
+      <div className="mt-4" />
+
+      <ItemsEditor
+        items={items}
+        setItems={setItems}
+        departureDate={form.departureDate}
+        returnDate={form.returnDate}
+        errors={errors}
+      />
 
       <FooterActionBar
         onCancel={() => navigate("/dashboard")}

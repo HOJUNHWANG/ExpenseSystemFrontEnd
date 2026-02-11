@@ -18,9 +18,18 @@ export default function SearchPage() {
 
   const canSearchAll = user && (user.role === "MANAGER" || user.role === "CFO" || user.role === "CEO");
 
-  const runSearch = async (e) => {
+  const runSearch = async (e, overrides) => {
     e?.preventDefault?.();
     if (!user) return;
+
+    const next = {
+      q,
+      status,
+      minTotal,
+      maxTotal,
+      sort,
+      ...(overrides || {}),
+    };
 
     setLoading(true);
     setError("");
@@ -28,11 +37,11 @@ export default function SearchPage() {
       const params = new URLSearchParams();
       params.set("requesterId", String(user.id));
       params.set("requesterRole", String(user.role));
-      if (q.trim()) params.set("q", q.trim());
-      if (status) params.set("status", status);
-      if (minTotal !== "") params.set("minTotal", String(Number(minTotal)));
-      if (maxTotal !== "") params.set("maxTotal", String(Number(maxTotal)));
-      if (sort) params.set("sort", sort);
+      if (next.q.trim()) params.set("q", next.q.trim());
+      if (next.status) params.set("status", next.status);
+      if (next.minTotal !== "") params.set("minTotal", String(Number(next.minTotal)));
+      if (next.maxTotal !== "") params.set("maxTotal", String(Number(next.maxTotal)));
+      if (next.sort) params.set("sort", next.sort);
 
       const data = await apiFetch(`/api/expense-reports/search?${params.toString()}`);
       setResults(data || []);
@@ -91,7 +100,7 @@ export default function SearchPage() {
 
             <div className="md:col-span-5">
               <label className="block text-xs font-medium text-slate-600 mb-1">Status</label>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
                 {[
                   { label: "Any", value: "" },
                   { label: "Manager", value: "MANAGER_REVIEW" },
@@ -109,7 +118,7 @@ export default function SearchPage() {
                       type="button"
                       onClick={() => setStatus(f.value)}
                       className={
-                        "text-[11px] px-3 py-2 rounded-full border " +
+                        "w-full text-[11px] px-3 py-2 rounded-full border text-center " +
                         (active
                           ? "bg-slate-900 text-white border-slate-900"
                           : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50")
@@ -165,14 +174,21 @@ export default function SearchPage() {
                   type="button"
                   variant="secondary"
                   size="sm"
-                  onClick={() => {
+                  onClick={async () => {
                     setQ("");
                     setStatus("");
                     setSort("activity_desc");
                     setMinTotal("");
                     setMaxTotal("");
-                    setResults([]);
                     setError("");
+
+                    await runSearch(null, {
+                      q: "",
+                      status: "",
+                      sort: "activity_desc",
+                      minTotal: "",
+                      maxTotal: "",
+                    });
                   }}
                 >
                   Clear

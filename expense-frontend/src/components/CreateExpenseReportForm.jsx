@@ -461,7 +461,8 @@ export default function CreateExpenseReportForm() {
         countryOptions={MAJOR_COUNTRY_OPTIONS}
       />
 
-      <div className="mt-4" />
+      {/* Spacer + subtle section divider to keep the header/date inputs from feeling glued to the Items action buttons. */}
+      <div className="mt-6 pt-6 border-t border-slate-100" />
 
       <ItemsEditor
         items={items}

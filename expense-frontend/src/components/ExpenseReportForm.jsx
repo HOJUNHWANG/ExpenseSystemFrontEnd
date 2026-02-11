@@ -199,7 +199,7 @@ export function FooterActionBar({
   );
 }
 
-export function ItemsEditor({ items, setItems, departureDate }) {
+export function ItemsEditor({ items, setItems, departureDate, returnDate, errors }) {
   const addNormalItem = () => setItems((prev) => [...prev, makeNormalItem()]);
   const addMileageItem = () =>
     setItems((prev) => {
@@ -210,6 +210,14 @@ export function ItemsEditor({ items, setItems, departureDate }) {
 
   const removeItem = (index) => setItems((prev) => prev.filter((_, i) => i !== index));
   const updateItem = (index, patch) => setItems((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)));
+
+  const errFor = (index, field) => {
+    const key = `items.${index}.${field}`;
+    return errors && errors[key] ? errors[key] : "";
+  };
+
+  const tripMin = departureDate || undefined;
+  const tripMax = returnDate || undefined;
 
   const onMealToggle = (index, field, checked) => {
     setItems((prev) =>
@@ -273,37 +281,63 @@ export function ItemsEditor({ items, setItems, departureDate }) {
             </div>
 
             {it.type === ITEM_TYPES.NORMAL && (
-              <div className="mt-3 grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Date</label>
-                  <input
-                    type="date"
-                    value={it.date}
-                    onChange={(e) => updateItem(idx, { date: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-                  />
+              <div className="mt-3 space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Date</label>
+                    <input
+                      type="date"
+                      value={it.date}
+                      min={tripMin}
+                      max={tripMax}
+                      onChange={(e) => updateItem(idx, { date: e.target.value })}
+                      className={
+                        "w-full border rounded-xl px-3 py-2 text-sm " +
+                        (errFor(idx, "date") ? "border-red-200 bg-red-50" : "border-slate-200")
+                      }
+                    />
+                    {errFor(idx, "date") && <p className="mt-1 text-xs text-red-600">{errFor(idx, "date")}</p>}
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Description</label>
+                    <input
+                      value={it.description}
+                      onChange={(e) => updateItem(idx, { description: e.target.value })}
+                      className={
+                        "w-full border rounded-xl px-3 py-2 text-sm " +
+                        (errFor(idx, "description") ? "border-red-200 bg-red-50" : "border-slate-200")
+                      }
+                      placeholder="e.g. Client dinner"
+                    />
+                    {errFor(idx, "description") && (
+                      <p className="mt-1 text-xs text-red-600">{errFor(idx, "description")}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Amount</label>
+                    <input
+                      value={it.amount}
+                      onChange={(e) => updateItem(idx, { amount: e.target.value })}
+                      inputMode="decimal"
+                      className={
+                        "w-full border rounded-xl px-3 py-2 text-sm " +
+                        (errFor(idx, "amount") ? "border-red-200 bg-red-50" : "border-slate-200")
+                      }
+                      placeholder="0"
+                    />
+                    {errFor(idx, "amount") && <p className="mt-1 text-xs text-red-600">{errFor(idx, "amount")}</p>}
+                  </div>
                 </div>
-                <div className="md:col-span-2">
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Description</label>
-                  <input
-                    value={it.description}
-                    onChange={(e) => updateItem(idx, { description: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Amount</label>
-                  <input
-                    value={it.amount}
-                    onChange={(e) => updateItem(idx, { amount: e.target.value })}
-                    inputMode="decimal"
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
-                  />
-                </div>
+
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-1">Category</label>
                   <select
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
+                    className={
+                      "w-full border rounded-xl px-3 py-2 text-sm bg-white " +
+                      (errFor(idx, "category") ? "border-red-200 bg-red-50" : "border-slate-200")
+                    }
                     value={it.category}
                     onChange={(e) => updateItem(idx, { category: e.target.value })}
                   >
@@ -314,6 +348,9 @@ export function ItemsEditor({ items, setItems, departureDate }) {
                       </option>
                     ))}
                   </select>
+                  {errFor(idx, "category") && (
+                    <p className="mt-1 text-xs text-red-600">{errFor(idx, "category")}</p>
+                  )}
                 </div>
               </div>
             )}
@@ -325,9 +362,15 @@ export function ItemsEditor({ items, setItems, departureDate }) {
                   <input
                     type="date"
                     value={it.date}
+                    min={tripMin}
+                    max={tripMax}
                     onChange={(e) => updateItem(idx, { date: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                    className={
+                      "w-full border rounded-xl px-3 py-2 text-sm " +
+                      (errFor(idx, "date") ? "border-red-200 bg-red-50" : "border-slate-200")
+                    }
                   />
+                  {errFor(idx, "date") && <p className="mt-1 text-xs text-red-600">{errFor(idx, "date")}</p>}
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-1">Miles</label>
@@ -335,8 +378,12 @@ export function ItemsEditor({ items, setItems, departureDate }) {
                     value={it.miles || ""}
                     onChange={(e) => onMileageChange(idx, e.target.value)}
                     inputMode="decimal"
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                    className={
+                      "w-full border rounded-xl px-3 py-2 text-sm " +
+                      (errFor(idx, "miles") ? "border-red-200 bg-red-50" : "border-slate-200")
+                    }
                   />
+                  {errFor(idx, "miles") && <p className="mt-1 text-xs text-red-600">{errFor(idx, "miles")}</p>}
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-1">Rate</label>
@@ -364,13 +411,22 @@ export function ItemsEditor({ items, setItems, departureDate }) {
                   <input
                     type="date"
                     value={it.date}
+                    min={tripMin}
+                    max={tripMax}
                     onChange={(e) => updateItem(idx, { date: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                    className={
+                      "w-full border rounded-xl px-3 py-2 text-sm " +
+                      (errFor(idx, "date") ? "border-red-200 bg-red-50" : "border-slate-200")
+                    }
                   />
+                  {errFor(idx, "date") && <p className="mt-1 text-xs text-red-600">{errFor(idx, "date")}</p>}
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-xs font-medium text-slate-600 mb-1">Meals</label>
-                  <div className="flex items-center gap-4 rounded-xl border border-slate-200 px-3 py-2">
+                  <div className={
+                    "flex items-center gap-4 rounded-xl border px-3 py-2 " +
+                    (errFor(idx, "meal") ? "border-red-200 bg-red-50" : "border-slate-200")
+                  }>
                     <label className="flex items-center gap-2 text-sm">
                       <input
                         type="checkbox"
@@ -389,6 +445,7 @@ export function ItemsEditor({ items, setItems, departureDate }) {
                     </label>
                     <span className="ml-auto text-xs text-slate-500">${MEAL_RATE}/meal</span>
                   </div>
+                  {errFor(idx, "meal") && <p className="mt-2 text-xs text-red-600">{errFor(idx, "meal")}</p>}
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-1">Amount</label>
@@ -488,11 +545,15 @@ export function ReportHeaderFields({
         <div>
           <label className="block text-sm font-medium mb-1">Destination</label>
           <input
-            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+            className={
+              "w-full border rounded-xl px-3 py-2 text-sm " +
+              (errors?.destination ? "border-red-200 bg-red-50" : "border-slate-200")
+            }
             value={values.destination}
             onChange={(e) => setValues((v) => ({ ...v, destination: e.target.value }))}
             placeholder="e.g. New York, United States"
           />
+          {errors?.destination && <p className="text-xs text-red-600 mt-1">{errors.destination}</p>}
         </div>
       )}
 
@@ -501,7 +562,10 @@ export function ReportHeaderFields({
           <label className="block text-sm font-medium mb-1">Departure date</label>
           <input
             type="date"
-            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+            className={
+              "w-full border rounded-xl px-3 py-2 text-sm " +
+              (errors?.departureDate ? "border-red-200 bg-red-50" : "border-slate-200")
+            }
             value={values.departureDate}
             onChange={(e) => setValues((v) => ({ ...v, departureDate: e.target.value }))}
           />
@@ -511,7 +575,10 @@ export function ReportHeaderFields({
           <label className="block text-sm font-medium mb-1">Return date</label>
           <input
             type="date"
-            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+            className={
+              "w-full border rounded-xl px-3 py-2 text-sm " +
+              (errors?.returnDate ? "border-red-200 bg-red-50" : "border-slate-200")
+            }
             value={values.returnDate}
             onChange={(e) => setValues((v) => ({ ...v, returnDate: e.target.value }))}
           />

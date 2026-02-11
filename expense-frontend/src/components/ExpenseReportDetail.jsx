@@ -37,33 +37,42 @@ function ChangesRequestedFeedback({ reportId, requesterId }) {
 
   return (
     <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800">
-      <div className="font-medium">Finance requested changes</div>
+      <div className="font-medium">Exception review rejected</div>
       {loading && <div className="mt-1 text-xs text-red-700">Loading feedback…</div>}
       {error && <div className="mt-1 text-xs text-red-700">{error}</div>}
+
+      {!loading && !error && data && (data.items || []).filter((it) => it.financeDecision === "REJECT").length === 0 && (
+        <div className="mt-2 text-xs text-red-700">No rejected items were found (this should be rare in the demo).</div>
+      )}
 
       {!loading && !error && data && (
         <>
           <div className="mt-2 text-xs text-red-700">
-            <span className="font-medium">Comment:</span> {data.reviewerComment || "-"}
+            Your exception review request was rejected.
           </div>
-          <div className="mt-2">
-            <div className="text-xs font-medium text-red-700">Per-warning decisions</div>
+
+          <div className="mt-2 text-xs text-red-700">
+            <span className="font-medium">Reviewer comment:</span> {data.reviewerComment || "-"}
+          </div>
+
+          <div className="mt-3">
+            <div className="text-xs font-medium text-red-700">Rejected items</div>
             <ul className="list-disc pl-5 mt-1 space-y-1 text-xs text-red-700">
-              {(data.items || []).map((it) => (
-                <li key={it.id || it.code}>
-                  <span className="font-medium">{it.code}</span>: {it.message}
-                  {it.financeDecision === "REJECT" && it.financeReason
-                    ? ` — Finance reason: ${it.financeReason}`
-                    : ""}
-                </li>
-              ))}
+              {(data.items || [])
+                .filter((it) => it.financeDecision === "REJECT")
+                .map((it) => (
+                  <li key={it.id || it.code}>
+                    <span className="font-medium">{it.code}</span>: {it.message}
+                    {it.financeReason ? ` — Reason: ${it.financeReason}` : ""}
+                  </li>
+                ))}
             </ul>
           </div>
         </>
       )}
 
       <div className="mt-3 text-xs text-red-700">
-        Fix the issues, then re-submit. You can either remove the warnings or request exception review again.
+        Update the report to comply with policy, then resubmit. Or delete the report if you no longer want to proceed.
       </div>
     </div>
   );

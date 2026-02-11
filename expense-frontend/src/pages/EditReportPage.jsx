@@ -6,6 +6,7 @@ import { Button, ButtonLink } from "../ui/Button.jsx";
 import { evaluateDraftWarnings } from "../lib/policy";
 import {
   ITEM_TYPES,
+  MILEAGE_RATE,
   ItemsEditor,
   buildPayloadItems,
   ConfirmSubmitModal,
@@ -40,6 +41,7 @@ export default function EditReportPage() {
   });
   const [items, setItems] = useState([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const canEdit = useMemo(() => {
     return user && form.title !== null;
@@ -118,6 +120,55 @@ export default function EditReportPage() {
     return buildPayloadItems(items, form.departureDate);
   }, [items, form.departureDate]);
 
+  const validate = () => {
+    const next = {};
+
+    if (!form.title?.trim()) next.title = "Title is required.";
+    if (!form.destination?.trim()) next.destination = "Destination is required.";
+    if (!form.departureDate) next.departureDate = "Departure date is required.";
+    if (!form.returnDate) next.returnDate = "Return date is required.";
+    if (form.departureDate && form.returnDate && form.departureDate > form.returnDate) {
+      next.returnDate = "Return date must be after departure date.";
+    }
+
+    if (!items.length) {
+      next.items = "At least one expense item is required.";
+    } else {
+      const hasTripRange = form.departureDate && form.returnDate;
+      items.forEach((item, index) => {
+        if (item.type === ITEM_TYPES.NORMAL) {
+          if (!item.date) next[`items.${index}.date`] = "Date is required.";
+          if (!item.description?.trim()) next[`items.${index}.description`] = "Description is required.";
+          if (!item.category) next[`items.${index}.category`] = "Category is required.";
+          if (!item.amount || isNaN(Number(item.amount)) || Number(item.amount) <= 0) {
+            next[`items.${index}.amount`] = "Amount must be a positive number.";
+          }
+        }
+
+        if (item.type === ITEM_TYPES.MILEAGE) {
+          if (!item.miles || isNaN(Number(item.miles)) || Number(item.miles) <= 0) {
+            next[`items.${index}.miles`] = "Miles must be a positive number.";
+          }
+        }
+
+        if (item.type === ITEM_TYPES.MEAL) {
+          if (!item.date) next[`items.${index}.date`] = "Meal date is required.";
+          const count = (item.lunch ? 1 : 0) + (item.dinner ? 1 : 0);
+          if (count == 0) next[`items.${index}.meal`] = "Select lunch and/or dinner.";
+        }
+
+        if (hasTripRange && item.date) {
+          if (item.date < form.departureDate || item.date > form.returnDate) {
+            next[`items.${index}.date`] = "Date must be within the trip dates.";
+          }
+        }
+      });
+    }
+
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
   const buildPayload = () => {
     return {
       submitterId: user.id,
@@ -157,6 +208,11 @@ export default function EditReportPage() {
   const submit = async () => {
     if (!user) return;
 
+    if (!validate()) {
+      setError("Please fill the required fields.");
+      return;
+    }
+
     // If warnings exist, confirm first (same UX as Create).
     if (policyWarnings.length > 0) {
       setConfirmOpen(true);
@@ -188,6 +244,11 @@ export default function EditReportPage() {
   const confirmSubmit = async () => {
     setConfirmOpen(false);
     if (!user) return;
+
+    if (!validate()) {
+      setError("Please fill the required fields.");
+      return;
+    }
 
     setSubmitting(true);
     setError("");
@@ -271,10 +332,16 @@ export default function EditReportPage() {
               mode="edit"
               values={form}
               setValues={setForm}
-              errors={{}}
+              errors={errors}
             />
 
-            <ItemsEditor items={items} setItems={setItems} departureDate={form.departureDate} />
+            <ItemsEditor
+              items={items}
+              setItems={setItems}
+              departureDate={form.departureDate}
+              returnDate={form.returnDate}
+              errors={errors}
+            />
 
             <FooterActionBar
               onCancel={() => navigate(`/reports/${id}`)}

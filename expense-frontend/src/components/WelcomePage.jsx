@@ -49,12 +49,12 @@ export default function WelcomePage() {
         title="Company Ops Demo"
         desc={
           "A solo-friendly expense workflow tool with role switching (Employee → Manager → CFO → CEO). " +
-          "Policy violations are routed to Policy exceptions / Exception review before entering the normal approval queue."
+          "Policy warnings route reports into Policy exceptions (exception review) before entering the normal approval queue."
         }
         tone="dark"
       >
         <div className="flex flex-wrap items-center gap-2">
-          <Pill>Resettable demo data</Pill>
+          <Pill>Reset demo (seeded data)</Pill>
           <Pill>Role switcher</Pill>
           <Pill>Exception review gate</Pill>
           <Pill>CI (API smoke + Playwright)</Pill>
@@ -104,7 +104,7 @@ export default function WelcomePage() {
           </li>
           <li className="rounded-2xl border border-slate-200 bg-white p-4">
             <div className="font-medium text-slate-900">3) Submit</div>
-            <div className="mt-1 text-slate-600">Warnings route to Policy exceptions.</div>
+            <div className="mt-1 text-slate-600">Policy warnings route to exception review.</div>
           </li>
           <li className="rounded-2xl border border-slate-200 bg-white p-4">
             <div className="font-medium text-slate-900">4) Review exceptions as CFO</div>
@@ -142,8 +142,8 @@ export default function WelcomePage() {
             <div className="font-medium text-slate-900">Notes</div>
             <ul className="mt-2 list-disc pl-5 space-y-1">
               <li>Item dates should be within trip dates.</li>
-              <li>No receipt attachment feature in this demo.</li>
-              <li>Exception review is required when warnings apply.</li>
+              <li>No receipt upload feature in this demo.</li>
+              <li>Exception review is required when policy warnings apply.</li>
             </ul>
           </div>
         </div>

@@ -35,15 +35,16 @@ function App() {
 
   const navItems = useMemo(() => {
     const base = [
-      { to: "/dashboard", label: "Dashboard" },
       { to: "/", label: "Welcome" },
+      { to: "/dashboard", label: "Dashboard" },
       { to: "/create", label: "Create" },
       { to: "/search", label: "Search" },
       { to: "/reports", label: "My Reports" },
       { to: "/reports/in-progress", label: "In progress" },
     ];
-    if (isApprover) base.push({ to: "/approvals", label: "Approval queue" });
+    // Keep approver-only pages at the end.
     if (isFinance) base.push({ to: "/policy-exceptions", label: "Policy exceptions" });
+    if (isApprover) base.push({ to: "/approvals", label: "Approval queue" });
     return base;
   }, [isApprover, isFinance]);
 

@@ -317,8 +317,20 @@ export default function CreateExpenseReportForm() {
 
     try {
       const { apiFetch } = await import("../lib/api");
+
+      // Backend create DTO is intentionally minimal in this demo.
+      // To ensure destination/dates/etc are persisted, we do: POST(minimal) -> PUT(full) -> SUBMIT.
       const id = await apiFetch("/api/expense-reports", {
         method: "POST",
+        body: JSON.stringify({
+          submitterId: user.id,
+          title: form.title,
+          items: payload.items,
+        }),
+      });
+
+      await apiFetch(`/api/expense-reports/${id}`, {
+        method: "PUT",
         body: JSON.stringify(payload),
       });
 
@@ -359,8 +371,18 @@ export default function CreateExpenseReportForm() {
       };
 
       const { apiFetch } = await import("../lib/api");
+
       const id = await apiFetch("/api/expense-reports", {
         method: "POST",
+        body: JSON.stringify({
+          submitterId: user.id,
+          title: form.title,
+          items: payload.items,
+        }),
+      });
+
+      await apiFetch(`/api/expense-reports/${id}`, {
+        method: "PUT",
         body: JSON.stringify(payload),
       });
 

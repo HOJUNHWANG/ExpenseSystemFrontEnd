@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../AuthContext";
 
 export default function DemoControls() {
   const { user, switchDemoRole } = useAuth();
+  const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState("");
 
@@ -16,6 +18,8 @@ export default function DemoControls() {
       const role = user?.role || "EMPLOYEE";
       await switchDemoRole(role);
       setToast("Demo data reset.");
+      // After reset, always land on Dashboard to avoid stale screens.
+      navigate("/dashboard");
       setTimeout(() => setToast(""), 2200);
     } catch (e) {
       setToast(e.message || "Reset failed");

@@ -1,5 +1,6 @@
 // src/components/WelcomePage.jsx
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext";
 
 function Section({ kicker, title, desc, children, tone = "white" }) {
   const tones = {
@@ -32,14 +33,9 @@ function Pill({ children }) {
 
 export default function WelcomePage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const startGuided = () => {
-    // remove the "seen" flag so it shows again
-    localStorage.removeItem("expense-demo-guided-v1");
-    navigate("/");
-    // next render will show the modal from App
-    window.location.reload();
-  };
+  const isApprover = user && (user.role === "MANAGER" || user.role === "CFO" || user.role === "CEO");
 
   return (
     <div className="space-y-6">
@@ -61,12 +57,6 @@ export default function WelcomePage() {
         </div>
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <button
-            onClick={startGuided}
-            className="px-4 py-2 rounded-xl bg-white text-slate-900 text-sm font-medium hover:bg-slate-100"
-          >
-            Start guided demo
-          </button>
           <Link
             to="/create"
             className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-500"
@@ -173,17 +163,34 @@ export default function WelcomePage() {
             Search reports
           </Link>
           <Link
-            to="/approvals"
-            className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50"
-          >
-            Approval queue
-          </Link>
-          <Link
             to="/policy-exceptions"
             className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50"
           >
             Policy exceptions
           </Link>
+
+          {/* Keep this CTA last; disable for employees */}
+          <div className="flex flex-col gap-1">
+            {isApprover ? (
+              <Link
+                to="/approvals"
+                className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50 text-center"
+              >
+                Approval queue
+              </Link>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-400 opacity-60 cursor-not-allowed"
+              >
+                Approval queue
+              </button>
+            )}
+            {!isApprover && (
+              <div className="text-[11px] text-slate-500">Available for Manager/CFO/CEO roles.</div>
+            )}
+          </div>
         </div>
       </Section>
 

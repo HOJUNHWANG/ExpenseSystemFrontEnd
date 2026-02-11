@@ -236,17 +236,26 @@ export default function CreateExpenseReportForm() {
     const destination = form.city.trim() || countryValue.trim() ? `${form.city}, ${countryValue}` : "";
 
     // Create uses a limited DTO in backend; create+update keeps this demo flexible.
+    const filteredDraftItems = payloadItems
+      .filter((it) => it.amount !== undefined && it.amount !== null)
+      .filter((it) => !isNaN(Number(it.amount)))
+      .map((it) => ({
+        date: it.date || form.departureDate || null,
+        description: it.description || "(draft)",
+        amount: Number(it.amount || 0),
+        category: it.category || "Other",
+      }));
+
     const createPayload = {
       submitterId: user.id,
       title: form.title?.trim() ? form.title : "Draft — Untitled",
-      items: payloadItems
-        .filter((it) => it.amount && !isNaN(Number(it.amount)) && Number(it.amount) > 0)
-        .map((it) => ({
-          date: it.date,
-          description: it.description || "(draft)",
-          amount: Number(it.amount),
-          category: it.category || "Other",
-        })),
+      // Demo rule: every report must have at least one item (even a draft).
+      items: filteredDraftItems.length > 0 ? filteredDraftItems : [{
+        date: form.departureDate || null,
+        description: "(draft)",
+        amount: 0,
+        category: "Other",
+      }],
     };
 
     try {

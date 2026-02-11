@@ -20,6 +20,17 @@ function Pill({ children, tone = "slate" }) {
   );
 }
 
+function baseCode(code) {
+  return String(code || "").split("#")[0];
+}
+
+function itemIdFromCode(code) {
+  const parts = String(code || "").split("#");
+  if (parts.length < 2) return null;
+  const id = Number(parts[1]);
+  return Number.isFinite(id) ? id : null;
+}
+
 export default function PolicyExceptionReviewPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -205,13 +216,13 @@ export default function PolicyExceptionReviewPage() {
               {/* Trip section */}
               <div className={
                 "rounded-2xl border p-4 " +
-                (items.some((x) => x.code === "TRIP_DATES_INVALID")
+                (items.some((x) => baseCode(x.code) === "TRIP_DATES_INVALID")
                   ? "border-orange-100 bg-orange-50/40"
                   : "border-slate-200 bg-white")
               }>
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-medium text-slate-900">Trip</div>
-                  {items.some((x) => x.code === "TRIP_DATES_INVALID") && <Pill tone="orange">TRIP_DATES_INVALID</Pill>}
+                  {items.some((x) => baseCode(x.code) === "TRIP_DATES_INVALID") && <Pill tone="orange">TRIP_DATES_INVALID</Pill>}
                 </div>
                 <div className="mt-2 text-xs text-slate-600">
                   Departure: {report?.departureDate || "-"} • Return: {report?.returnDate || "-"}
@@ -221,7 +232,7 @@ export default function PolicyExceptionReviewPage() {
               {/* Items section */}
               <div className={
                 "rounded-2xl border p-4 " +
-                (items.some((x) => x.code !== "TRIP_DATES_INVALID")
+                (items.some((x) => baseCode(x.code) !== "TRIP_DATES_INVALID")
                   ? "border-orange-100 bg-orange-50/40"
                   : "border-slate-200 bg-white")
               }>
@@ -242,17 +253,28 @@ export default function PolicyExceptionReviewPage() {
                     </thead>
                     <tbody>
                       {(report?.items || []).map((it, idx) => {
-                        const isHotelCap = items.some((x) => x.code === "HOTEL_ABOVE_CAP")
+                        const itId = it?.id ?? null;
+                        const itemWarnings = items.filter((x) => itemIdFromCode(x.code) && String(itemIdFromCode(x.code)) === String(itId));
+                        const has = (base) => itemWarnings.some((x) => baseCode(x.code) === base);
+
+                        const isHotelCap = has("HOTEL_ABOVE_CAP")
                           && String(it.category || "").toLowerCase().includes("hotel")
                           && Number(it.amount) > 250;
-                        const isMealCap = items.some((x) => x.code === "MEALS_ABOVE_DAILY_CAP")
+                        const isMealCap = has("MEALS_ABOVE_DAILY_CAP")
                           && (String(it.category || "").toLowerCase().includes("meal") || String(it.description || "").toLowerCase().includes("per diem"));
-                        const isEntertainmentCap = items.some((x) => x.code === "ENTERTAINMENT_ABOVE_CAP")
+                        const isEntertainmentCap = has("ENTERTAINMENT_ABOVE_CAP")
                           && String(it.category || "").toLowerCase().includes("entertain")
                           && Number(it.amount) > 100;
-                        const isAirfareCap = items.some((x) => x.code === "AIRFARE_ABOVE_CAP")
+                        const isAirfareCap = has("AIRFARE_ABOVE_CAP")
                           && String(it.category || "").toLowerCase().includes("airfare");
-                        const highlight = isHotelCap || isMealCap || isEntertainmentCap || isAirfareCap;
+                        const isTransportationCap = has("TRANSPORTATION_ABOVE_CAP")
+                          && String(it.category || "").toLowerCase().includes("transport")
+                          && Number(it.amount) > 150;
+                        const isOfficeCap = has("OFFICE_ABOVE_CAP")
+                          && String(it.category || "").toLowerCase().includes("office")
+                          && Number(it.amount) > 200;
+
+                        const highlight = isHotelCap || isMealCap || isEntertainmentCap || isAirfareCap || isTransportationCap || isOfficeCap;
                         return (
                           <tr key={idx} className={"border-t border-slate-100 " + (highlight ? "bg-orange-50/40" : "")}
                           >
@@ -299,7 +321,7 @@ export default function PolicyExceptionReviewPage() {
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <Pill tone="orange">{it.code}</Pill>
+                          <Pill tone="orange">{baseCode(it.code)}</Pill>
                           <div className="text-sm font-medium text-slate-900">{it.message}</div>
                         </div>
                         <div className="mt-2 text-xs text-slate-600">

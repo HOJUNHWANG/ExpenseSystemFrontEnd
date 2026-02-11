@@ -7,6 +7,10 @@ export const POLICY = {
   AIRFARE_LIMIT_US: 500,
   AIRFARE_LIMIT_INTL: 1000,
   MEAL_DAILY_LIMIT: 75,
+
+  // Additional caps for remaining categories
+  TRANSPORTATION_LIMIT: 150,
+  OFFICE_LIMIT: 200,
 };
 
 function isUnitedStates(country) {
@@ -60,6 +64,20 @@ export function evaluateDraftWarnings({ country, departureDate, returnDate, item
       if (amt > limit) {
         warnings.push({ code: "AIRFARE_ABOVE_CAP", message: `Airfare above cap ($${limit})` });
       }
+    }
+
+    if (cat.toLowerCase() === "transportation" && amt > POLICY.TRANSPORTATION_LIMIT) {
+      warnings.push({
+        code: "TRANSPORTATION_ABOVE_CAP",
+        message: `Transportation above cap ($${POLICY.TRANSPORTATION_LIMIT})`,
+      });
+    }
+
+    if (cat.toLowerCase() === "office" && amt > POLICY.OFFICE_LIMIT) {
+      warnings.push({
+        code: "OFFICE_ABOVE_CAP",
+        message: `Office expenses above cap ($${POLICY.OFFICE_LIMIT})`,
+      });
     }
 
     // Meals daily rollup (heuristic)

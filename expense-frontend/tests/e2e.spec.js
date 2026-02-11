@@ -167,14 +167,25 @@ test("flow: exception reject -> edit/resubmit -> approvals", async ({ page, requ
     data: {
       submitterId: employee.id,
       title,
+      // Create DTO is intentionally minimal in this demo.
+      // We follow up with PUT to set destination/dates/items (matches UI draft-save behavior).
+      items: [{ date: "2026-01-10", description: "Hotel night", amount: 400, category: "Hotel" }],
+    },
+  });
+  expect(create.ok()).toBeTruthy();
+  const reportId = await create.json();
+
+  const patch = await request.put(`${apiBase}/api/expense-reports/${reportId}`, {
+    data: {
+      submitterId: employee.id,
+      title,
       destination: "Boston, United States",
       departureDate: "2026-01-10",
       returnDate: "2026-01-10",
       items: [{ date: "2026-01-10", description: "Hotel night", amount: 400, category: "Hotel" }],
     },
   });
-  expect(create.ok()).toBeTruthy();
-  const reportId = await create.json();
+  expect(patch.ok()).toBeTruthy();
 
   const submit = await request.post(`${apiBase}/api/expense-reports/${reportId}/submit`, {
     data: { submitterId: employee.id, reasons: [] },

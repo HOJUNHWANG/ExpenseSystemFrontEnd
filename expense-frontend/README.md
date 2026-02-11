@@ -1,18 +1,40 @@
 # Company Ops Demo (Frontend)
 
-Public portfolio demo UI for a corporate expense workflow (Expense → Finance special approval for policy exceptions → Manager approval).
+Public portfolio UI for a corporate-style expense workflow: **create reports → policy checks → exception review → approvals**.
+
+This is an **open demo** (seeded accounts + Reset Demo) designed to be **solo-friendly** via a **Role Switcher**.
 
 ## Highlights
-- **Solo-friendly demo mode**: Role Switcher (Employee / Manager / Finance)
-- **Finance special approval gate** for policy exceptions
-- **Search + Recent Activity** dashboard
-- **Reset Demo** (seed data)
+- **Solo-friendly demo mode**: Role Switcher (Employee / Manager / CFO / CEO)
+- **Policy exceptions** (aka *exception review*) before entering the normal approval queue
+- **Dashboard** with Recent Activity
+- **Search** with role-based scope
+- **Reset Demo** (seed data; safe for public visitors)
+
+## Key routes
+- `/` → Welcome
+- `/dashboard` → Dashboard + recent activity
+- `/create` → Create report
+- `/reports` → My reports
+- `/approvals` → Approval queue (Manager/CFO/CEO)
+- `/policy-exceptions` → Policy exceptions inbox (CFO)
+
+Legacy redirects (kept for compatibility):
+- `/special-approvals` → `/policy-exceptions`
+- `/special-approval/:id` → `/policy-exceptions/:id`
 
 ## Demo policy (simplified)
-- Receipts typically required for expenses **$25+**
-- Hotel nightly cap (demo): **$300/night**
-- Meals daily cap (demo): **$75/day**
-- Item dates should be within trip date range
+- **No receipt upload feature** (intentionally omitted for the public demo)
+- Caps:
+  - Entertainment: **$100**
+  - Hotel: **$250**
+  - Airfare: **US $500 / Intl $1000**
+  - Meals: **$75/day**
+- Item dates should be within the trip date range
+
+## Country input
+- Country dropdown uses a curated list of major countries.
+- Includes **Other…** for manual entry (used only to build the destination label `City, Country`).
 
 ## Local development
 
@@ -33,7 +55,7 @@ Base URL for the backend API.
 
 Examples:
 - Local: `http://localhost:8080`
-- Render: `https://<your-backend>.onrender.com`
+- Render: `https://company-ops-demo-api.onrender.com`
 
 ## Deployment (Vercel)
 1. Import this repo into Vercel

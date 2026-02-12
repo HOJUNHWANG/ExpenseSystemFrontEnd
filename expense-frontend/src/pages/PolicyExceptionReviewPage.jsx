@@ -24,11 +24,24 @@ function baseCode(code) {
   return String(code || "").split("#")[0];
 }
 
-function itemIdFromCode(code) {
+function suffixFromCode(code) {
   const parts = String(code || "").split("#");
   if (parts.length < 2) return null;
-  const id = Number(parts[1]);
+  return parts.slice(1).join("#");
+}
+
+function itemIdFromCode(code) {
+  const suffix = suffixFromCode(code);
+  if (!suffix) return null;
+  const id = Number(suffix);
   return Number.isFinite(id) ? id : null;
+}
+
+function dateFromCode(code) {
+  const suffix = suffixFromCode(code);
+  if (!suffix) return null;
+  // expected: YYYY-MM-DD
+  return /^\d{4}-\d{2}-\d{2}$/.test(suffix) ? suffix : null;
 }
 
 export default function PolicyExceptionReviewPage() {
@@ -257,10 +270,17 @@ export default function PolicyExceptionReviewPage() {
                         const itemWarnings = items.filter((x) => itemIdFromCode(x.code) && String(itemIdFromCode(x.code)) === String(itId));
                         const has = (base) => itemWarnings.some((x) => baseCode(x.code) === base);
 
+                        // Meals daily cap is scoped by date (MEALS_ABOVE_DAILY_CAP#YYYY-MM-DD)
+                        const mealDates = items
+                          .filter((x) => baseCode(x.code) === "MEALS_ABOVE_DAILY_CAP")
+                          .map((x) => dateFromCode(x.code))
+                          .filter(Boolean);
+                        const hasMealsDailyForThisRow = mealDates.includes(it.date);
+
                         const isHotelCap = has("HOTEL_ABOVE_CAP")
                           && String(it.category || "").toLowerCase().includes("hotel")
                           && Number(it.amount) > 250;
-                        const isMealCap = has("MEALS_ABOVE_DAILY_CAP")
+                        const isMealCap = hasMealsDailyForThisRow
                           && (String(it.category || "").toLowerCase().includes("meal") || String(it.description || "").toLowerCase().includes("per diem"));
                         const isEntertainmentCap = has("ENTERTAINMENT_ABOVE_CAP")
                           && String(it.category || "").toLowerCase().includes("entertain")
@@ -290,11 +310,13 @@ export default function PolicyExceptionReviewPage() {
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {items.some((x) => x.code === "HOTEL_ABOVE_CAP") && <Pill tone="orange">HOTEL_ABOVE_CAP</Pill>}
-                  {items.some((x) => x.code === "MEALS_ABOVE_DAILY_CAP") && <Pill tone="orange">MEALS_ABOVE_DAILY_CAP</Pill>}
-                  {items.some((x) => x.code === "ENTERTAINMENT_ABOVE_CAP") && <Pill tone="orange">ENTERTAINMENT_ABOVE_CAP</Pill>}
-                  {items.some((x) => x.code === "AIRFARE_ABOVE_CAP") && <Pill tone="orange">AIRFARE_ABOVE_CAP</Pill>}
-                  {items.some((x) => x.code === "ITEM_DATE_OUTSIDE_TRIP") && <Pill tone="orange">ITEM_DATE_OUTSIDE_TRIP</Pill>}
+                  {items.some((x) => baseCode(x.code) === "HOTEL_ABOVE_CAP") && <Pill tone="orange">HOTEL_ABOVE_CAP</Pill>}
+                  {items.some((x) => baseCode(x.code) === "MEALS_ABOVE_DAILY_CAP") && <Pill tone="orange">MEALS_ABOVE_DAILY_CAP</Pill>}
+                  {items.some((x) => baseCode(x.code) === "ENTERTAINMENT_ABOVE_CAP") && <Pill tone="orange">ENTERTAINMENT_ABOVE_CAP</Pill>}
+                  {items.some((x) => baseCode(x.code) === "AIRFARE_ABOVE_CAP") && <Pill tone="orange">AIRFARE_ABOVE_CAP</Pill>}
+                  {items.some((x) => baseCode(x.code) === "TRANSPORTATION_ABOVE_CAP") && <Pill tone="orange">TRANSPORTATION_ABOVE_CAP</Pill>}
+                  {items.some((x) => baseCode(x.code) === "OFFICE_ABOVE_CAP") && <Pill tone="orange">OFFICE_ABOVE_CAP</Pill>}
+                  {items.some((x) => baseCode(x.code) === "ITEM_DATE_OUTSIDE_TRIP") && <Pill tone="orange">ITEM_DATE_OUTSIDE_TRIP</Pill>}
                 </div>
               </div>
             </div>

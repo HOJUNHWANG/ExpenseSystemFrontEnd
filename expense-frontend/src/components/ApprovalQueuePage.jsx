@@ -96,10 +96,10 @@ export default function ApprovalQueuePage() {
 
       {!loading && !error && reports.length > 0 && (
         <div className="mt-2 border rounded-lg overflow-x-auto">
-          <table className="w-full text-sm min-w-[640px]">
+          <table className="w-full text-sm min-w-[640px] table-fixed">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
-                <th className="text-left px-3 py-2">Title</th>
+                <th className="text-left px-3 py-2 w-[260px]">Title</th>
                 <th className="text-left px-3 py-2 hidden md:table-cell">Destination</th>
                 <th className="text-left px-3 py-2 hidden lg:table-cell">Departure</th>
                 <th className="text-left px-3 py-2 hidden lg:table-cell">Return</th>
@@ -110,7 +110,7 @@ export default function ApprovalQueuePage() {
             <tbody>
               {reports.map((r) => (
                 <tr key={r.id} className="border-t hover:bg-slate-50">
-                  <td className="px-3 py-2 max-w-[280px]">
+                  <td className="px-3 py-2 w-[260px]">
                     <div className="font-medium text-slate-900 truncate" title={r.title}>
                       {r.title}
                     </div>
@@ -130,7 +130,7 @@ export default function ApprovalQueuePage() {
                     <Link
                       to={`/reports/${r.id}`}
                       state={{ from: "/approvals" }}
-                      className="text-xs text-blue-600 hover:underline"
+                      className="text-xs text-blue-600 hover:underline whitespace-nowrap"
                     >
                       View / Approve
                     </Link>

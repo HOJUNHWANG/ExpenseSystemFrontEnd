@@ -13,6 +13,7 @@ import EditReportPage from "./pages/EditReportPage.jsx";
 import E2ELoginPage from "./pages/E2ELoginPage.jsx";
 import { useAuth } from "./AuthContext";
 import RequireAuth from "./RequireAuth.jsx";
+import RequireRole from "./RequireRole.jsx";
 import WelcomePage from "./components/WelcomePage.jsx";
 import InProgressReportsPage from "./components/InProgressReportsPage.jsx";
 import ApprovalQueuePage from "./components/ApprovalQueuePage.jsx";
@@ -138,8 +139,22 @@ function App() {
           <Route path="/e2e/login" element={<E2ELoginPage />} />
           <Route path="/search" element={<RequireAuth><SearchPage /></RequireAuth>} />
           {/* New naming */}
-          <Route path="/policy-exceptions" element={<RequireAuth><PolicyExceptionsInboxPage /></RequireAuth>} />
-          <Route path="/policy-exceptions/:id" element={<RequireAuth><PolicyExceptionReviewPage /></RequireAuth>} />
+          <Route
+            path="/policy-exceptions"
+            element={
+              <RequireRole roles={["CFO"]} title="Policy exceptions">
+                <PolicyExceptionsInboxPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/policy-exceptions/:id"
+            element={
+              <RequireRole roles={["CFO"]} title="Policy exceptions">
+                <PolicyExceptionReviewPage />
+              </RequireRole>
+            }
+          />
 
           {/* Back-compat routes */}
           <Route path="/special-approvals" element={<Navigate to="/policy-exceptions" replace />} />
@@ -175,9 +190,9 @@ function App() {
           <Route
             path="/approvals"
             element={
-              <RequireAuth>
+              <RequireRole roles={["MANAGER", "CFO", "CEO"]} title="Approval queue">
                 <ApprovalQueuePage />
-              </RequireAuth>
+              </RequireRole>
             }
           />
           <Route

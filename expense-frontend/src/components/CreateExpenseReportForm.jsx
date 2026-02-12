@@ -178,6 +178,14 @@ export default function CreateExpenseReportForm() {
     if (!items.length) {
       newErrors.items = "At least one expense item is required.";
     } else {
+      // Demo rule: only one Meal entry per date.
+      const mealDateCounts = new Map();
+      items.forEach((item) => {
+        if (!item || item.type !== ITEM_TYPES.MEAL) return;
+        if (!item.date) return;
+        mealDateCounts.set(item.date, (mealDateCounts.get(item.date) || 0) + 1);
+      });
+
       items.forEach((item, index) => {
         // 날짜 범위는 NORMAL/MILEAGE/MEAL 모두 공통으로 “입력되어 있다면 범위 체크”
         const hasTripRange = form.departureDate && form.returnDate;
@@ -206,6 +214,10 @@ export default function CreateExpenseReportForm() {
           if (!item.date) newErrors[`items.${index}.date`] = "Meal date is required.";
           const count = (item.lunch ? 1 : 0) + (item.dinner ? 1 : 0);
           if (count === 0) newErrors[`items.${index}.meal`] = "Select lunch and/or dinner.";
+
+          if (item.date && (mealDateCounts.get(item.date) || 0) > 1) {
+            newErrors[`items.${index}.date`] = "Only one meal entry per date is allowed.";
+          }
         }
 
         // 날짜 범위 제한: date가 있는 아이템은 범위 안인지 확인

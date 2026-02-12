@@ -135,6 +135,15 @@ export default function EditReportPage() {
       next.items = "At least one expense item is required.";
     } else {
       const hasTripRange = form.departureDate && form.returnDate;
+
+      // Demo rule: only one Meal entry per date.
+      const mealDateCounts = new Map();
+      items.forEach((item) => {
+        if (!item || item.type !== ITEM_TYPES.MEAL) return;
+        if (!item.date) return;
+        mealDateCounts.set(item.date, (mealDateCounts.get(item.date) || 0) + 1);
+      });
+
       items.forEach((item, index) => {
         if (item.type === ITEM_TYPES.NORMAL) {
           if (!item.date) next[`items.${index}.date`] = "Date is required.";
@@ -155,6 +164,10 @@ export default function EditReportPage() {
           if (!item.date) next[`items.${index}.date`] = "Meal date is required.";
           const count = (item.lunch ? 1 : 0) + (item.dinner ? 1 : 0);
           if (count == 0) next[`items.${index}.meal`] = "Select lunch and/or dinner.";
+
+          if (item.date && (mealDateCounts.get(item.date) || 0) > 1) {
+            next[`items.${index}.date`] = "Only one meal entry per date is allowed.";
+          }
         }
 
         if (hasTripRange && item.date) {

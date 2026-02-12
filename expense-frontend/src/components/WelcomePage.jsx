@@ -36,6 +36,7 @@ export default function WelcomePage() {
   const { user } = useAuth();
 
   const isApprover = user && (user.role === "MANAGER" || user.role === "CFO" || user.role === "CEO");
+  const isCfo = user && user.role === "CFO";
 
   return (
     <div className="space-y-6">
@@ -163,12 +164,22 @@ export default function WelcomePage() {
             >
               Search reports
             </Link>
-            <Link
-              to="/policy-exceptions"
-              className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50"
-            >
-              Policy exceptions
-            </Link>
+            {isCfo ? (
+              <Link
+                to="/policy-exceptions"
+                className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50"
+              >
+                Policy exceptions
+              </Link>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-400 opacity-60 cursor-not-allowed"
+              >
+                Policy exceptions
+              </button>
+            )}
 
             {/* Keep this CTA last; disable for employees */}
             {isApprover ? (
@@ -189,8 +200,12 @@ export default function WelcomePage() {
             )}
           </div>
 
-          {!isApprover && (
-            <div className="mt-2 text-[11px] text-slate-500">Approval queue is available for Manager/CFO/CEO roles.</div>
+          {(!isApprover || !isCfo) && (
+            <div className="mt-2 text-[11px] text-slate-500">
+              {!isApprover ? "Approval queue is available for Manager/CFO/CEO roles." : ""}
+              {!isApprover && !isCfo ? " " : ""}
+              {!isCfo ? "Policy exceptions are available for the CFO role." : ""}
+            </div>
           )}
         </div>
       </Section>

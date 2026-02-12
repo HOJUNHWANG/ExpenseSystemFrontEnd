@@ -155,22 +155,22 @@ export default function WelcomePage() {
           <Pill>API smoke</Pill>
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link
-            to="/search"
-            className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50"
-          >
-            Search reports
-          </Link>
-          <Link
-            to="/policy-exceptions"
-            className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50"
-          >
-            Policy exceptions
-          </Link>
+        <div className="mt-6">
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              to="/search"
+              className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50"
+            >
+              Search reports
+            </Link>
+            <Link
+              to="/policy-exceptions"
+              className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50"
+            >
+              Policy exceptions
+            </Link>
 
-          {/* Keep this CTA last; disable for employees */}
-          <div className="flex flex-col gap-1">
+            {/* Keep this CTA last; disable for employees */}
             {isApprover ? (
               <Link
                 to="/approvals"
@@ -187,10 +187,11 @@ export default function WelcomePage() {
                 Approval queue
               </button>
             )}
-            {!isApprover && (
-              <div className="text-[11px] text-slate-500">Available for Manager/CFO/CEO roles.</div>
-            )}
           </div>
+
+          {!isApprover && (
+            <div className="mt-2 text-[11px] text-slate-500">Approval queue is available for Manager/CFO/CEO roles.</div>
+          )}
         </div>
       </Section>
 

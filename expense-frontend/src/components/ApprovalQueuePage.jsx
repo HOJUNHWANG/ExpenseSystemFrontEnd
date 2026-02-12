@@ -110,8 +110,10 @@ export default function ApprovalQueuePage() {
             <tbody>
               {reports.map((r) => (
                 <tr key={r.id} className="border-t hover:bg-slate-50">
-                  <td className="px-3 py-2">
-                    <div className="font-medium text-slate-900">{r.title}</div>
+                  <td className="px-3 py-2 max-w-[280px]">
+                    <div className="font-medium text-slate-900 truncate" title={r.title}>
+                      {r.title}
+                    </div>
                     <div className="mt-0.5 text-xs text-slate-500 md:hidden">
                       {(r.destination || "-")}
                       {r.departureDate ? ` • ${r.departureDate}` : ""}

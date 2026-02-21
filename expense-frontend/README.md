@@ -36,6 +36,17 @@ Legacy redirects (kept for compatibility):
 - Country dropdown uses a curated list of major countries.
 - Includes **Other…** for manual entry (used only to build the destination label `City, Country`).
 
+## Code quality
+
+### Error Boundary
+A global `ErrorBoundary` component wraps the app. If a React render error occurs, it shows a user-friendly fallback with a "Try again" button instead of a white screen.
+
+### Centralized constants
+All report statuses (`DRAFT`, `MANAGER_REVIEW`, etc.) and user roles (`EMPLOYEE`, `MANAGER`, `CFO`, `CEO`) are defined in `src/lib/constants.js` and imported throughout the codebase — no magic strings.
+
+### Code splitting (React.lazy)
+Page-level components are lazy-loaded via `React.lazy()` + `<Suspense>`, so the initial bundle stays small and each route loads on demand.
+
 ## Local development
 
 ### Requirements

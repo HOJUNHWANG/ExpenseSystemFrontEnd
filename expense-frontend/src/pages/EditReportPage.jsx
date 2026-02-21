@@ -4,6 +4,7 @@ import { useAuth } from "../AuthContext";
 import { apiFetch } from "../lib/api";
 import { Button, ButtonLink } from "../ui/Button.jsx";
 import { evaluateDraftWarnings } from "../lib/policy";
+import { REPORT_STATUS } from "../lib/constants";
 import {
   ITEM_TYPES,
   MILEAGE_RATE,
@@ -74,7 +75,7 @@ export default function EditReportPage() {
         if (Number(r.submitterId) !== Number(user.id)) {
           throw new Error("Only the submitter can edit this report.");
         }
-        if (r.status !== "DRAFT" && r.status !== "CHANGES_REQUESTED") {
+        if (r.status !== REPORT_STATUS.DRAFT && r.status !== REPORT_STATUS.CHANGES_REQUESTED) {
           throw new Error("Only DRAFT/CHANGES_REQUESTED reports can be edited.");
         }
 

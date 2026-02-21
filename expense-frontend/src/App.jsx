@@ -1,25 +1,36 @@
 // src/App.jsx
+import React, { Suspense } from "react";
 import { Routes, Route, Link, Navigate, useLocation, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
-import CreateExpenseReportForm from "./components/CreateExpenseReportForm";
-import ExpenseReportList from "./components/ExpenseReportList";
-import ExpenseReportDetail from "./components/ExpenseReportDetail";
 import LoginPage from "./pages/LoginPage";
-import DashboardPage from "./pages/DashboardPage.jsx";
-import SearchPage from "./pages/SearchPage.jsx";
-import PolicyExceptionReviewPage from "./pages/PolicyExceptionReviewPage.jsx";
-import PolicyExceptionsInboxPage from "./pages/PolicyExceptionsInboxPage.jsx";
-import EditReportPage from "./pages/EditReportPage.jsx";
 import E2ELoginPage from "./pages/E2ELoginPage.jsx";
 import { useAuth } from "./AuthContext";
 import RequireAuth from "./RequireAuth.jsx";
 import RequireRole from "./RequireRole.jsx";
 import WelcomePage from "./components/WelcomePage.jsx";
-import InProgressReportsPage from "./components/InProgressReportsPage.jsx";
-import ApprovalQueuePage from "./components/ApprovalQueuePage.jsx";
 import RoleSwitcher from "./components/RoleSwitcher.jsx";
 import DemoControls from "./components/DemoControls.jsx";
 import GuidedDemoModal from "./components/GuidedDemoModal.jsx";
+import { USER_ROLES } from "./lib/constants";
+
+const DashboardPage = React.lazy(() => import("./pages/DashboardPage.jsx"));
+const CreateExpenseReportForm = React.lazy(() => import("./components/CreateExpenseReportForm"));
+const ExpenseReportList = React.lazy(() => import("./components/ExpenseReportList"));
+const ExpenseReportDetail = React.lazy(() => import("./components/ExpenseReportDetail"));
+const SearchPage = React.lazy(() => import("./pages/SearchPage.jsx"));
+const EditReportPage = React.lazy(() => import("./pages/EditReportPage.jsx"));
+const PolicyExceptionReviewPage = React.lazy(() => import("./pages/PolicyExceptionReviewPage.jsx"));
+const PolicyExceptionsInboxPage = React.lazy(() => import("./pages/PolicyExceptionsInboxPage.jsx"));
+const InProgressReportsPage = React.lazy(() => import("./components/InProgressReportsPage.jsx"));
+const ApprovalQueuePage = React.lazy(() => import("./components/ApprovalQueuePage.jsx"));
+
+function LoadingSpinner() {
+  return (
+    <div className="flex items-center justify-center py-12">
+      <div className="text-sm text-slate-500">Loading...</div>
+    </div>
+  );
+}
 
 function LegacySpecialApprovalRedirect() {
   const { id } = useParams();
@@ -31,8 +42,8 @@ function App() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const isApprover = user && (user.role === "MANAGER" || user.role === "CFO" || user.role === "CEO");
-  const isFinance = user && user.role === "CFO";
+  const isApprover = user && (user.role === USER_ROLES.MANAGER || user.role === USER_ROLES.CFO || user.role === USER_ROLES.CEO);
+  const isFinance = user && user.role === USER_ROLES.CFO;
 
   const navItems = useMemo(() => {
     const base = [
@@ -133,78 +144,80 @@ function App() {
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-4 py-6">
-        <Routes>
-          <Route path="/" element={<WelcomePage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/e2e/login" element={<E2ELoginPage />} />
-          <Route path="/search" element={<RequireAuth><SearchPage /></RequireAuth>} />
-          {/* New naming */}
-          <Route
-            path="/policy-exceptions"
-            element={
-              <RequireRole roles={["CFO"]} title="Policy exceptions">
-                <PolicyExceptionsInboxPage />
-              </RequireRole>
-            }
-          />
-          <Route
-            path="/policy-exceptions/:id"
-            element={
-              <RequireRole roles={["CFO"]} title="Policy exceptions">
-                <PolicyExceptionReviewPage />
-              </RequireRole>
-            }
-          />
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            <Route path="/" element={<WelcomePage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/e2e/login" element={<E2ELoginPage />} />
+            <Route path="/search" element={<RequireAuth><SearchPage /></RequireAuth>} />
+            {/* New naming */}
+            <Route
+              path="/policy-exceptions"
+              element={
+                <RequireRole roles={[USER_ROLES.CFO]} title="Policy exceptions">
+                  <PolicyExceptionsInboxPage />
+                </RequireRole>
+              }
+            />
+            <Route
+              path="/policy-exceptions/:id"
+              element={
+                <RequireRole roles={[USER_ROLES.CFO]} title="Policy exceptions">
+                  <PolicyExceptionReviewPage />
+                </RequireRole>
+              }
+            />
 
-          {/* Back-compat routes */}
-          <Route path="/special-approvals" element={<Navigate to="/policy-exceptions" replace />} />
-          <Route path="/special-approval/:id" element={<LegacySpecialApprovalRedirect />} />
-          <Route path="/reports/:id/edit" element={<RequireAuth><EditReportPage /></RequireAuth>} />
-          <Route path="/welcome" element={<Navigate to="/" replace />} />
-          <Route path="/login" element={<LoginPage />} />
+            {/* Back-compat routes */}
+            <Route path="/special-approvals" element={<Navigate to="/policy-exceptions" replace />} />
+            <Route path="/special-approval/:id" element={<LegacySpecialApprovalRedirect />} />
+            <Route path="/reports/:id/edit" element={<RequireAuth><EditReportPage /></RequireAuth>} />
+            <Route path="/welcome" element={<Navigate to="/" replace />} />
+            <Route path="/login" element={<LoginPage />} />
 
-          <Route
-            path="/create"
-            element={
-              <RequireAuth>
-                <CreateExpenseReportForm />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/reports"
-            element={
-              <RequireAuth>
-                <ExpenseReportList />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/reports/in-progress"
-            element={
-              <RequireAuth>
-                <InProgressReportsPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/approvals"
-            element={
-              <RequireRole roles={["MANAGER", "CFO", "CEO"]} title="Approval queue">
-                <ApprovalQueuePage />
-              </RequireRole>
-            }
-          />
-          <Route
-            path="/reports/:id"
-            element={
-              <RequireAuth>
-                <ExpenseReportDetail />
-              </RequireAuth>
-            }
-          />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
+            <Route
+              path="/create"
+              element={
+                <RequireAuth>
+                  <CreateExpenseReportForm />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <RequireAuth>
+                  <ExpenseReportList />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/reports/in-progress"
+              element={
+                <RequireAuth>
+                  <InProgressReportsPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/approvals"
+              element={
+                <RequireRole roles={[USER_ROLES.MANAGER, USER_ROLES.CFO, USER_ROLES.CEO]} title="Approval queue">
+                  <ApprovalQueuePage />
+                </RequireRole>
+              }
+            />
+            <Route
+              path="/reports/:id"
+              element={
+                <RequireAuth>
+                  <ExpenseReportDetail />
+                </RequireAuth>
+              }
+            />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </Suspense>
       </main>
     </div>
   );

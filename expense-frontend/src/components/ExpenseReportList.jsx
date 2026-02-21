@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../AuthContext";
 import {Link, useNavigate} from "react-router-dom";
 import StatusBadge from "../ui/StatusBadge.jsx";
+import { REPORT_STATUS } from "../lib/constants";
 
 export default function ExpenseReportList() {
   const { user } = useAuth();
@@ -50,14 +51,14 @@ export default function ExpenseReportList() {
 
   const filters = [
     { label: "All", value: "" },
-    { label: "Draft", value: "DRAFT" },
-    { label: "Manager review", value: "MANAGER_REVIEW" },
-    { label: "CFO review", value: "CFO_REVIEW" },
-    { label: "CEO review", value: "CEO_REVIEW" },
-    { label: "CFO special", value: "CFO_SPECIAL_REVIEW" },
-    { label: "Changes requested", value: "CHANGES_REQUESTED" },
-    { label: "Approved", value: "APPROVED" },
-    { label: "Rejected", value: "REJECTED" },
+    { label: "Draft", value: REPORT_STATUS.DRAFT },
+    { label: "Manager review", value: REPORT_STATUS.MANAGER_REVIEW },
+    { label: "CFO review", value: REPORT_STATUS.CFO_REVIEW },
+    { label: "CEO review", value: REPORT_STATUS.CEO_REVIEW },
+    { label: "CFO special", value: REPORT_STATUS.CFO_SPECIAL_REVIEW },
+    { label: "Changes requested", value: REPORT_STATUS.CHANGES_REQUESTED },
+    { label: "Approved", value: REPORT_STATUS.APPROVED },
+    { label: "Rejected", value: REPORT_STATUS.REJECTED },
   ];
 
   return (

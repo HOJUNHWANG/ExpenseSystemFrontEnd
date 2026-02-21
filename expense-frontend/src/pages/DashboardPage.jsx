@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { apiFetch } from "../lib/api";
 import StatusBadge from "../ui/StatusBadge.jsx";
+import { REPORT_STATUS, USER_ROLES } from "../lib/constants";
 
 function StatCard({ title, value, hint, action }) {
   return (
@@ -36,7 +37,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const isApprover = user && (user.role === "MANAGER" || user.role === "CFO" || user.role === "CEO");
+  const isApprover = user && (user.role === USER_ROLES.MANAGER || user.role === USER_ROLES.CFO || user.role === USER_ROLES.CEO);
 
   useEffect(() => {
     const run = async () => {
@@ -70,10 +71,10 @@ export default function DashboardPage() {
 
   const myCounts = useMemo(() => {
     const submitted = myReports.filter((r) => (
-      r.status === "MANAGER_REVIEW" || r.status === "CFO_REVIEW" || r.status === "CEO_REVIEW" || r.status === "CFO_SPECIAL_REVIEW"
+      r.status === REPORT_STATUS.MANAGER_REVIEW || r.status === REPORT_STATUS.CFO_REVIEW || r.status === REPORT_STATUS.CEO_REVIEW || r.status === REPORT_STATUS.CFO_SPECIAL_REVIEW
     )).length;
-    const approved = myReports.filter((r) => r.status === "APPROVED").length;
-    const rejected = myReports.filter((r) => r.status === "REJECTED").length;
+    const approved = myReports.filter((r) => r.status === REPORT_STATUS.APPROVED).length;
+    const rejected = myReports.filter((r) => r.status === REPORT_STATUS.REJECTED).length;
     return { total: myReports.length, submitted, approved, rejected };
   }, [myReports]);
 
@@ -243,7 +244,7 @@ export default function DashboardPage() {
               {activity.map((a) => (
                 <Link
                   key={a.id}
-                  to={a.status === "CFO_SPECIAL_REVIEW" ? `/policy-exceptions/${a.id}` : `/reports/${a.id}`}
+                  to={a.status === REPORT_STATUS.CFO_SPECIAL_REVIEW ? `/policy-exceptions/${a.id}` : `/reports/${a.id}`}
                   className="block rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 px-3 py-2"
                 >
                   <div className="flex items-center justify-between gap-3">

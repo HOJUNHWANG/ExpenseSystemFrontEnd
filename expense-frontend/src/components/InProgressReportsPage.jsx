@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import { REPORT_STATUS } from "../lib/constants";
 
 export default function InProgressReportsPage() {
     const { user } = useAuth();
@@ -20,12 +21,12 @@ export default function InProgressReportsPage() {
                 const { apiFetch } = await import("../lib/api");
 
                 const statuses = [
-                    "MANAGER_REVIEW",
-                    "CFO_REVIEW",
-                    "CEO_REVIEW",
-                    "CFO_SPECIAL_REVIEW",
-                    "CEO_SPECIAL_REVIEW",
-                    "CHANGES_REQUESTED",
+                    REPORT_STATUS.MANAGER_REVIEW,
+                    REPORT_STATUS.CFO_REVIEW,
+                    REPORT_STATUS.CEO_REVIEW,
+                    REPORT_STATUS.CFO_SPECIAL_REVIEW,
+                    REPORT_STATUS.CEO_SPECIAL_REVIEW,
+                    REPORT_STATUS.CHANGES_REQUESTED,
                 ];
 
                 const all = [];

@@ -6,6 +6,7 @@ import { useLocation } from "react-router-dom";
 import StatusBadge from "../ui/StatusBadge.jsx";
 import { Button } from "../ui/Button.jsx";
 import SubmitWithWarningsModal from "./SubmitWithWarningsModal.jsx";
+import { REPORT_STATUS, USER_ROLES } from "../lib/constants";
 
 function ChangesRequestedFeedback({ reportId, requesterId }) {
   const [loading, setLoading] = useState(true);
@@ -190,13 +191,13 @@ export default function ExpenseReportDetail() {
     const total = report.totalAmount ?? 0;
 
     const isOwner = user && report && Number(report.submitterId) === Number(user.id);
-    const canApproveByRole = user && (user.role === "MANAGER" || user.role === "CFO" || user.role === "CEO");
+    const canApproveByRole = user && (user.role === USER_ROLES.MANAGER || user.role === USER_ROLES.CFO || user.role === USER_ROLES.CEO);
     const canTakeAction = canApproveByRole && !isOwner && (
-      report?.status === "MANAGER_REVIEW" || report?.status === "CFO_REVIEW" || report?.status === "CEO_REVIEW"
+      report?.status === REPORT_STATUS.MANAGER_REVIEW || report?.status === REPORT_STATUS.CFO_REVIEW || report?.status === REPORT_STATUS.CEO_REVIEW
     );
 
-    const canSubmit = isOwner && (report?.status === "CHANGES_REQUESTED");
-    const isDraft = isOwner && report?.status === "DRAFT";
+    const canSubmit = isOwner && (report?.status === REPORT_STATUS.CHANGES_REQUESTED);
+    const isDraft = isOwner && report?.status === REPORT_STATUS.DRAFT;
 
     return (
         <div className="bg-white shadow-md rounded-xl p-6 space-y-4">
@@ -313,7 +314,7 @@ export default function ExpenseReportDetail() {
               </div>
             )}
 
-            {report?.status === "CHANGES_REQUESTED" && (
+            {report?.status === REPORT_STATUS.CHANGES_REQUESTED && (
               <ChangesRequestedFeedback reportId={id} requesterId={user?.id} />
             )}
 
@@ -562,7 +563,7 @@ export default function ExpenseReportDetail() {
                             )}
                         </div>
 
-                        {!(report?.status === "MANAGER_REVIEW" || report?.status === "CFO_REVIEW" || report?.status === "CEO_REVIEW") && (
+                        {!(report?.status === REPORT_STATUS.MANAGER_REVIEW || report?.status === REPORT_STATUS.CFO_REVIEW || report?.status === REPORT_STATUS.CEO_REVIEW) && (
                             <p className="text-xs text-slate-500 mt-2">
                                 This report is already {report.status.toLowerCase()}.
                             </p>

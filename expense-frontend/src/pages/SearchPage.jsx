@@ -4,6 +4,7 @@ import { useAuth } from "../AuthContext";
 import { apiFetch } from "../lib/api";
 import StatusBadge from "../ui/StatusBadge.jsx";
 import { Button } from "../ui/Button.jsx";
+import { REPORT_STATUS, USER_ROLES } from "../lib/constants";
 
 export default function SearchPage() {
   const { user } = useAuth();
@@ -16,7 +17,7 @@ export default function SearchPage() {
   const [error, setError] = useState("");
   const [results, setResults] = useState([]);
 
-  const canSearchAll = user && (user.role === "MANAGER" || user.role === "CFO" || user.role === "CEO");
+  const canSearchAll = user && (user.role === USER_ROLES.MANAGER || user.role === USER_ROLES.CFO || user.role === USER_ROLES.CEO);
 
   const runSearch = async (e, overrides) => {
     e?.preventDefault?.();
@@ -103,13 +104,13 @@ export default function SearchPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
                 {[
                   { label: "Any", value: "" },
-                  { label: "Manager", value: "MANAGER_REVIEW" },
-                  { label: "CFO", value: "CFO_REVIEW" },
-                  { label: "CEO", value: "CEO_REVIEW" },
-                  { label: "CFO special", value: "CFO_SPECIAL_REVIEW" },
-                  { label: "Changes", value: "CHANGES_REQUESTED" },
-                  { label: "Approved", value: "APPROVED" },
-                  { label: "Rejected", value: "REJECTED" },
+                  { label: "Manager", value: REPORT_STATUS.MANAGER_REVIEW },
+                  { label: "CFO", value: REPORT_STATUS.CFO_REVIEW },
+                  { label: "CEO", value: REPORT_STATUS.CEO_REVIEW },
+                  { label: "CFO special", value: REPORT_STATUS.CFO_SPECIAL_REVIEW },
+                  { label: "Changes", value: REPORT_STATUS.CHANGES_REQUESTED },
+                  { label: "Approved", value: REPORT_STATUS.APPROVED },
+                  { label: "Rejected", value: REPORT_STATUS.REJECTED },
                 ].map((f) => {
                   const active = status === f.value;
                   return (
@@ -255,7 +256,7 @@ export default function SearchPage() {
                     </td>
                     <td className="py-2 text-right">
                       <Link
-                        to={r.status === "CFO_SPECIAL_REVIEW" ? `/policy-exceptions/${r.id}` : `/reports/${r.id}`}
+                        to={r.status === REPORT_STATUS.CFO_SPECIAL_REVIEW ? `/policy-exceptions/${r.id}` : `/reports/${r.id}`}
                         className="text-xs text-blue-600 hover:underline"
                       >
                         View

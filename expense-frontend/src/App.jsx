@@ -135,10 +135,10 @@ function SidebarContent({ navItems, currentPath, user, logout, onNavigate }) {
         </div>
 
         {user ? (
-          <div className="flex items-center gap-2 px-1">
+          <div className="flex items-center gap-2 px-1" data-testid="current-user">
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
-              <p className="text-xs text-muted-foreground">{user.role}</p>
+              <p className="text-xs text-muted-foreground">({user.role})</p>
             </div>
             <Button variant="ghost" size="icon" onClick={logout} title="Logout">
               <LogOut className="h-4 w-4" />
@@ -224,7 +224,7 @@ function App() {
           <span className="font-semibold text-sm">Company Ops</span>
         </div>
         {user && (
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground" data-testid="current-user-mobile">
             {user.name} <span className="text-[10px]">({user.role})</span>
           </div>
         )}

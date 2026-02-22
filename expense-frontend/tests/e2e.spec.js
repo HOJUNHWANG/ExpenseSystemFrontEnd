@@ -12,9 +12,9 @@ async function resetDemo(page) {
   await page.goto("/dashboard");
   await page.getByTestId("demo-reset").click();
 
-  // The reset action triggers a re-login (default: EMPLOYEE) and shows the user in header.
-  // Scope to header to avoid strict-mode collisions.
-  await expect(page.locator("header").getByText("Jun Employee (EMPLOYEE)")).toBeVisible();
+  // The reset action triggers a re-login (default: EMPLOYEE) and shows the user in sidebar/header.
+  await expect(page.getByTestId("current-user").getByText("Jun Employee")).toBeVisible();
+  await expect(page.getByTestId("current-user").getByText("(EMPLOYEE)")).toBeVisible();
 }
 
 async function viewAs(page, label) {
@@ -28,8 +28,8 @@ async function viewAs(page, label) {
   };
   const roleCode = roleCodeByLabel[label];
   if (roleCode) {
-    // Wait until header reflects the active role
-    await expect(page.locator("header").getByText(new RegExp(`\\(${roleCode}\\)`))).toBeVisible();
+    // Wait until sidebar/header reflects the active role
+    await expect(page.getByTestId("current-user").getByText(new RegExp(`\\(${roleCode}\\)`))).toBeVisible();
 
     // Also wait for localStorage user to update (prevents race between click and navigation)
     await expect

@@ -7,7 +7,7 @@ import { Button } from "../ui/Button.jsx";
 
 function Pill({ children, tone = "slate" }) {
   const tones = {
-    slate: "border-slate-200 bg-slate-50 text-slate-700",
+    slate: "border bg-muted/50 text-muted-foreground",
     orange: "border-orange-100 bg-orange-50 text-orange-800",
     red: "border-red-100 bg-red-50 text-red-700",
     green: "border-green-100 bg-green-50 text-green-700",
@@ -153,18 +153,18 @@ export default function PolicyExceptionReviewPage() {
 
   if (!user) {
     return (
-      <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
-        <h1 className="text-xl font-semibold text-slate-900">Policy exceptions</h1>
-        <p className="mt-2 text-sm text-slate-600">Please login as CFO to review policy exceptions.</p>
+      <div className="rounded-2xl bg-white border shadow-sm p-6">
+        <h1 className="text-xl font-semibold text-foreground">Policy exceptions</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Please login as CFO to review policy exceptions.</p>
       </div>
     );
   }
 
   if (!isCfo) {
     return (
-      <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
-        <h1 className="text-xl font-semibold text-slate-900">Policy exceptions</h1>
-        <p className="mt-2 text-sm text-slate-600">Only CFO can access this page.</p>
+      <div className="rounded-2xl bg-white border shadow-sm p-6">
+        <h1 className="text-xl font-semibold text-foreground">Policy exceptions</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Only CFO can access this page.</p>
         <div className="mt-4">
           <Link to="/dashboard" className="text-sm text-blue-600 hover:underline">Back to Dashboard</Link>
         </div>
@@ -174,11 +174,11 @@ export default function PolicyExceptionReviewPage() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
+      <div className="rounded-2xl bg-white border shadow-sm p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-xl font-semibold text-slate-900">Exception review</h1>
-            <p className="mt-1 text-sm text-slate-600">
+            <h1 className="text-xl font-semibold text-foreground">Exception review</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
               Review policy exceptions before this report enters the normal approval queue.
             </p>
           </div>
@@ -193,24 +193,24 @@ export default function PolicyExceptionReviewPage() {
           </div>
         )}
 
-        {loading && <div className="mt-4 text-sm text-slate-600">Loading…</div>}
+        {loading && <div className="mt-4 text-sm text-muted-foreground">Loading…</div>}
 
         {!loading && report && (
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-              <div className="text-xs text-slate-500">Report</div>
-              <div className="mt-1 font-medium text-slate-900">#{report.id} — {report.title}</div>
+            <div className="rounded-xl border border bg-muted/50 px-4 py-3">
+              <div className="text-xs text-muted-foreground">Report</div>
+              <div className="mt-1 font-medium text-foreground">#{report.id} — {report.title}</div>
               <div className="mt-2 flex items-center gap-2">
                 <StatusBadge status={report.status} />
                 <Pill tone="orange">Policy exceptions</Pill>
               </div>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-              <div className="text-xs text-slate-500">Total</div>
-              <div className="mt-1 text-lg font-semibold text-slate-900">
+            <div className="rounded-xl border border bg-muted/50 px-4 py-3">
+              <div className="text-xs text-muted-foreground">Total</div>
+              <div className="mt-1 text-lg font-semibold text-foreground">
                 ${Number(report.totalAmount || 0).toLocaleString()}
               </div>
-              <div className="mt-1 text-xs text-slate-500">Destination: {report.destination || "-"}</div>
+              <div className="mt-1 text-xs text-muted-foreground">Destination: {report.destination || "-"}</div>
             </div>
           </div>
         )}
@@ -219,9 +219,9 @@ export default function PolicyExceptionReviewPage() {
       {!loading && review && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Left: contextual highlights */}
-          <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
+          <div className="rounded-2xl bg-white border shadow-sm p-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-900">Highlighted sections</h2>
+              <h2 className="text-sm font-semibold text-foreground">Highlighted sections</h2>
               <Pill tone="orange">Exception areas</Pill>
             </div>
 
@@ -231,13 +231,13 @@ export default function PolicyExceptionReviewPage() {
                 "rounded-2xl border p-4 " +
                 (items.some((x) => baseCode(x.code) === "TRIP_DATES_INVALID")
                   ? "border-orange-100 bg-orange-50/40"
-                  : "border-slate-200 bg-white")
+                  : "border bg-white")
               }>
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium text-slate-900">Trip</div>
+                  <div className="text-sm font-medium text-foreground">Trip</div>
                   {items.some((x) => baseCode(x.code) === "TRIP_DATES_INVALID") && <Pill tone="orange">TRIP_DATES_INVALID</Pill>}
                 </div>
-                <div className="mt-2 text-xs text-slate-600">
+                <div className="mt-2 text-xs text-muted-foreground">
                   Departure: {report?.departureDate || "-"} • Return: {report?.returnDate || "-"}
                 </div>
               </div>
@@ -247,16 +247,16 @@ export default function PolicyExceptionReviewPage() {
                 "rounded-2xl border p-4 " +
                 (items.some((x) => baseCode(x.code) !== "TRIP_DATES_INVALID")
                   ? "border-orange-100 bg-orange-50/40"
-                  : "border-slate-200 bg-white")
+                  : "border bg-white")
               }>
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium text-slate-900">Items</div>
+                  <div className="text-sm font-medium text-foreground">Items</div>
                   {items.some((x) => x.code !== "TRIP_DATES_INVALID") && <Pill tone="orange">Policy exceptions</Pill>}
                 </div>
 
                 <div className="mt-3 overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="text-xs text-slate-500">
+                    <thead className="text-xs text-muted-foreground">
                       <tr>
                         <th className="text-left font-medium py-2">Date</th>
                         <th className="text-left font-medium py-2">Description</th>
@@ -296,7 +296,7 @@ export default function PolicyExceptionReviewPage() {
 
                         const highlight = isHotelCap || isMealCap || isEntertainmentCap || isAirfareCap || isTransportationCap || isOfficeCap;
                         return (
-                          <tr key={idx} className={"border-t border-slate-100 " + (highlight ? "bg-orange-50/40" : "")}
+                          <tr key={idx} className={"border-t border " + (highlight ? "bg-orange-50/40" : "")}
                           >
                             <td className="py-2">{it.date || "-"}</td>
                             <td className="py-2">{it.description}</td>
@@ -323,9 +323,9 @@ export default function PolicyExceptionReviewPage() {
           </div>
 
           {/* Right: decisions checklist */}
-          <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
+          <div className="rounded-2xl bg-white border shadow-sm p-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-900">Exception checklist</h2>
+              <h2 className="text-sm font-semibold text-foreground">Exception checklist</h2>
               <Pill tone={anyReject ? "red" : "green"}>{anyReject ? "Reject path" : "Approve path"}</Pill>
             </div>
 
@@ -344,9 +344,9 @@ export default function PolicyExceptionReviewPage() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <Pill tone="orange">{baseCode(it.code)}</Pill>
-                          <div className="text-sm font-medium text-slate-900">{it.message}</div>
+                          <div className="text-sm font-medium text-foreground">{it.message}</div>
                         </div>
-                        <div className="mt-2 text-xs text-slate-600">
+                        <div className="mt-2 text-xs text-muted-foreground">
                           <span className="font-medium">Employee reason:</span> {it.employeeReason}
                         </div>
                       </div>
@@ -377,7 +377,7 @@ export default function PolicyExceptionReviewPage() {
                     </div>
 
                     <div className="mt-3">
-                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                      <label className="block text-xs font-medium text-muted-foreground mb-1">
                         Finance note {d === "REJECT" ? "(required)" : "(optional)"}
                       </label>
                       <input
@@ -388,7 +388,7 @@ export default function PolicyExceptionReviewPage() {
                           "w-full border rounded-xl px-3 py-2 text-sm " +
                           (d === "REJECT" && !reason.trim()
                             ? "border-red-200 bg-red-50"
-                            : "border-slate-200")
+                            : "border")
                         }
                         placeholder={d === "REJECT" ? "Required for rejection" : "Optional note for this exception"}
                       />
@@ -402,7 +402,7 @@ export default function PolicyExceptionReviewPage() {
             </div>
 
             <div className="mt-4">
-              <label className="block text-xs font-medium text-slate-600 mb-1">
+              <label className="block text-xs font-medium text-muted-foreground mb-1">
                 Finance decision comment {anyReject ? "(required for reject)" : "(optional)"}
               </label>
               <textarea
@@ -410,7 +410,7 @@ export default function PolicyExceptionReviewPage() {
                 value={reviewerComment}
                 onChange={(e) => setReviewerComment(e.target.value)}
                 rows={3}
-                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                className="w-full border border rounded-xl px-3 py-2 text-sm"
                 placeholder={anyReject ? "Please explain why this is rejected." : "Optional overall comment."}
               />
               {anyReject && !reviewerComment.trim() && (
@@ -419,7 +419,7 @@ export default function PolicyExceptionReviewPage() {
             </div>
 
             <div className="mt-5 flex items-center justify-between">
-              <div className="text-xs text-slate-500">
+              <div className="text-xs text-muted-foreground">
                 {!allDecided
                   ? "Please decide approve/reject for all items."
                   : anyReject && reviewerComment.trim().length === 0

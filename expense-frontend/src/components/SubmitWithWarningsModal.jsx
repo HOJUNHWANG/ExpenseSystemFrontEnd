@@ -46,16 +46,16 @@ export default function SubmitWithWarningsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
-      <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl border border-slate-200 p-6">
+      <div className="w-full max-w-2xl rounded-2xl bg-card shadow-sm-xl border border p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Policy warnings</h2>
-            <p className="mt-1 text-sm text-slate-600">
+            <h2 className="text-lg font-semibold text-foreground">Policy warnings</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
               This report violates one or more policies. To continue, provide a reason for each exception.
               The report will be routed to CFO for exception review.
             </p>
           </div>
-          <button onClick={close} className="text-xs text-slate-500 hover:text-slate-900">
+          <button onClick={close} className="text-xs text-muted-foreground hover:text-foreground">
             Close
           </button>
         </div>
@@ -63,16 +63,16 @@ export default function SubmitWithWarningsModal({
         <div className="mt-4 space-y-3">
           {(warnings || []).map((w) => (
             <div key={w.code} className="rounded-2xl border border-orange-100 bg-orange-50/40 p-4">
-              <div className="text-sm font-medium text-slate-900">{w.message}</div>
+              <div className="text-sm font-medium text-foreground">{w.message}</div>
               <div className="mt-2">
-                <label className="block text-xs font-medium text-slate-600 mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Reason (required)
                 </label>
                 <textarea
                   value={reasons[w.code] || ""}
                   onChange={(e) => setReasons((p) => ({ ...p, [w.code]: e.target.value }))}
                   rows={2}
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                  className="w-full border border rounded-xl px-3 py-2 text-sm"
                   placeholder="Explain why you are submitting an exception…"
                 />
                 {!(reasons[w.code] || "").trim() && (
@@ -90,7 +90,7 @@ export default function SubmitWithWarningsModal({
         )}
 
         <div className="mt-5 flex items-center justify-between">
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-muted-foreground">
             {canSubmit ? "" : "Fill in all required reasons to continue."}
           </div>
           <div className="flex items-center gap-2">

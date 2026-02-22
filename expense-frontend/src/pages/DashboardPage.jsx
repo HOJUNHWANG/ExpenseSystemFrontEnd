@@ -1,16 +1,57 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
-import { apiFetch } from "../lib/api";
 import StatusBadge from "../ui/StatusBadge.jsx";
 import { REPORT_STATUS, USER_ROLES } from "../lib/constants";
+import { Skeleton } from "@/components/ui/skeleton";
+import PageTransition from "@/components/PageTransition";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys, fetchReports, fetchPendingApprovals, fetchActivity, fetchStats } from "@/lib/queries";
+
+const DashboardCharts = lazy(() => import("@/components/DashboardCharts"));
+
+function StatCardSkeleton() {
+  return (
+    <div className="rounded-2xl bg-card border shadow-sm p-5">
+      <Skeleton className="h-3 w-20" />
+      <Skeleton className="mt-3 h-7 w-12" />
+      <Skeleton className="mt-3 h-3 w-32" />
+    </div>
+  );
+}
+
+function ActivitySkeleton() {
+  return (
+    <div className="space-y-2">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="rounded-xl border px-3 py-3">
+          <Skeleton className="h-4 w-48" />
+          <div className="mt-2 flex gap-2">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-3 w-12" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ChartSkeleton() {
+  return (
+    <div className="rounded-2xl bg-card border shadow-sm p-5">
+      <Skeleton className="h-4 w-32 mb-4" />
+      <Skeleton className="h-[200px] w-full rounded-xl" />
+    </div>
+  );
+}
 
 function StatCard({ title, value, hint, action }) {
   return (
-    <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
-      <div className="text-xs text-slate-500">{title}</div>
-      <div className="mt-2 text-2xl font-semibold text-slate-900">{value}</div>
-      {hint && <div className="mt-2 text-xs text-slate-500">{hint}</div>}
+    <div className="rounded-2xl bg-card border shadow-sm p-5">
+      <div className="text-xs text-muted-foreground">{title}</div>
+      <div className="mt-2 text-2xl font-semibold text-foreground">{value}</div>
+      {hint && <div className="mt-2 text-xs text-muted-foreground">{hint}</div>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   );
@@ -20,7 +61,7 @@ function Section({ title, children, right }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
+        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
         {right}
       </div>
       {children}
@@ -30,44 +71,34 @@ function Section({ title, children, right }) {
 
 export default function DashboardPage() {
   const { user } = useAuth();
-
-  const [myReports, setMyReports] = useState([]);
-  const [pendingApprovals, setPendingApprovals] = useState([]);
-  const [activity, setActivity] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
   const isApprover = user && (user.role === USER_ROLES.MANAGER || user.role === USER_ROLES.CFO || user.role === USER_ROLES.CEO);
 
-  useEffect(() => {
-    const run = async () => {
-      if (!user) return;
-      setLoading(true);
-      setError("");
-      try {
-        const reports = await apiFetch(`/api/expense-reports?submitterId=${user.id}`);
-        setMyReports(reports || []);
+  const { data: myReports = [], isLoading: reportsLoading, error: reportsError } = useQuery({
+    queryKey: queryKeys.reports(user?.id),
+    queryFn: () => fetchReports({ submitterId: user.id }),
+    enabled: !!user,
+  });
 
-        const act = await apiFetch(
-          `/api/expense-reports/activity?requesterId=${user.id}&requesterRole=${user.role}&limit=8`
-        );
-        setActivity(act || []);
+  const { data: activity = [], isLoading: activityLoading } = useQuery({
+    queryKey: queryKeys.activity(user?.id, user?.role),
+    queryFn: () => fetchActivity(user.id, user.role),
+    enabled: !!user,
+  });
 
-        if (isApprover) {
-          const pending = await apiFetch(`/api/expense-reports/pending-approval?requesterRole=${encodeURIComponent(user.role)}`);
-          setPendingApprovals(pending || []);
-        } else {
-          setPendingApprovals([]);
-        }
-      } catch (e) {
-        setError(e.message || "Failed to load dashboard");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: pendingApprovals = [], isLoading: pendingLoading } = useQuery({
+    queryKey: queryKeys.pendingApprovals(user?.role),
+    queryFn: () => fetchPendingApprovals(user.role),
+    enabled: !!user && isApprover,
+  });
 
-    run();
-  }, [user, isApprover]);
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    queryKey: queryKeys.stats(),
+    queryFn: fetchStats,
+    enabled: !!user,
+  });
+
+  const loading = reportsLoading || activityLoading || (isApprover && pendingLoading);
+  const error = reportsError?.message || "";
 
   const myCounts = useMemo(() => {
     const submitted = myReports.filter((r) => (
@@ -82,11 +113,11 @@ export default function DashboardPage() {
 
   if (!user) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-        <h1 className="text-xl font-semibold text-slate-900">Dashboard</h1>
-        <p className="mt-2 text-sm text-slate-600">Please login to view your dashboard.</p>
-        <p className="mt-1 text-xs text-slate-500">
-          Tip: Use the demo Role Switcher in the header to try the workflow solo.
+      <div className="bg-card rounded-2xl border shadow-sm p-6">
+        <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Please login to view your dashboard.</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Tip: Use the demo Role Switcher in the sidebar to try the workflow solo.
         </p>
         <div className="mt-4">
           <Link to="/login" className="text-sm text-blue-600 hover:underline">
@@ -98,12 +129,13 @@ export default function DashboardPage() {
   }
 
   return (
+    <PageTransition>
     <div className="space-y-6">
-      <div className="rounded-2xl bg-gradient-to-b from-slate-50 to-white border border-slate-200 p-6">
+      <div className="rounded-2xl bg-gradient-to-b from-muted/50 to-card border p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
-            <p className="mt-1 text-sm text-slate-600">
+            <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
               Welcome back, <span className="font-medium">{user.name}</span>. This is a public demo —
               data resets daily.
             </p>
@@ -111,13 +143,13 @@ export default function DashboardPage() {
           <div className="flex gap-2">
             <Link
               to="/create"
-              className="px-3 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium hover:bg-slate-800"
+              className="px-3 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90"
             >
               New report
             </Link>
             <Link
               to="/reports"
-              className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50"
+              className="px-3 py-2 rounded-xl border bg-card text-sm font-medium hover:bg-accent"
             >
               View reports
             </Link>
@@ -132,32 +164,62 @@ export default function DashboardPage() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="My reports"
-          value={loading ? "…" : myCounts.total}
-          hint="Created by the current demo user"
-          action={
-            <Link to="/reports" className="text-xs text-blue-600 hover:underline">
-              Open My Reports
-            </Link>
-          }
-        />
-        <StatCard
-          title="In review"
-          value={loading ? "…" : myCounts.submitted}
-          hint="Waiting for approvals"
-        />
-        <StatCard
-          title="Approved"
-          value={loading ? "…" : myCounts.approved}
-          hint="Processed successfully"
-        />
-        <StatCard
-          title="Rejected"
-          value={loading ? "…" : myCounts.rejected}
-          hint="Needs changes / missing info"
-        />
+        {loading ? (
+          <>
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+          </>
+        ) : (
+          <>
+            <StatCard
+              title="My reports"
+              value={myCounts.total}
+              hint="Created by the current demo user"
+              action={
+                <Link to="/reports" className="text-xs text-blue-600 hover:underline">
+                  Open My Reports
+                </Link>
+              }
+            />
+            <StatCard
+              title="In review"
+              value={myCounts.submitted}
+              hint="Waiting for approvals"
+            />
+            <StatCard
+              title="Approved"
+              value={myCounts.approved}
+              hint="Processed successfully"
+            />
+            <StatCard
+              title="Rejected"
+              value={myCounts.rejected}
+              hint="Needs changes / missing info"
+            />
+          </>
+        )}
       </div>
+
+      {/* Charts Section */}
+      <Section title="Analytics overview">
+        {statsLoading ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ChartSkeleton />
+            <ChartSkeleton />
+          </div>
+        ) : stats ? (
+          <Suspense fallback={
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <ChartSkeleton />
+              <ChartSkeleton />
+            </div>
+          }>
+            <DashboardCharts stats={stats} />
+          </Suspense>
+        ) : null}
+      </Section>
 
       {isApprover && (
         <Section
@@ -168,25 +230,25 @@ export default function DashboardPage() {
             </Link>
           }
         >
-          <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
+          <div className="rounded-2xl bg-card border shadow-sm p-5">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm font-medium text-slate-900">Pending approvals</div>
-                <div className="mt-1 text-xs text-slate-500">
+                <div className="text-sm font-medium text-foreground">Pending approvals</div>
+                <div className="mt-1 text-xs text-muted-foreground">
                   Reports currently waiting for approval.
                 </div>
               </div>
-              <div className="text-2xl font-semibold text-slate-900">{loading ? "…" : pendingCount}</div>
+              <div className="text-2xl font-semibold text-foreground">{loading ? "..." : pendingCount}</div>
             </div>
 
             {!loading && pendingCount === 0 && (
-              <div className="mt-3 text-sm text-slate-600">Nothing to approve right now.</div>
+              <div className="mt-3 text-sm text-muted-foreground">Nothing to approve right now.</div>
             )}
 
             {!loading && pendingCount > 0 && (
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="text-xs text-slate-500">
+                  <thead className="text-xs text-muted-foreground">
                     <tr>
                       <th className="text-left font-medium py-2">Title</th>
                       <th className="text-left font-medium py-2">Destination</th>
@@ -196,7 +258,7 @@ export default function DashboardPage() {
                   </thead>
                   <tbody>
                     {pendingApprovals.slice(0, 5).map((r) => (
-                      <tr key={r.id} className="border-t border-slate-100">
+                      <tr key={r.id} className="border-t">
                         <td className="py-2">{r.title}</td>
                         <td className="py-2">{r.destination || "-"}</td>
                         <td className="py-2">
@@ -216,7 +278,7 @@ export default function DashboardPage() {
                   </tbody>
                 </table>
                 {pendingCount > 5 && (
-                  <div className="mt-3 text-xs text-slate-500">Showing 5 of {pendingCount}.</div>
+                  <div className="mt-3 text-xs text-muted-foreground">Showing 5 of {pendingCount}.</div>
                 )}
               </div>
             )}
@@ -232,40 +294,40 @@ export default function DashboardPage() {
           </Link>
         }
       >
-        <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
-          {loading && <div className="text-sm text-slate-600">Loading…</div>}
+        <div className="rounded-2xl bg-card border shadow-sm p-5">
+          {activityLoading && <ActivitySkeleton />}
 
-          {!loading && activity.length === 0 && (
-            <div className="text-sm text-slate-600">No recent activity.</div>
+          {!activityLoading && activity.length === 0 && (
+            <div className="text-sm text-muted-foreground">No recent activity.</div>
           )}
 
-          {!loading && activity.length > 0 && (
+          {!activityLoading && activity.length > 0 && (
             <div className="space-y-2">
               {activity.map((a) => (
                 <Link
                   key={a.id}
                   to={a.status === REPORT_STATUS.CFO_SPECIAL_REVIEW ? `/policy-exceptions/${a.id}` : `/reports/${a.id}`}
-                  className="block rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 px-3 py-2"
+                  className="block rounded-xl border hover:bg-accent px-3 py-2"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="text-sm font-medium text-slate-900 truncate">
+                      <div className="text-sm font-medium text-foreground truncate">
                         {a.title}
                       </div>
-                      <div className="mt-0.5 text-xs text-slate-500 flex flex-wrap items-center gap-2">
+                      <div className="mt-0.5 text-xs text-muted-foreground flex flex-wrap items-center gap-2">
                         <span>{a.activityLabel}</span>
-                        <span className="text-slate-300">•</span>
+                        <span>-</span>
                         <StatusBadge status={a.status} />
                         {a.flagged && (
                           <span className="inline-flex items-center rounded-full border border-orange-100 bg-orange-50 px-2 py-0.5 text-[11px] font-medium text-orange-700">
                             Flagged
                           </span>
                         )}
-                        <span className="text-slate-300">•</span>
+                        <span>-</span>
                         <span>${Number(a.totalAmount || 0).toLocaleString()}</span>
                       </div>
                     </div>
-                    <div className="text-xs text-slate-500 whitespace-nowrap">
+                    <div className="text-xs text-muted-foreground whitespace-nowrap">
                       #{a.id}
                     </div>
                   </div>
@@ -277,10 +339,10 @@ export default function DashboardPage() {
       </Section>
 
       <Section title="Demo tips" right={<Link to="/welcome" className="text-xs text-blue-600 hover:underline">About this demo</Link>}>
-        <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-5 text-sm text-slate-700">
+        <div className="rounded-2xl bg-card border shadow-sm p-5 text-sm text-muted-foreground">
           <ul className="list-disc pl-5 space-y-1">
             <li>
-              Use <span className="font-medium">View as</span> in the header to switch roles and
+              Use <span className="font-medium">View as</span> in the sidebar to switch roles and
               complete the full workflow.
             </li>
             <li>
@@ -293,5 +355,6 @@ export default function DashboardPage() {
         </div>
       </Section>
     </div>
+    </PageTransition>
   );
 }

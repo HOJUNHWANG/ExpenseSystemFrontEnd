@@ -42,10 +42,10 @@ export default function E2ELoginPage() {
   }, [location.search, loginWithEmail, navigate]);
 
   return (
-    <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
-      <h1 className="text-xl font-semibold text-slate-900">E2E Login</h1>
-      <p className="mt-2 text-sm text-slate-600">{status}</p>
-      <p className="mt-2 text-xs text-slate-400">
+    <div className="rounded-2xl bg-white border shadow-sm p-6">
+      <h1 className="text-xl font-semibold text-foreground">E2E Login</h1>
+      <p className="mt-2 text-sm text-muted-foreground">{status}</p>
+      <p className="mt-2 text-xs text-muted-foreground">
         (This page is used by automated Playwright tests to set a deterministic auth state.)
       </p>
     </div>

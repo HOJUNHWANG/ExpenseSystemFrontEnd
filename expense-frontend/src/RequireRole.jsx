@@ -17,9 +17,9 @@ export default function RequireRole({ roles, title = "Access restricted", childr
 
   if (!ok) {
     return (
-      <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
-        <h1 className="text-xl font-semibold text-slate-900">{title}</h1>
-        <p className="mt-2 text-sm text-slate-600">
+      <div className="rounded-2xl bg-white border shadow-sm p-6">
+        <h1 className="text-xl font-semibold text-foreground">{title}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
           You don’t have permission to view this page.
           {allow.length > 0 ? ` Allowed roles: ${allow.join(", ")}.` : ""}
         </p>

@@ -2,28 +2,23 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../AuthContext";
+import { toast } from "sonner";
 
 export default function DemoControls() {
   const { user, switchDemoRole } = useAuth();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState("");
 
   const resetDemo = async () => {
     setBusy(true);
-    setToast("");
     try {
       await apiFetch("/api/demo/reset", { method: "POST" });
-      // Re-login current role (so IDs are always valid after reset)
       const role = user?.role || "EMPLOYEE";
       await switchDemoRole(role);
-      setToast("Demo data reset.");
-      // After reset, always land on Dashboard to avoid stale screens.
+      toast.success("Demo data reset.");
       navigate("/dashboard");
-      setTimeout(() => setToast(""), 2200);
     } catch (e) {
-      setToast(e.message || "Reset failed");
-      setTimeout(() => setToast(""), 3000);
+      toast.error(e.message || "Reset failed");
     } finally {
       setBusy(false);
     }
@@ -31,16 +26,11 @@ export default function DemoControls() {
 
   return (
     <div className="flex items-center gap-2 whitespace-nowrap">
-      {toast && (
-        <span className="text-[11px] text-slate-600 bg-slate-100 border border-slate-200 px-2 py-1 rounded-full">
-          {toast}
-        </span>
-      )}
       <button
         data-testid="demo-reset"
         onClick={resetDemo}
         disabled={busy}
-        className="text-[11px] px-2 py-1 rounded-full border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-60"
+        className="text-[11px] px-2 py-1 rounded-full border bg-background hover:bg-accent disabled:opacity-60"
         title="Reset demo workspace and reload sample data"
       >
         {busy ? "Resetting..." : "Reset demo"}

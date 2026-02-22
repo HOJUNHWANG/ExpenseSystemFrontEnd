@@ -7,6 +7,7 @@ import StatusBadge from "../ui/StatusBadge.jsx";
 import { Button } from "../ui/Button.jsx";
 import SubmitWithWarningsModal from "./SubmitWithWarningsModal.jsx";
 import { REPORT_STATUS, USER_ROLES } from "../lib/constants";
+import { toast } from "sonner";
 
 function ChangesRequestedFeedback({ reportId, requesterId }) {
   const [loading, setLoading] = useState(true);
@@ -160,15 +161,15 @@ export default function ExpenseReportDetail() {
 
     if (loading) {
         return (
-            <div className="bg-white shadow-md rounded-xl p-6">
-                <p className="text-sm text-slate-600">Loading report...</p>
+            <div className="bg-card shadow-sm rounded-xl p-6">
+                <p className="text-sm text-muted-foreground">Loading report...</p>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="bg-white shadow-md rounded-xl p-6">
+            <div className="bg-card shadow-sm rounded-xl p-6">
                 <p className="text-sm text-red-600 mb-4">Error: {error}</p>
                 <button
                     onClick={() => navigate(-1)}
@@ -182,8 +183,8 @@ export default function ExpenseReportDetail() {
 
     if (!report) {
         return (
-            <div className="bg-white shadow-md rounded-xl p-6">
-                <p className="text-sm text-slate-600">Report not found.</p>
+            <div className="bg-card shadow-sm rounded-xl p-6">
+                <p className="text-sm text-muted-foreground">Report not found.</p>
             </div>
         );
     }
@@ -200,7 +201,7 @@ export default function ExpenseReportDetail() {
     const isDraft = isOwner && report?.status === REPORT_STATUS.DRAFT;
 
     return (
-        <div className="bg-white shadow-md rounded-xl p-6 space-y-4">
+        <div className="bg-card shadow-sm rounded-xl p-6 space-y-4">
             <SubmitWithWarningsModal
               open={showSubmitModal}
               warnings={report?.policyWarnings || []}
@@ -331,29 +332,29 @@ export default function ExpenseReportDetail() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
-                    <div className="font-medium text-slate-500">Status</div>
+                    <div className="font-medium text-muted-foreground">Status</div>
                     <div>
             <StatusBadge status={report.status} className="mt-1" />
                     </div>
                 </div>
 
                 <div>
-                    <div className="font-medium text-slate-500">Destination</div>
+                    <div className="font-medium text-muted-foreground">Destination</div>
                     <div className="mt-1">{report.destination || "-"}</div>
                 </div>
 
                 <div>
-                    <div className="font-medium text-slate-500">Departure Date</div>
+                    <div className="font-medium text-muted-foreground">Departure Date</div>
                     <div className="mt-1">{report.departureDate || "-"}</div>
                 </div>
 
                 <div>
-                    <div className="font-medium text-slate-500">Return Date</div>
+                    <div className="font-medium text-muted-foreground">Return Date</div>
                     <div className="mt-1">{report.returnDate || "-"}</div>
                 </div>
 
                 <div>
-                    <div className="font-medium text-slate-500">Submitter</div>
+                    <div className="font-medium text-muted-foreground">Submitter</div>
                     <div className="mt-1">
                         {report.submitterName
                             ? `${report.submitterName} (ID: ${report.submitterId})`
@@ -362,7 +363,7 @@ export default function ExpenseReportDetail() {
                 </div>
 
                 <div>
-                    <div className="font-medium text-slate-500">Approver</div>
+                    <div className="font-medium text-muted-foreground">Approver</div>
                     <div className="mt-1">
                         {report.approverName
                             ? `${report.approverName} (ID: ${report.approverId})`
@@ -371,26 +372,26 @@ export default function ExpenseReportDetail() {
                 </div>
 
                 <div>
-                    <div className="font-medium text-slate-500">Created At</div>
+                    <div className="font-medium text-muted-foreground">Created At</div>
                     <div className="mt-1">
                         {report.createdAt ? report.createdAt.replace("T", " ") : "-"}
                     </div>
                 </div>
 
                 <div>
-                    <div className="font-medium text-slate-500">Approved / Rejected At</div>
+                    <div className="font-medium text-muted-foreground">Approved / Rejected At</div>
                     <div className="mt-1">
                         {report.approvedAt ? report.approvedAt.replace("T", " ") : "-"}
                     </div>
                 </div>
 
                 <div>
-                    <div className="font-medium text-slate-500">Approval Comment</div>
+                    <div className="font-medium text-muted-foreground">Approval Comment</div>
                     <div className="mt-1">{report.approvalComment || "-"}</div>
                 </div>
 
                 <div>
-                    <div className="font-medium text-slate-500">Total Amount</div>
+                    <div className="font-medium text-muted-foreground">Total Amount</div>
                     <div className="mt-1 font-semibold">
                         {total.toLocaleString()} (base currency)
                     </div>
@@ -401,7 +402,7 @@ export default function ExpenseReportDetail() {
             <div>
                 <h3 className="text-lg font-semibold mb-2">Items</h3>
                 {(!report.items || report.items.length === 0) && (
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-muted-foreground">
                         This report has no expense items.
                     </p>
                 )}
@@ -409,7 +410,7 @@ export default function ExpenseReportDetail() {
                     <div className="overflow-x-auto">
                         <table className="min-w-full text-sm">
                             <thead>
-                            <tr className="border-b bg-slate-50">
+                            <tr className="border-b bg-muted/50">
                                 <th className="px-3 py-2 text-left font-medium">Date</th>
                                 <th className="px-3 py-2 text-left font-medium">
                                     Description
@@ -490,14 +491,14 @@ export default function ExpenseReportDetail() {
                             </button>
 
                             {actionMode && (
-                              <div className="mt-4 border rounded-lg p-4 bg-slate-50">
+                              <div className="mt-4 border rounded-lg p-4 bg-muted/50">
                                 <div className="flex justify-between items-center mb-2">
-                                  <p className="text-sm font-medium text-slate-700">
+                                  <p className="text-sm font-medium text-muted-foreground">
                                     {actionMode === "approve" ? "Approve comment (optional)" : "Reject comment (required)"}
                                   </p>
                                   <button
                                     type="button"
-                                    className="text-xs text-slate-600 hover:underline"
+                                    className="text-xs text-muted-foreground hover:underline"
                                     onClick={() => {
                                       setActionMode(null);
                                       setComment("");
@@ -564,7 +565,7 @@ export default function ExpenseReportDetail() {
                         </div>
 
                         {!(report?.status === REPORT_STATUS.MANAGER_REVIEW || report?.status === REPORT_STATUS.CFO_REVIEW || report?.status === REPORT_STATUS.CEO_REVIEW) && (
-                            <p className="text-xs text-slate-500 mt-2">
+                            <p className="text-xs text-muted-foreground mt-2">
                                 This report is already {report.status.toLowerCase()}.
                             </p>
                         )}

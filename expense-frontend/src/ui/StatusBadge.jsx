@@ -1,33 +1,25 @@
 import { REPORT_STATUS } from "../lib/constants";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
+const STATUS_VARIANT = {
+  [REPORT_STATUS.DRAFT]: "secondary",
+  [REPORT_STATUS.MANAGER_REVIEW]: "warning",
+  [REPORT_STATUS.CFO_REVIEW]: "warning",
+  [REPORT_STATUS.CEO_REVIEW]: "warning",
+  [REPORT_STATUS.CFO_SPECIAL_REVIEW]: "warning",
+  [REPORT_STATUS.CHANGES_REQUESTED]: "destructive",
+  [REPORT_STATUS.APPROVED]: "success",
+  [REPORT_STATUS.REJECTED]: "destructive",
+};
 
 export default function StatusBadge({ status, className = "" }) {
   const s = String(status || "").toUpperCase();
-
-  const styles = {
-    [REPORT_STATUS.DRAFT]: "bg-slate-50 text-slate-700 border-slate-100",
-
-    [REPORT_STATUS.MANAGER_REVIEW]: "bg-yellow-50 text-yellow-700 border-yellow-100",
-    [REPORT_STATUS.CFO_REVIEW]: "bg-yellow-50 text-yellow-700 border-yellow-100",
-    [REPORT_STATUS.CEO_REVIEW]: "bg-yellow-50 text-yellow-700 border-yellow-100",
-
-    [REPORT_STATUS.CFO_SPECIAL_REVIEW]: "bg-orange-50 text-orange-700 border-orange-100",
-    [REPORT_STATUS.CHANGES_REQUESTED]: "bg-orange-50 text-orange-700 border-orange-100",
-
-    [REPORT_STATUS.APPROVED]: "bg-green-50 text-green-700 border-green-100",
-    [REPORT_STATUS.REJECTED]: "bg-red-50 text-red-700 border-red-100",
-  };
-
-  const cls = styles[s] || "bg-slate-50 text-slate-700 border-slate-200";
+  const variant = STATUS_VARIANT[s] || "secondary";
 
   return (
-    <span
-      className={
-        "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium " +
-        cls +
-        (className ? ` ${className}` : "")
-      }
-    >
+    <Badge variant={variant} className={cn("text-[11px]", className)}>
       {s || "-"}
-    </span>
+    </Badge>
   );
 }

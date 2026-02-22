@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { REPORT_STATUS } from "../lib/constants";
+import TableSkeleton from "./TableSkeleton.jsx";
+import PageTransition from "@/components/PageTransition";
 
 export default function InProgressReportsPage() {
     const { user } = useAuth();
@@ -56,8 +58,8 @@ export default function InProgressReportsPage() {
 
     if (!user) {
         return (
-            <div className="bg-white rounded-xl shadow p-6">
-                <p className="text-sm text-slate-700">
+            <div className="bg-card rounded-xl shadow p-6">
+                <p className="text-sm text-muted-foreground">
                     Please login to see your in-progress reports.
                 </p>
             </div>
@@ -65,11 +67,11 @@ export default function InProgressReportsPage() {
     }
 
     return (
-        <div className="bg-white shadow-md rounded-xl p-6">
+        <div className="bg-card shadow-sm rounded-xl p-6">
             <div className="flex justify-between items-center mb-4">
                 <div>
                     <h1 className="text-xl font-semibold">In-progress Reports</h1>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                         Submitted reports that are not yet approved or rejected.
                     </p>
                 </div>
@@ -81,7 +83,7 @@ export default function InProgressReportsPage() {
                 </Link>
             </div>
 
-            {loading && <p className="text-sm text-slate-600">Loading...</p>}
+            {loading && <TableSkeleton rows={4} cols={5} />}
             {error && (
                 <p className="text-sm text-red-600 bg-red-50 rounded px-3 py-2">
                     {error}
@@ -89,7 +91,7 @@ export default function InProgressReportsPage() {
             )}
 
             {!loading && !error && reports.length === 0 && (
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-muted-foreground">
                     You have no in-progress reports.
                 </p>
             )}
@@ -97,7 +99,7 @@ export default function InProgressReportsPage() {
             {!loading && !error && reports.length > 0 && (
                 <div className="mt-2 border rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
-                        <thead className="bg-slate-50 text-slate-600">
+                        <thead className="bg-muted/50 text-muted-foreground">
                         <tr>
                             <th className="text-left px-3 py-2">Title</th>
                             <th className="text-left px-3 py-2">Destination</th>
@@ -109,7 +111,7 @@ export default function InProgressReportsPage() {
                         </thead>
                         <tbody>
                         {reports.map((r) => (
-                            <tr key={r.id} className="border-t hover:bg-slate-50">
+                            <tr key={r.id} className="border-t hover:bg-muted/50">
                                 <td className="px-3 py-2">{r.title}</td>
                                 <td className="px-3 py-2">{r.destination}</td>
                                 <td className="px-3 py-2">{r.departureDate}</td>

@@ -23,7 +23,7 @@ export default function RoleSwitcher() {
 
   return (
     <div className="flex items-center gap-2 whitespace-nowrap">
-      <span className="text-xs text-slate-500">View as</span>
+      <span className="text-xs text-muted-foreground">View as</span>
       {Object.keys(DEMO_USERS).map((role) => {
         const active = currentRole === role;
         return (
@@ -35,7 +35,7 @@ export default function RoleSwitcher() {
               "text-[11px] px-2 py-1 rounded-full border " +
               (active
                 ? "bg-slate-900 text-white border-slate-900"
-                : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50") +
+                : "bg-white text-muted-foreground border hover:bg-muted/50") +
               (loadingRole === role ? " opacity-70" : "")
             }
             title={DEMO_USERS[role].email}

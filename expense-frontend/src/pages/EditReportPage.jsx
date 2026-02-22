@@ -303,20 +303,20 @@ export default function EditReportPage() {
 
   if (!user) {
     return (
-      <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
-        <h1 className="text-xl font-semibold text-slate-900">Edit report</h1>
-        <p className="mt-2 text-sm text-slate-600">Please login to edit reports.</p>
+      <div className="rounded-2xl bg-white border shadow-sm p-6">
+        <h1 className="text-xl font-semibold text-foreground">Edit report</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Please login to edit reports.</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
+      <div className="rounded-2xl bg-white border shadow-sm p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-xl font-semibold text-slate-900">Edit report</h1>
-            <p className="mt-1 text-sm text-slate-600">Update details and items, then resubmit.</p>
+            <h1 className="text-xl font-semibold text-foreground">Edit report</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Update details and items, then resubmit.</p>
           </div>
           <Link to={`/reports/${id}`} className="text-xs text-blue-600 hover:underline">
             Back
@@ -329,7 +329,7 @@ export default function EditReportPage() {
           </div>
         )}
 
-        {loading && <div className="mt-4 text-sm text-slate-600">Loading…</div>}
+        {loading && <div className="mt-4 text-sm text-muted-foreground">Loading…</div>}
 
         {!loading && !error && (
           <form onSubmit={save} className="mt-4 space-y-4">

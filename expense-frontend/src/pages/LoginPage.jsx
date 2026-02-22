@@ -29,7 +29,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-10 bg-white shadow-lg rounded-xl p-6">
+        <div className="max-w-md mx-auto mt-10 bg-card shadow-sm rounded-xl p-6">
             <h1 className="text-xl font-semibold mb-4">Login</h1>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
@@ -58,7 +58,7 @@ export default function LoginPage() {
                 </button>
             </form>
 
-            <div className="mt-4 text-xs text-slate-500">
+            <div className="mt-4 text-xs text-muted-foreground">
                 Demo users:
                 <ul className="list-disc ml-5">
                     <li>jun@example.com (EMPLOYEE)</li>

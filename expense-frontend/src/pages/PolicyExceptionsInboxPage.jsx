@@ -45,18 +45,18 @@ export default function PolicyExceptionsInboxPage() {
 
   if (!user) {
     return (
-      <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
-        <h1 className="text-xl font-semibold text-slate-900">Policy exceptions</h1>
-        <p className="mt-2 text-sm text-slate-600">Please login to view this page.</p>
+      <div className="rounded-2xl bg-white border shadow-sm p-6">
+        <h1 className="text-xl font-semibold text-foreground">Policy exceptions</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Please login to view this page.</p>
       </div>
     );
   }
 
   if (!isFinance) {
     return (
-      <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
-        <h1 className="text-xl font-semibold text-slate-900">Policy exceptions</h1>
-        <p className="mt-2 text-sm text-slate-600">Only CFO can access this page.</p>
+      <div className="rounded-2xl bg-white border shadow-sm p-6">
+        <h1 className="text-xl font-semibold text-foreground">Policy exceptions</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Only CFO can access this page.</p>
         <div className="mt-4">
           <Link to="/dashboard" className="text-sm text-blue-600 hover:underline">
             Back to Dashboard
@@ -68,11 +68,11 @@ export default function PolicyExceptionsInboxPage() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
+      <div className="rounded-2xl bg-white border shadow-sm p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-xl font-semibold text-slate-900">Policy exceptions</h1>
-            <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
+            <h1 className="text-xl font-semibold text-foreground">Policy exceptions</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
           </div>
           <Link to="/dashboard" className="text-xs text-blue-600 hover:underline">
             Back to Dashboard
@@ -86,22 +86,22 @@ export default function PolicyExceptionsInboxPage() {
         )}
       </div>
 
-      <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
+      <div className="rounded-2xl bg-white border shadow-sm p-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-900">Inbox</h2>
-          <div className="text-xs text-slate-500">{results.length} item(s)</div>
+          <h2 className="text-sm font-semibold text-foreground">Inbox</h2>
+          <div className="text-xs text-muted-foreground">{results.length} item(s)</div>
         </div>
 
-        {loading && <div className="mt-3 text-sm text-slate-600">Loading…</div>}
+        {loading && <div className="mt-3 text-sm text-muted-foreground">Loading…</div>}
 
         {!loading && results.length === 0 && (
-          <div className="mt-3 text-sm text-slate-600">No reports waiting for exception review.</div>
+          <div className="mt-3 text-sm text-muted-foreground">No reports waiting for exception review.</div>
         )}
 
         {!loading && results.length > 0 && (
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="text-xs text-slate-500">
+              <thead className="text-xs text-muted-foreground">
                 <tr>
                   <th className="text-left font-medium py-2">Title</th>
                   <th className="text-left font-medium py-2 hidden md:table-cell">Destination</th>
@@ -112,10 +112,10 @@ export default function PolicyExceptionsInboxPage() {
               </thead>
               <tbody>
                 {results.map((r) => (
-                  <tr key={r.id} className="border-t border-slate-100">
+                  <tr key={r.id} className="border-t border">
                     <td className="py-2">
-                      <div className="font-medium text-slate-900">{r.title}</div>
-                      <div className="mt-0.5 text-xs text-slate-500 md:hidden">{r.destination || "-"}</div>
+                      <div className="font-medium text-foreground">{r.title}</div>
+                      <div className="mt-0.5 text-xs text-muted-foreground md:hidden">{r.destination || "-"}</div>
                     </td>
                     <td className="py-2 hidden md:table-cell">{r.destination || "-"}</td>
                     <td className="py-2 text-right pr-4">${Number(r.totalAmount || 0).toLocaleString()}</td>

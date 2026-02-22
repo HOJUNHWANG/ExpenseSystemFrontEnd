@@ -4,6 +4,8 @@ import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../AuthContext";
 import { evaluateDraftWarnings } from "../lib/policy";
 import { UNSAFE_NavigationContext, useBeforeUnload, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import PageTransition from "@/components/PageTransition";
 
 import {
   CATEGORY_OPTIONS,
@@ -62,7 +64,6 @@ export default function CreateExpenseReportForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState({});
-  const [policyToast, setPolicyToast] = useState("");
 
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [draftSaving, setDraftSaving] = useState(false);
@@ -70,8 +71,8 @@ export default function CreateExpenseReportForm() {
 
   if (!user) {
     return (
-        <div className="bg-white shadow-lg rounded-xl p-6">
-          <p className="text-sm text-slate-700 mb-2">
+        <div className="bg-card shadow-sm rounded-xl p-6">
+          <p className="text-sm text-muted-foreground mb-2">
             Please login to create an expense report.
           </p>
         </div>
@@ -147,11 +148,6 @@ export default function CreateExpenseReportForm() {
     setLeaveOpen(true);
   });
 
-  useEffect(() => {
-    if (!policyToast) return;
-    const t = setTimeout(() => setPolicyToast(""), 3500);
-    return () => clearTimeout(t);
-  }, [policyToast]);
 
   const validate = () => {
     const newErrors = {};
@@ -294,7 +290,7 @@ export default function CreateExpenseReportForm() {
         }),
       });
 
-      setPolicyToast("Draft saved.");
+      toast.success("Draft saved.");
       return { ok: true };
     } catch (e) {
       setMessage(`❌ Error: ${e.message || "Failed to save draft"}`);
@@ -424,21 +420,21 @@ export default function CreateExpenseReportForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white shadow-md rounded-xl p-6 max-w-4xl mx-auto"
+      className="bg-card shadow-sm rounded-xl p-6 max-w-4xl mx-auto"
     >
       <h2 className="text-xl font-semibold mb-4">Create Expense Report</h2>
 
       {message && (
-        <div className="mb-4 text-sm rounded-lg p-3 bg-slate-100">
+        <div className="mb-4 text-sm rounded-lg p-3 bg-muted">
           {message}
         </div>
       )}
 
       {leaveOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl p-6">
-            <div className="text-lg font-semibold text-slate-900">Leave this page?</div>
-            <div className="mt-2 text-sm text-slate-700">
+          <div className="w-full max-w-lg rounded-2xl bg-white border shadow-xl p-6">
+            <div className="text-lg font-semibold text-foreground">Leave this page?</div>
+            <div className="mt-2 text-sm text-muted-foreground">
               You have unsaved changes. Save as a draft before leaving?
             </div>
             <div className="mt-5 flex items-center justify-end gap-2">
@@ -448,7 +444,7 @@ export default function CreateExpenseReportForm() {
                   setLeaveOpen(false);
                   pendingTxRef.current = null;
                 }}
-                className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50"
+                className="px-3 py-2 rounded-xl border border bg-white text-sm hover:bg-muted/50"
               >
                 Cancel
               </button>
@@ -460,7 +456,7 @@ export default function CreateExpenseReportForm() {
                   setLeaveOpen(false);
                   tx?.retry();
                 }}
-                className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50"
+                className="px-3 py-2 rounded-xl border border bg-white text-sm hover:bg-muted/50"
               >
                 Leave without saving
               </button>
@@ -505,7 +501,7 @@ export default function CreateExpenseReportForm() {
       />
 
       {/* Spacer + subtle section divider to keep the header/date inputs from feeling glued to the Items action buttons. */}
-      <div className="mt-6 pt-6 border-t border-slate-100" />
+      <div className="mt-6 pt-6 border-t border" />
 
       <ItemsEditor
         items={items}

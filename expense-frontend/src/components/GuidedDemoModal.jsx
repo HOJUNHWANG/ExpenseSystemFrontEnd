@@ -47,24 +47,24 @@ export default function GuidedDemoModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl border border-slate-200 p-6">
+      <div className="w-full max-w-lg rounded-2xl bg-card shadow-sm-xl border border p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Guided Demo</h2>
-            <p className="text-sm text-slate-600 mt-1">
+            <h2 className="text-lg font-semibold text-foreground">Guided Demo</h2>
+            <p className="text-sm text-muted-foreground mt-1">
               This is a public demo. Data resets daily. Don&apos;t enter sensitive
               information.
             </p>
           </div>
           <button
             onClick={close}
-            className="text-xs text-slate-500 hover:text-slate-900"
+            className="text-xs text-muted-foreground hover:text-foreground"
           >
             Skip
           </button>
         </div>
 
-        <ol className="mt-4 space-y-2 text-sm text-slate-700 list-decimal pl-5">
+        <ol className="mt-4 space-y-2 text-sm text-muted-foreground list-decimal pl-5">
           <li>Create or open an expense report as an Employee</li>
           <li>Submit it (status enters the approval chain)</li>
           <li>Switch role to Manager to approve or reject</li>
@@ -78,7 +78,7 @@ export default function GuidedDemoModal() {
         )}
 
         <div className="mt-5 flex items-center justify-between">
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-muted-foreground">
             Current: {user ? `${user.name} (${user.role})` : "Not logged in"}
           </div>
           <button

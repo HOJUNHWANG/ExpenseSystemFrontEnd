@@ -4,7 +4,6 @@ import { useAuth } from "../AuthContext";
 import StatusBadge from "../ui/StatusBadge.jsx";
 import { Button } from "../ui/Button.jsx";
 import { REPORT_STATUS, USER_ROLES } from "../lib/constants";
-import PageTransition from "@/components/PageTransition";
 import Pagination from "@/components/Pagination";
 import TableSkeleton from "@/components/TableSkeleton";
 import { useQuery } from "@tanstack/react-query";
@@ -126,7 +125,7 @@ export default function SearchPage() {
                       type="button"
                       onClick={() => setStatus(f.value)}
                       className={
-                        "w-full text-[11px] px-3 py-2 rounded-full border text-center " +
+                        "w-full text-[11px] px-3 py-2 rounded-lg border text-center " +
                         (active
                           ? "bg-primary text-primary-foreground border-primary"
                           : "bg-card text-muted-foreground border hover:bg-accent")
@@ -219,7 +218,7 @@ export default function SearchPage() {
                 </thead>
                 <tbody>
                   {results.map((r) => (
-                    <tr key={r.id} className="border-t border">
+                    <tr key={r.id} className="border-b">
                       <td className="py-2">
                         <div className="font-medium text-foreground">{r.title}</div>
                         <div className="mt-0.5 text-xs text-muted-foreground md:hidden">

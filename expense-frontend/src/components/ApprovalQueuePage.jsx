@@ -4,7 +4,6 @@ import { useAuth } from "../AuthContext";
 import StatusBadge from "../ui/StatusBadge.jsx";
 import { toast } from "sonner";
 import TableSkeleton from "./TableSkeleton.jsx";
-import PageTransition from "@/components/PageTransition";
 import Pagination from "@/components/Pagination";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys, fetchPendingApprovals } from "@/lib/queries";

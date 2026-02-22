@@ -61,7 +61,7 @@ function SidebarNav({ items, currentPath, onNavigate }) {
   return (
     <nav className="flex flex-col gap-1 px-3">
       {items.map((item) => {
-        const isActive = currentPath === item.to || (item.to !== "/" && currentPath.startsWith(item.to));
+        const isActive = currentPath === item.to || (item.to !== "/" && currentPath.startsWith(item.to + "/"));
         const Icon = item.icon;
         return (
           <Link
@@ -128,7 +128,7 @@ function SidebarContent({ navItems, currentPath, user, logout, onNavigate }) {
       <Separator />
 
       {/* Bottom section */}
-      <div className="p-4 space-y-3">
+      <div className="p-4 space-y-3 overflow-hidden">
         <div className="rounded-lg border bg-card p-3 space-y-2">
           <DemoControls />
           <RoleSwitcher />

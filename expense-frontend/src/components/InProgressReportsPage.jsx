@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { REPORT_STATUS } from "../lib/constants";
 import TableSkeleton from "./TableSkeleton.jsx";
-import PageTransition from "@/components/PageTransition";
 
 export default function InProgressReportsPage() {
     const { user } = useAuth();

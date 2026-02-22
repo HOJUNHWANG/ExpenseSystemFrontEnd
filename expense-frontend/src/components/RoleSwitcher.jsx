@@ -22,28 +22,30 @@ export default function RoleSwitcher() {
   };
 
   return (
-    <div className="flex items-center gap-2 whitespace-nowrap">
+    <div className="space-y-1">
       <span className="text-xs text-muted-foreground">View as</span>
-      {Object.keys(DEMO_USERS).map((role) => {
-        const active = currentRole === role;
-        return (
-          <button
-            key={role}
-            onClick={() => onSwitch(role)}
-            disabled={loadingRole !== null}
-            className={
-              "text-[11px] px-2 py-1 rounded-full border " +
-              (active
-                ? "bg-slate-900 text-white border-slate-900"
-                : "bg-white text-muted-foreground border hover:bg-muted/50") +
-              (loadingRole === role ? " opacity-70" : "")
-            }
-            title={DEMO_USERS[role].email}
-          >
-            {DEMO_USERS[role].label}
-          </button>
-        );
-      })}
+      <div className="grid grid-cols-2 gap-1">
+        {Object.keys(DEMO_USERS).map((role) => {
+          const active = currentRole === role;
+          return (
+            <button
+              key={role}
+              onClick={() => onSwitch(role)}
+              disabled={loadingRole !== null}
+              className={
+                "text-[11px] px-2 py-1 rounded-lg border " +
+                (active
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border hover:bg-muted/50") +
+                (loadingRole === role ? " opacity-70" : "")
+              }
+              title={DEMO_USERS[role].email}
+            >
+              {DEMO_USERS[role].label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -47,7 +47,7 @@ export default function GuidedDemoModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
-      <div className="w-full max-w-lg rounded-2xl bg-card shadow-sm-xl border border p-6">
+      <div className="w-full max-w-lg rounded-2xl bg-card shadow-xl border p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-foreground">Guided Demo</h2>
@@ -84,7 +84,7 @@ export default function GuidedDemoModal() {
           <button
             onClick={start}
             disabled={busy}
-            className="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium disabled:opacity-60"
+            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:opacity-60 hover:bg-primary/90"
           >
             {busy ? "Preparing..." : "Start demo"}
           </button>

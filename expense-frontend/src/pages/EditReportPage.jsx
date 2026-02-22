@@ -14,6 +14,7 @@ import {
   PolicyWarningsPanel,
   FooterActionBar,
   ReportHeaderFields,
+  PerDiemPreview,
 } from "../components/ExpenseReportForm.jsx";
 
 function parseCountryFromDestination(destination) {
@@ -303,7 +304,7 @@ export default function EditReportPage() {
 
   if (!user) {
     return (
-      <div className="rounded-2xl bg-white border shadow-sm p-6">
+      <div className="rounded-2xl bg-card border shadow-sm p-6">
         <h1 className="text-xl font-semibold text-foreground">Edit report</h1>
         <p className="mt-2 text-sm text-muted-foreground">Please login to edit reports.</p>
       </div>
@@ -312,7 +313,7 @@ export default function EditReportPage() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl bg-white border shadow-sm p-6">
+      <div className="rounded-2xl bg-card border shadow-sm p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-xl font-semibold text-foreground">Edit report</h1>
@@ -347,6 +348,12 @@ export default function EditReportPage() {
               values={form}
               setValues={setForm}
               errors={errors}
+            />
+
+            <PerDiemPreview
+              departureDate={form.departureDate}
+              returnDate={form.returnDate}
+              destination={form.destination}
             />
 
             <ItemsEditor

@@ -18,7 +18,7 @@ export default class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-muted px-4">
-          <div className="rounded-2xl bg-white border shadow-sm p-8 max-w-md w-full text-center">
+          <div className="rounded-2xl bg-card border shadow-sm p-8 max-w-md w-full text-center">
             <h1 className="text-xl font-semibold text-foreground">Something went wrong</h1>
             <p className="mt-2 text-sm text-muted-foreground">
               An unexpected error occurred. Please try again.
@@ -28,7 +28,7 @@ export default class ErrorBoundary extends React.Component {
                 this.setState({ hasError: false, error: null });
                 window.location.reload();
               }}
-              className="mt-4 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium hover:bg-slate-800"
+              className="mt-4 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90"
             >
               Try again
             </button>

@@ -108,7 +108,7 @@ export function ConfirmSubmitModal({ open, warnings, busy, onCancel, onConfirm }
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white border shadow-xl p-6">
+      <div className="w-full max-w-lg rounded-2xl bg-card border shadow-xl p-6">
         <div className="text-lg font-semibold text-foreground">Policy warnings</div>
         <div className="mt-2 text-sm text-muted-foreground">
           This report has policy warnings. Submitting will route it to <span className="font-medium">exception review</span>. Do you want to continue?
@@ -124,7 +124,7 @@ export function ConfirmSubmitModal({ open, warnings, busy, onCancel, onConfirm }
           <button
             type="button"
             onClick={onCancel}
-            className="px-3 py-2 rounded-xl border border bg-white text-sm hover:bg-muted/50"
+            className="px-3 py-2 rounded-xl border bg-card text-sm hover:bg-muted/50"
           >
             No, keep editing
           </button>
@@ -132,7 +132,7 @@ export function ConfirmSubmitModal({ open, warnings, busy, onCancel, onConfirm }
             type="button"
             onClick={onConfirm}
             disabled={busy}
-            className="px-3 py-2 rounded-xl border border-slate-900 bg-slate-900 text-white text-sm hover:bg-slate-800 disabled:opacity-60"
+            className="px-3 py-2 rounded-xl border border-primary bg-primary text-primary-foreground text-sm hover:bg-primary/90 disabled:opacity-60"
           >
             Yes, submit
           </button>
@@ -162,7 +162,7 @@ export function FooterActionBar({
       <button
         type="button"
         onClick={onCancel}
-        className="px-3 py-2 rounded-xl border border bg-white text-sm hover:bg-muted/50"
+        className="px-3 py-2 rounded-xl border bg-card text-sm hover:bg-muted/50"
       >
         Cancel
       </button>
@@ -182,7 +182,7 @@ export function FooterActionBar({
         type="button"
         onClick={onSaveDraft}
         disabled={busy || saving || !canSaveDraft}
-        className="px-3 py-2 rounded-xl border border bg-white text-sm hover:bg-muted/50 disabled:opacity-60"
+        className="px-3 py-2 rounded-xl border bg-card text-sm hover:bg-muted/50 disabled:opacity-60"
       >
         {saving ? "Saving…" : saveDraftLabel}
       </button>
@@ -191,7 +191,7 @@ export function FooterActionBar({
         type="button"
         onClick={onSubmit}
         disabled={busy || submitting || !canSubmit}
-        className="px-3 py-2 rounded-xl border border-slate-900 bg-slate-900 text-white text-sm hover:bg-slate-800 disabled:opacity-60"
+        className="px-3 py-2 rounded-xl border border-primary bg-primary text-primary-foreground text-sm hover:bg-primary/90 disabled:opacity-60"
       >
         {submitting ? "Submitting…" : submitLabel}
       </button>
@@ -243,21 +243,21 @@ export function ItemsEditor({ items, setItems, departureDate, returnDate, errors
           <button
             type="button"
             onClick={addNormalItem}
-            className="text-xs px-3 py-2 rounded-xl border border bg-white hover:bg-muted/50"
+            className="text-xs px-3 py-2 rounded-xl border bg-card hover:bg-muted/50"
           >
             Add expense
           </button>
           <button
             type="button"
             onClick={addMileageItem}
-            className="text-xs px-3 py-2 rounded-xl border border bg-white hover:bg-muted/50"
+            className="text-xs px-3 py-2 rounded-xl border bg-card hover:bg-muted/50"
           >
             Add mileage
           </button>
           <button
             type="button"
             onClick={addMealItem}
-            className="text-xs px-3 py-2 rounded-xl border border bg-white hover:bg-muted/50"
+            className="text-xs px-3 py-2 rounded-xl border bg-card hover:bg-muted/50"
           >
             Add meal
           </button>
@@ -266,7 +266,7 @@ export function ItemsEditor({ items, setItems, departureDate, returnDate, errors
 
       <div className="mt-3 space-y-3">
         {(items || []).map((it, idx) => (
-          <div key={idx} className="rounded-2xl border border p-4">
+          <div key={idx} className="rounded-2xl border p-4">
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs text-muted-foreground">
                 Type: <span className="font-medium text-foreground">{it.type}</span>
@@ -335,7 +335,7 @@ export function ItemsEditor({ items, setItems, departureDate, returnDate, errors
                   <label className="block text-xs font-medium text-muted-foreground mb-1">Category</label>
                   <select
                     className={
-                      "w-full border rounded-xl px-3 py-2 text-sm bg-white " +
+                      "w-full border rounded-xl px-3 py-2 text-sm bg-card " +
                       (errFor(idx, "category") ? "border-red-200 bg-red-50" : "border")
                     }
                     value={it.category}
@@ -390,7 +390,7 @@ export function ItemsEditor({ items, setItems, departureDate, returnDate, errors
                   <input
                     value={MILEAGE_RATE}
                     readOnly
-                    className="w-full border border rounded-xl px-3 py-2 text-sm bg-muted/50"
+                    className="w-full border rounded-xl px-3 py-2 text-sm bg-muted/50"
                   />
                 </div>
                 <div>
@@ -398,7 +398,7 @@ export function ItemsEditor({ items, setItems, departureDate, returnDate, errors
                   <input
                     value={Number(it.amount || 0).toFixed(2)}
                     readOnly
-                    className="w-full border border rounded-xl px-3 py-2 text-sm bg-muted/50"
+                    className="w-full border rounded-xl px-3 py-2 text-sm bg-muted/50"
                   />
                 </div>
               </div>
@@ -452,7 +452,7 @@ export function ItemsEditor({ items, setItems, departureDate, returnDate, errors
                   <input
                     value={Number(it.amount || 0).toFixed(2)}
                     readOnly
-                    className="w-full border border rounded-xl px-3 py-2 text-sm bg-muted/50"
+                    className="w-full border rounded-xl px-3 py-2 text-sm bg-muted/50"
                   />
                 </div>
               </div>
@@ -462,6 +462,40 @@ export function ItemsEditor({ items, setItems, departureDate, returnDate, errors
 
         {(items || []).length === 0 && <div className="text-sm text-muted-foreground">No items.</div>}
       </div>
+    </div>
+  );
+}
+
+export function computePerDiemPreview(departureDate, returnDate, destination) {
+  if (!departureDate || !returnDate) return null;
+  const dep = new Date(departureDate);
+  const ret = new Date(returnDate);
+  const diffMs = ret - dep;
+  if (diffMs <= 0) return { days: 0, rate: 0, amount: 0, label: "Same-day trip — no per-diem" };
+  const days = Math.round(diffMs / (1000 * 60 * 60 * 24));
+  const lower = (destination || "").toLowerCase();
+  const domestic = lower.includes("united states") || lower.endsWith(", us") || !lower.includes(",");
+  const rate = domestic ? 25 : 50;
+  return { days, rate, amount: days * rate, label: domestic ? "Domestic" : "International" };
+}
+
+export function PerDiemPreview({ departureDate, returnDate, destination }) {
+  const preview = useMemo(
+    () => computePerDiemPreview(departureDate, returnDate, destination),
+    [departureDate, returnDate, destination]
+  );
+  if (!preview) return null;
+  if (preview.days === 0) {
+    return (
+      <div className="rounded-xl border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+        <span className="font-medium text-foreground">Per-Diem:</span> {preview.label}
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-xl border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+      <span className="font-medium text-foreground">Per-Diem:</span>{" "}
+      ${preview.rate}/day ({preview.label}) &times; {preview.days} days = <span className="font-medium text-foreground">${preview.amount.toFixed(2)}</span>
     </div>
   );
 }
@@ -482,7 +516,7 @@ export function ReportHeaderFields({
         <label className="block text-sm font-medium mb-1">Title</label>
         <input
           type="text"
-          className="w-full border border rounded-xl px-3 py-2 text-sm"
+          className="w-full border rounded-xl px-3 py-2 text-sm"
           value={values.title}
           onChange={(e) => setValues((v) => ({ ...v, title: e.target.value }))}
         />
@@ -495,7 +529,7 @@ export function ReportHeaderFields({
             <label className="block text-sm font-medium mb-1">City</label>
             <input
               type="text"
-              className="w-full border border rounded-xl px-3 py-2 text-sm"
+              className="w-full border rounded-xl px-3 py-2 text-sm"
               value={values.city}
               onChange={(e) => setValues((v) => ({ ...v, city: e.target.value }))}
               placeholder="e.g. Atlanta"
@@ -506,7 +540,7 @@ export function ReportHeaderFields({
           <div>
             <label className="block text-sm font-medium mb-1">Country</label>
             <select
-              className="w-full border border rounded-xl px-3 py-2 text-sm bg-white"
+              className="w-full border rounded-xl px-3 py-2 text-sm bg-card"
               value={values.countrySelect || ""}
               onChange={(e) =>
                 setValues((v) => {
@@ -530,7 +564,7 @@ export function ReportHeaderFields({
               <div className="mt-2">
                 <input
                   type="text"
-                  className="w-full border border rounded-xl px-3 py-2 text-sm"
+                  className="w-full border rounded-xl px-3 py-2 text-sm"
                   value={values.countryOther || ""}
                   onChange={(e) => setValues((v) => ({ ...v, countryOther: e.target.value }))}
                   placeholder="Type your country (e.g., Argentina)"
@@ -557,9 +591,9 @@ export function ReportHeaderFields({
         </div>
       )}
 
-      <div className={isCreate ? "grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2" : "grid grid-cols-1 md:grid-cols-2 gap-4"}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
         <div>
-          <label className="block text-sm font-medium mb-1">Departure date</label>
+          <label className="block text-sm font-medium mb-1 whitespace-nowrap">Departure date</label>
           <input
             type="date"
             className={
@@ -572,7 +606,7 @@ export function ReportHeaderFields({
           {errors?.departureDate && <p className="text-xs text-red-600 mt-1">{errors.departureDate}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Return date</label>
+          <label className="block text-sm font-medium mb-1 whitespace-nowrap">Return date</label>
           <input
             type="date"
             className={
@@ -606,7 +640,7 @@ export default function ExpenseReportFormShell({
   const setOpen = setConfirmOpen ?? setLocalConfirmOpen;
 
   return (
-    <div className="rounded-2xl bg-white border shadow-sm p-6 space-y-4">
+    <div className="rounded-2xl bg-card border shadow-sm p-6 space-y-4">
       <div>
         <h1 className="text-xl font-semibold text-foreground">{title}</h1>
         {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}

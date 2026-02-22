@@ -42,7 +42,7 @@ export default function E2ELoginPage() {
   }, [location.search, loginWithEmail, navigate]);
 
   return (
-    <div className="rounded-2xl bg-white border shadow-sm p-6">
+    <div className="rounded-2xl bg-card border shadow-sm p-6">
       <h1 className="text-xl font-semibold text-foreground">E2E Login</h1>
       <p className="mt-2 text-sm text-muted-foreground">{status}</p>
       <p className="mt-2 text-xs text-muted-foreground">

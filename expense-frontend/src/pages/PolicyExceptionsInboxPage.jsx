@@ -45,7 +45,7 @@ export default function PolicyExceptionsInboxPage() {
 
   if (!user) {
     return (
-      <div className="rounded-2xl bg-white border shadow-sm p-6">
+      <div className="rounded-2xl bg-card border shadow-sm p-6">
         <h1 className="text-xl font-semibold text-foreground">Policy exceptions</h1>
         <p className="mt-2 text-sm text-muted-foreground">Please login to view this page.</p>
       </div>
@@ -54,7 +54,7 @@ export default function PolicyExceptionsInboxPage() {
 
   if (!isFinance) {
     return (
-      <div className="rounded-2xl bg-white border shadow-sm p-6">
+      <div className="rounded-2xl bg-card border shadow-sm p-6">
         <h1 className="text-xl font-semibold text-foreground">Policy exceptions</h1>
         <p className="mt-2 text-sm text-muted-foreground">Only CFO can access this page.</p>
         <div className="mt-4">
@@ -68,7 +68,7 @@ export default function PolicyExceptionsInboxPage() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl bg-white border shadow-sm p-6">
+      <div className="rounded-2xl bg-card border shadow-sm p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-xl font-semibold text-foreground">Policy exceptions</h1>
@@ -86,7 +86,7 @@ export default function PolicyExceptionsInboxPage() {
         )}
       </div>
 
-      <div className="rounded-2xl bg-white border shadow-sm p-6">
+      <div className="rounded-2xl bg-card border shadow-sm p-6">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-foreground">Inbox</h2>
           <div className="text-xs text-muted-foreground">{results.length} item(s)</div>
@@ -112,7 +112,7 @@ export default function PolicyExceptionsInboxPage() {
               </thead>
               <tbody>
                 {results.map((r) => (
-                  <tr key={r.id} className="border-t border">
+                  <tr key={r.id} className="border-b">
                     <td className="py-2">
                       <div className="font-medium text-foreground">{r.title}</div>
                       <div className="mt-0.5 text-xs text-muted-foreground md:hidden">{r.destination || "-"}</div>

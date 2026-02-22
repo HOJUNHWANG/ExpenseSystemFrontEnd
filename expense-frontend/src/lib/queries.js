@@ -10,6 +10,7 @@ export const queryKeys = {
   specialReview: (id) => ["specialReview", id],
   submitterFeedback: (reportId, requesterId) => ["submitterFeedback", reportId, requesterId],
   stats: () => ["stats"],
+  auditLog: (reportId) => ["auditLog", reportId],
 };
 
 // --- Fetchers ---
@@ -58,4 +59,8 @@ export const fetchSearch = async (params) => {
 
 export const fetchStats = async () => {
   return apiFetch("/api/expense-reports/stats");
+};
+
+export const fetchAuditLog = async (reportId) => {
+  return apiFetch(`/api/expense-reports/${reportId}/audit-log`);
 };

@@ -5,7 +5,6 @@ import { useAuth } from "../AuthContext";
 import { evaluateDraftWarnings } from "../lib/policy";
 import { UNSAFE_NavigationContext, useBeforeUnload, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import PageTransition from "@/components/PageTransition";
 
 import {
   CATEGORY_OPTIONS,
@@ -17,6 +16,8 @@ import {
   PolicyWarningsPanel,
   FooterActionBar,
   ReportHeaderFields,
+  PerDiemPreview,
+  computePerDiemPreview,
 } from "./ExpenseReportForm.jsx";
 
 import { MAJOR_COUNTRY_OPTIONS, OTHER_COUNTRY_VALUE } from "../lib/countries";
@@ -432,7 +433,7 @@ export default function CreateExpenseReportForm() {
 
       {leaveOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white border shadow-xl p-6">
+          <div className="w-full max-w-lg rounded-2xl bg-card border shadow-xl p-6">
             <div className="text-lg font-semibold text-foreground">Leave this page?</div>
             <div className="mt-2 text-sm text-muted-foreground">
               You have unsaved changes. Save as a draft before leaving?
@@ -444,7 +445,7 @@ export default function CreateExpenseReportForm() {
                   setLeaveOpen(false);
                   pendingTxRef.current = null;
                 }}
-                className="px-3 py-2 rounded-xl border border bg-white text-sm hover:bg-muted/50"
+                className="px-3 py-2 rounded-xl border bg-card text-sm hover:bg-muted/50"
               >
                 Cancel
               </button>
@@ -456,7 +457,7 @@ export default function CreateExpenseReportForm() {
                   setLeaveOpen(false);
                   tx?.retry();
                 }}
-                className="px-3 py-2 rounded-xl border border bg-white text-sm hover:bg-muted/50"
+                className="px-3 py-2 rounded-xl border bg-card text-sm hover:bg-muted/50"
               >
                 Leave without saving
               </button>
@@ -471,7 +472,7 @@ export default function CreateExpenseReportForm() {
                   tx?.retry();
                 }}
                 disabled={draftSaving}
-                className="px-3 py-2 rounded-xl border border-slate-900 bg-slate-900 text-white text-sm hover:bg-slate-800 disabled:opacity-60"
+                className="px-3 py-2 rounded-xl border border-primary bg-primary text-primary-foreground text-sm hover:bg-primary/90 disabled:opacity-60"
               >
                 {draftSaving ? "Saving…" : "Save draft & leave"}
               </button>
@@ -500,8 +501,14 @@ export default function CreateExpenseReportForm() {
         countryOptions={MAJOR_COUNTRY_OPTIONS}
       />
 
-      {/* Spacer + subtle section divider to keep the header/date inputs from feeling glued to the Items action buttons. */}
-      <div className="mt-6 pt-6 border-t border" />
+      <PerDiemPreview
+        departureDate={form.departureDate}
+        returnDate={form.returnDate}
+        destination={`${form.city}, ${countryValue}`}
+      />
+
+      {/* Spacer + subtle section divider */}
+      <div className="mt-6 pt-6 border-t" />
 
       <ItemsEditor
         items={items}

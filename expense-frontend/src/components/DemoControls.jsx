@@ -25,12 +25,12 @@ export default function DemoControls() {
   };
 
   return (
-    <div className="flex items-center gap-2 whitespace-nowrap">
+    <div className="flex items-center gap-2 flex-wrap">
       <button
         data-testid="demo-reset"
         onClick={resetDemo}
         disabled={busy}
-        className="text-[11px] px-2 py-1 rounded-full border bg-background hover:bg-accent disabled:opacity-60"
+        className="text-[11px] px-2 py-1 rounded-lg border bg-background hover:bg-accent disabled:opacity-60"
         title="Reset demo workspace and reload sample data"
       >
         {busy ? "Resetting..." : "Reset demo"}

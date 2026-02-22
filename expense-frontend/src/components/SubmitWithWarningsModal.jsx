@@ -46,7 +46,7 @@ export default function SubmitWithWarningsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
-      <div className="w-full max-w-2xl rounded-2xl bg-card shadow-sm-xl border border p-6">
+      <div className="w-full max-w-2xl rounded-2xl bg-card shadow-xl border p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-foreground">Policy warnings</h2>
@@ -72,7 +72,7 @@ export default function SubmitWithWarningsModal({
                   value={reasons[w.code] || ""}
                   onChange={(e) => setReasons((p) => ({ ...p, [w.code]: e.target.value }))}
                   rows={2}
-                  className="w-full border border rounded-xl px-3 py-2 text-sm"
+                  className="w-full border rounded-xl px-3 py-2 text-sm"
                   placeholder="Explain why you are submitting an exception…"
                 />
                 {!(reasons[w.code] || "").trim() && (

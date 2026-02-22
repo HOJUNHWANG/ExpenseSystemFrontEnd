@@ -8,6 +8,8 @@ import { Button } from "../ui/Button.jsx";
 import SubmitWithWarningsModal from "./SubmitWithWarningsModal.jsx";
 import { REPORT_STATUS, USER_ROLES } from "../lib/constants";
 import { toast } from "sonner";
+import { Download, FileSpreadsheet } from "lucide-react";
+import AuditTimeline from "./AuditTimeline.jsx";
 
 function ChangesRequestedFeedback({ reportId, requesterId }) {
   const [loading, setLoading] = useState(true);
@@ -240,10 +242,10 @@ export default function ExpenseReportDetail() {
                         Edit
                       </Button>
 
-                      {isDraft && (
+                      {(isDraft || canSubmit) && (
                         <Button
                           onClick={async () => {
-                            if (!confirm("Delete this draft? This cannot be undone.")) return;
+                            if (!confirm("Delete this report? This cannot be undone.")) return;
                             try {
                               const { apiFetch } = await import("../lib/api");
                               await apiFetch(`/api/expense-reports/${id}?requesterId=${user.id}`, { method: "DELETE" });
@@ -292,6 +294,22 @@ export default function ExpenseReportDetail() {
                           {submitting ? "Submitting…" : "Submit"}
                         </Button>
                       )}
+                    </>
+                  )}
+                  {report.status === "APPROVED" && (
+                    <>
+                      <Button variant="outline" size="sm" onClick={async () => {
+                        const { exportReportPdf } = await import("../lib/exportReport");
+                        exportReportPdf(report);
+                      }}>
+                        <Download className="h-4 w-4 mr-1" /> PDF
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={async () => {
+                        const { exportReportExcel } = await import("../lib/exportReport");
+                        exportReportExcel(report);
+                      }}>
+                        <FileSpreadsheet className="h-4 w-4 mr-1" /> Excel
+                      </Button>
                     </>
                   )}
                   <button
@@ -398,6 +416,26 @@ export default function ExpenseReportDetail() {
                 </div>
             </div>
 
+            {/* Per-Diem */}
+            {report.perDiemDays > 0 && (
+              <div className="rounded-xl border bg-muted/30 px-4 py-3">
+                <h3 className="text-sm font-semibold text-foreground mb-1">Per-Diem Allowance</h3>
+                <div className="text-sm text-muted-foreground">
+                  Rate: <span className="font-medium text-foreground">${report.perDiemRate}/day</span>
+                  {" "}({report.perDiemRate === 25 ? "Domestic" : "International"})
+                  {" | "}Days: <span className="font-medium text-foreground">{report.perDiemDays}</span>
+                  {" | "}Total: <span className="font-medium text-foreground">${Number(report.perDiemAmount).toFixed(2)}</span>
+                </div>
+              </div>
+            )}
+
+            {report.perDiemDays === 0 && report.departureDate && report.returnDate && report.departureDate === report.returnDate && (
+              <div className="rounded-xl border bg-muted/30 px-4 py-3">
+                <h3 className="text-sm font-semibold text-foreground mb-1">Per-Diem Allowance</h3>
+                <div className="text-sm text-muted-foreground">Same-day trip — no per-diem.</div>
+              </div>
+            )}
+
             {/* Items */}
             <div>
                 <h3 className="text-lg font-semibold mb-2">Items</h3>
@@ -435,6 +473,9 @@ export default function ExpenseReportDetail() {
                     </div>
                 )}
             </div>
+
+            {/* Audit Timeline */}
+            {report?.id && <AuditTimeline reportId={report.id} />}
 
             {/* Approve / Reject section */}
             <div className="border-t pt-4 space-y-3">

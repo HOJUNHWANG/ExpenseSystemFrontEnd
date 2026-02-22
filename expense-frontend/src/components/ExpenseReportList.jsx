@@ -5,7 +5,6 @@ import { Link, useNavigate } from "react-router-dom";
 import StatusBadge from "../ui/StatusBadge.jsx";
 import { REPORT_STATUS } from "../lib/constants";
 import TableSkeleton from "./TableSkeleton.jsx";
-import PageTransition from "@/components/PageTransition";
 import Pagination from "@/components/Pagination";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys, fetchReports } from "@/lib/queries";

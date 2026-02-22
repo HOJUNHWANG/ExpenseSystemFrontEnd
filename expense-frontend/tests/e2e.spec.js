@@ -146,7 +146,7 @@ test("manager: approve a submitted report from approval queue", async ({ page })
   // ApprovalQueuePage consumes ?toast=approved and then replaces URL back to /approvals.
   // So we only assert the toast is visible and we're on approvals.
   await expect(page).toHaveURL(/\/approvals/);
-  await expect(page.getByText("Successfully approved.")).toBeVisible();
+  await expect(page.getByText("Successfully approved.").first()).toBeVisible();
 });
 
 test("flow: exception reject -> edit/resubmit -> approvals", async ({ page, request }) => {
@@ -240,7 +240,7 @@ test("flow: exception reject -> edit/resubmit -> approvals", async ({ page, requ
   await mgrRow.getByRole("link", { name: /View \/ Approve/ }).click();
   await page.getByRole("button", { name: "Approve" }).click();
   await page.getByRole("button", { name: "Confirm Approve" }).click();
-  await expect(page.getByText("Successfully approved.")).toBeVisible();
+  await expect(page.getByText("Successfully approved.").first()).toBeVisible();
 
   // 5) CFO final-approves in approvals queue
   await page.goto(
@@ -251,7 +251,7 @@ test("flow: exception reject -> edit/resubmit -> approvals", async ({ page, requ
   await cfoRow.getByRole("link", { name: /View \/ Approve/ }).click();
   await page.getByRole("button", { name: "Approve" }).click();
   await page.getByRole("button", { name: "Confirm Approve" }).click();
-  await expect(page.getByText("Successfully approved.")).toBeVisible();
+  await expect(page.getByText("Successfully approved.").first()).toBeVisible();
 
   // 6) Employee sees APPROVED
   await page.goto(

@@ -76,6 +76,7 @@ export interface ExpenseReport {
   createdAt?: string;
   updatedAt?: string;
   approvedAt?: string;
+  rejectedAt?: string;
   approvalComment?: string;
   approverId?: number | string;
   flagged?: boolean;

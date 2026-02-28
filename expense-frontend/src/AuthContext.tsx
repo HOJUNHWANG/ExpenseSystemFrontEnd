@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { apiFetch } from "./lib/api";
+import { getSessionUser, setSessionUser, clearSessionUser } from "./lib/session";
 import type { User } from "./types";
 
 interface AuthContextValue {
@@ -26,29 +27,20 @@ export const DEMO_USERS: Record<string, { email: string; label: string }> = {
   CEO: { email: "ceo@example.com", label: "CEO" },
 };
 
-// Phase 3: sessionStorage helper — exported so api.ts can inject headers
-export function getSessionUser(): User | null {
-  const saved = sessionStorage.getItem("expense-user");
-  if (!saved) return null;
-  try {
-    return JSON.parse(saved) as User;
-  } catch {
-    return null;
-  }
-}
+// Re-export so other modules can import from AuthContext without knowing about session.ts
+export { getSessionUser } from "./lib/session";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Phase 3: Use sessionStorage instead of localStorage (closes on tab close)
   const [user, setUser] = useState<User | null>(() => getSessionUser());
 
   const login = useCallback((userData: User) => {
     setUser(userData);
-    sessionStorage.setItem("expense-user", JSON.stringify(userData));
+    setSessionUser(userData);
   }, []);
 
   const logout = useCallback(() => {
     setUser(null);
-    sessionStorage.removeItem("expense-user");
+    clearSessionUser();
   }, []);
 
   const loginWithEmail = useCallback(

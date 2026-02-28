@@ -52,16 +52,34 @@ function StatCard({
   value,
   hint,
   action,
+  accent,
 }: {
   title: string;
   value: number | string;
   hint?: string;
   action?: React.ReactNode;
+  accent?: 'neutral' | 'blue' | 'green' | 'red' | 'amber';
 }) {
+  const accentClasses: Record<string, string> = {
+    neutral: '',
+    blue: 'border-l-2 border-l-blue-400',
+    green: 'border-l-2 border-l-emerald-500',
+    red: 'border-l-2 border-l-red-400',
+    amber: 'border-l-2 border-l-amber-400',
+  };
+  const valueClasses: Record<string, string> = {
+    neutral: 'text-foreground',
+    blue: 'text-blue-600 dark:text-blue-400',
+    green: 'text-emerald-600 dark:text-emerald-400',
+    red: 'text-red-600 dark:text-red-400',
+    amber: 'text-amber-600 dark:text-amber-400',
+  };
+  const ac = accent ?? 'neutral';
+
   return (
-    <div className="rounded-2xl bg-card border shadow-sm p-5">
-      <div className="text-xs text-muted-foreground">{title}</div>
-      <div className="mt-2 text-2xl font-semibold text-foreground">{value}</div>
+    <div className={`rounded-2xl bg-card border shadow-sm p-5 ${accentClasses[ac]}`}>
+      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{title}</div>
+      <div className={`mt-2 text-3xl font-bold tabular-nums ${valueClasses[ac]}`}>{value}</div>
       {hint && <div className="mt-2 text-xs text-muted-foreground">{hint}</div>}
       {action && <div className="mt-4">{action}</div>}
     </div>
@@ -80,7 +98,7 @@ function Section({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+        <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">{title}</h2>
         {right}
       </div>
       {children}
@@ -202,12 +220,13 @@ export default function DashboardPage() {
               <StatCard
                 title="My reports"
                 value={myCounts.total}
-                hint="Created by the current demo user"
-                action={<Link to="/reports" className="text-xs text-blue-600 hover:underline">Open My Reports</Link>}
+                hint="All reports you've created"
+                accent="blue"
+                action={<Link to="/reports" className="text-xs text-blue-600 hover:underline">Open My Reports →</Link>}
               />
-              <StatCard title="In review" value={myCounts.submitted} hint="Waiting for approvals" />
-              <StatCard title="Approved" value={myCounts.approved} hint="Processed successfully" />
-              <StatCard title="Rejected" value={myCounts.rejected} hint="Needs changes / missing info" />
+              <StatCard title="In review" value={myCounts.submitted} hint="Awaiting approvals" accent="amber" />
+              <StatCard title="Approved" value={myCounts.approved} hint="Fully processed" accent="green" />
+              <StatCard title="Rejected" value={myCounts.rejected} hint="Needs revision" accent="red" />
             </>
           )}
         </div>
@@ -288,7 +307,10 @@ export default function DashboardPage() {
           <div className="rounded-2xl bg-card border shadow-sm p-5">
             {activityLoading && <ActivitySkeleton />}
             {!activityLoading && (activity as ExpenseReportListItem[]).length === 0 && (
-              <div className="text-sm text-muted-foreground">No recent activity.</div>
+              <div className="flex flex-col items-center py-8 text-center">
+                <p className="text-sm text-muted-foreground">No recent activity yet.</p>
+                <Link to="/create" className="mt-3 text-xs text-blue-600 hover:underline">Create your first report →</Link>
+              </div>
             )}
             {!activityLoading && (activity as ExpenseReportListItem[]).length > 0 && (
               <div className="space-y-2">

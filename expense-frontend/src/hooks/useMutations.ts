@@ -102,3 +102,28 @@ export function useUpdateReport() {
     },
   });
 }
+
+export function useDeleteReport() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      requesterId,
+    }: {
+      id: string | number;
+      requesterId: string | number;
+    }) => {
+      return apiFetch(
+        `/api/expense-reports/${id}?requesterId=${requesterId}`,
+        { method: "DELETE" }
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+    },
+    onError: (error: Error) => {
+      toast.error(toUserMessage(error));
+    },
+  });
+}

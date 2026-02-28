@@ -30,3 +30,9 @@ export const USER_ROLES = {
   CFO: 'CFO',
   CEO: 'CEO',
 } as const satisfies Record<string, UserRole>;
+
+// ─── Policy constants (keep in sync with backend PolicyEngine) ────────────────
+export const MILEAGE_RATE = 0.70;           // $ per mile
+export const MEAL_LUNCH_AMOUNT = 25;        // $ per lunch
+export const MEAL_DINNER_AMOUNT = 25;       // $ per dinner
+export const MAX_ITEM_AMOUNT = 999999.99;   // backend DecimalMax cap

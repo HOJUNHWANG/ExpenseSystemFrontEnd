@@ -8,7 +8,16 @@ export const queryKeys = {
   report: (id: number | string) => ['report', id] as const,
   pendingApprovals: (role?: string, page?: number) => ['pendingApprovals', role, page] as const,
   activity: (userId?: number | string, role?: string) => ['activity', userId, role] as const,
-  search: (params: object) => ['search', params] as const,
+  search: (params: {
+    requesterId?: number | string;
+    requesterRole?: string;
+    q?: string;
+    status?: string;
+    minTotal?: number | string;
+    maxTotal?: number | string;
+    sort?: string;
+    page?: number;
+  }) => ['search', params.requesterId, params.requesterRole, params.q ?? '', params.status ?? '', params.minTotal ?? '', params.maxTotal ?? '', params.sort ?? '', params.page ?? 0] as const,
   specialReview: (id: number | string) => ['specialReview', id] as const,
   submitterFeedback: (reportId: number | string, requesterId: number | string) =>
     ['submitterFeedback', reportId, requesterId] as const,

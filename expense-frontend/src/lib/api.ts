@@ -1,17 +1,8 @@
-import type { User } from '../types';
+import { getSessionUser } from './session';
+
+export { getSessionUser } from './session';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-
-// ─── Phase 3: sessionStorage helper ──────────────────────────────────────────
-export function getSessionUser(): User | null {
-  const saved = sessionStorage.getItem('expense-user');
-  if (!saved) return null;
-  try {
-    return JSON.parse(saved) as User;
-  } catch {
-    return null;
-  }
-}
 
 // ─── HTTP fetch wrapper ───────────────────────────────────────────────────────
 export async function apiFetch(
@@ -20,7 +11,7 @@ export async function apiFetch(
 ): Promise<unknown> {
   const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
 
-  // Phase 3: inject user identity headers from sessionStorage
+  // Inject user identity headers from sessionStorage
   const sessionUser = getSessionUser();
   const identityHeaders: Record<string, string> = {};
   if (sessionUser) {

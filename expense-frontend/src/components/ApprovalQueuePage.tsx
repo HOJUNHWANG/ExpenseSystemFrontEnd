@@ -43,12 +43,12 @@ export default function ApprovalQueuePage() {
   }
 
   return (
-    <div className="bg-card shadow-sm rounded-xl p-6">
-      <div className="flex justify-between items-center mb-4">
+    <div className="bg-card shadow-sm rounded-2xl border p-6">
+      <div className="flex justify-between items-center mb-5">
         <div>
-          <h1 className="text-xl font-semibold">Approval Queue</h1>
-          <p className="text-xs text-muted-foreground">
-            Expense reports that are waiting for your approval.
+          <h1 className="text-xl font-semibold text-foreground">Approval Queue</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Expense reports waiting for your review.
           </p>
         </div>
       </div>
@@ -56,15 +56,18 @@ export default function ApprovalQueuePage() {
       {loading && <TableSkeleton rows={4} cols={5} />}
 
       {error && (
-        <p className="text-sm text-red-600 bg-red-50 rounded px-3 py-2" role="alert">
+        <div className="text-sm rounded-xl p-3 bg-red-50 border border-red-100 text-red-700 dark:bg-red-900/20 dark:border-red-900 dark:text-red-400" role="alert">
           {error}
-        </p>
+        </div>
       )}
 
       {!loading && !error && reports.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <p className="text-sm text-muted-foreground">All caught up! No reports pending approval.</p>
-          <p className="mt-1 text-xs text-muted-foreground">Reports submitted by employees will appear here.</p>
+        <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed rounded-xl border-border">
+          <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mb-3">
+            <span className="text-2xl" aria-hidden="true">✓</span>
+          </div>
+          <p className="text-sm font-medium text-foreground">All caught up!</p>
+          <p className="mt-1 text-xs text-muted-foreground">No reports pending approval right now.</p>
         </div>
       )}
 

@@ -92,6 +92,7 @@ interface NavItem {
   to: string;
   label: string;
   icon: React.ElementType;
+  section?: string;
 }
 
 function SidebarNav({
@@ -103,34 +104,55 @@ function SidebarNav({
   currentPath: string;
   onNavigate: () => void;
 }) {
+  // Group items by section for visual separation
+  const sections: { title: string; items: NavItem[] }[] = [];
+  let currentSection: { title: string; items: NavItem[] } | null = null;
+  for (const item of items) {
+    const sectionTitle = item.section ?? '';
+    if (!currentSection || currentSection.title !== sectionTitle) {
+      currentSection = { title: sectionTitle, items: [] };
+      sections.push(currentSection);
+    }
+    currentSection.items.push(item);
+  }
+
   return (
-    <nav className="flex flex-col gap-1 px-3" aria-label="Main navigation">
-      {items.map((item) => {
-        const isActive =
-          currentPath === item.to ||
-          (item.to !== "/" && currentPath.startsWith(item.to + "/"));
-        const Icon = item.icon;
-        return (
-          <Link
-            key={item.to}
-            to={item.to}
-            onClick={onNavigate}
-            aria-current={isActive ? "page" : undefined}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors relative",
-              isActive
-                ? "bg-accent text-accent-foreground font-medium"
-                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-            )}
-          >
-            {isActive && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
-            )}
-            <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span>{item.label}</span>
-          </Link>
-        );
-      })}
+    <nav className="flex flex-col gap-4 px-3" aria-label="Main navigation">
+      {sections.map((section, si) => (
+        <div key={si} className="flex flex-col gap-0.5">
+          {section.title && (
+            <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+              {section.title}
+            </p>
+          )}
+          {section.items.map((item) => {
+            const isActive =
+              currentPath === item.to ||
+              (item.to !== "/" && currentPath.startsWith(item.to + "/"));
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={onNavigate}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors relative",
+                  isActive
+                    ? "bg-accent text-accent-foreground font-medium"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                )}
+              >
+                {isActive && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
+                )}
+                <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      ))}
     </nav>
   );
 }
@@ -260,24 +282,26 @@ function App() {
 
   const navItems = useMemo<NavItem[]>(() => {
     const base: NavItem[] = [
-      { to: "/", label: "Welcome", icon: Home },
-      { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { to: "/create", label: "Create Report", icon: PlusCircle },
-      { to: "/search", label: "Search", icon: Search },
-      { to: "/reports", label: "My Reports", icon: FileText },
-      { to: "/reports/in-progress", label: "In Progress", icon: Clock },
+      { to: "/", label: "Welcome", icon: Home, section: "General" },
+      { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, section: "General" },
+      { to: "/create", label: "Create Report", icon: PlusCircle, section: "Reports" },
+      { to: "/reports", label: "My Reports", icon: FileText, section: "Reports" },
+      { to: "/reports/in-progress", label: "In Progress", icon: Clock, section: "Reports" },
+      { to: "/search", label: "Search", icon: Search, section: "Reports" },
     ];
     if (isFinance)
       base.push({
         to: "/policy-exceptions",
         label: "Policy Exceptions",
         icon: Shield,
+        section: "Approvals",
       });
     if (isApprover)
       base.push({
         to: "/approvals",
         label: "Approval Queue",
         icon: CheckSquare,
+        section: "Approvals",
       });
     return base;
   }, [isApprover, isFinance]);

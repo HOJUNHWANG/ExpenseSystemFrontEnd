@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { FormExpenseItem, PolicyWarning } from '../types';
+import { MILEAGE_RATE as _MILEAGE_RATE, MEAL_LUNCH_AMOUNT } from '../lib/constants';
 
 export const CATEGORY_OPTIONS = [
   'Airfare',
@@ -18,8 +19,8 @@ export const ITEM_TYPES = {
 
 export type ItemType = (typeof ITEM_TYPES)[keyof typeof ITEM_TYPES];
 
-export const MILEAGE_RATE = 0.7;
-export const MEAL_RATE = 25;
+export const MILEAGE_RATE = _MILEAGE_RATE;   // sourced from lib/constants
+export const MEAL_RATE = MEAL_LUNCH_AMOUNT;  // sourced from lib/constants
 
 export function makeNormalItem(): FormExpenseItem {
   return { type: ITEM_TYPES.NORMAL, date: '', description: '', amount: '', category: '' };

@@ -3,7 +3,7 @@ import type { User } from '../types';
 const SESSION_KEY = 'expense-user';
 
 export function getSessionUser(): User | null {
-  const saved = sessionStorage.getItem(SESSION_KEY);
+  const saved = localStorage.getItem(SESSION_KEY);
   if (!saved) return null;
   try {
     return JSON.parse(saved) as User;
@@ -13,9 +13,9 @@ export function getSessionUser(): User | null {
 }
 
 export function setSessionUser(user: User): void {
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
+  localStorage.setItem(SESSION_KEY, JSON.stringify(user));
 }
 
 export function clearSessionUser(): void {
-  sessionStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(SESSION_KEY);
 }

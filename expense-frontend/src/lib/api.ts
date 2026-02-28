@@ -21,7 +21,6 @@ export async function apiFetch(
 
   const res = await fetch(url, {
     ...options,
-    credentials: 'include', // future httpOnly cookie support
     headers: {
       'Content-Type': 'application/json',
       ...identityHeaders,

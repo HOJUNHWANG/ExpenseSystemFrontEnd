@@ -222,7 +222,7 @@ test("flow: exception reject -> edit/resubmit -> approvals", async ({ page, requ
     `/e2e/login?email=${encodeURIComponent("jun@example.com")}&next=${encodeURIComponent(`/reports/${reportId}`)}`
   );
 
-  await expect(page.getByText(/CHANGES_REQUESTED/)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/Changes Requested/)).toBeVisible({ timeout: 30_000 });
   await page.getByRole("button", { name: "Edit" }).click();
   await expect(page).toHaveURL(new RegExp(`/reports/${reportId}/edit$`));
 
@@ -257,5 +257,5 @@ test("flow: exception reject -> edit/resubmit -> approvals", async ({ page, requ
   await page.goto(
     `/e2e/login?email=${encodeURIComponent("jun@example.com")}&next=${encodeURIComponent(`/reports/${reportId}`)}`
   );
-  await expect(page.getByText(/APPROVED/)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/Approved/)).toBeVisible({ timeout: 30_000 });
 });

@@ -3,7 +3,7 @@ import { apiFetch, getSessionUser } from '../api';
 
 describe('apiFetch', () => {
   beforeEach(() => {
-    sessionStorage.clear();
+    localStorage.clear();
   });
 
   afterEach(() => {
@@ -53,10 +53,10 @@ describe('apiFetch', () => {
     await expect(apiFetch('/api/error')).rejects.toThrow('Request failed: 500');
   });
 
-  it('injects X-User-Id and X-User-Role headers when sessionStorage has user', async () => {
-    sessionStorage.setItem(
+  it('injects Authorization Bearer header when localStorage has user with token', async () => {
+    localStorage.setItem(
       'expense-user',
-      JSON.stringify({ id: 99, name: 'Test', email: 't@t.com', role: 'MANAGER' })
+      JSON.stringify({ id: 99, name: 'Test', email: 't@t.com', role: 'MANAGER', token: 'test-token' })
     );
 
     let capturedHeaders: Record<string, string> = {};
@@ -70,11 +70,10 @@ describe('apiFetch', () => {
     });
 
     await apiFetch('/api/test');
-    expect(capturedHeaders['X-User-Id']).toBe('99');
-    expect(capturedHeaders['X-User-Role']).toBe('MANAGER');
+    expect(capturedHeaders['Authorization']).toBe('Bearer test-token');
   });
 
-  it('does not inject identity headers when no user in sessionStorage', async () => {
+  it('does not inject Authorization header when no user in localStorage', async () => {
     let capturedHeaders: Record<string, string> = {};
     global.fetch = vi.fn().mockImplementation((_url: string, opts: RequestInit) => {
       capturedHeaders = opts.headers as Record<string, string>;
@@ -86,28 +85,27 @@ describe('apiFetch', () => {
     });
 
     await apiFetch('/api/test');
-    expect(capturedHeaders['X-User-Id']).toBeUndefined();
-    expect(capturedHeaders['X-User-Role']).toBeUndefined();
+    expect(capturedHeaders['Authorization']).toBeUndefined();
   });
 });
 
 describe('getSessionUser', () => {
   beforeEach(() => {
-    sessionStorage.clear();
+    localStorage.clear();
   });
 
-  it('returns null when sessionStorage is empty', () => {
+  it('returns null when localStorage is empty', () => {
     expect(getSessionUser()).toBeNull();
   });
 
   it('returns parsed user when valid JSON is stored', () => {
-    const user = { id: 1, name: 'Jun', email: 'jun@example.com', role: 'EMPLOYEE' as const };
-    sessionStorage.setItem('expense-user', JSON.stringify(user));
+    const user = { id: 1, name: 'Jun', email: 'jun@example.com', role: 'EMPLOYEE' as const, token: 'tok' };
+    localStorage.setItem('expense-user', JSON.stringify(user));
     expect(getSessionUser()).toEqual(user);
   });
 
-  it('returns null when sessionStorage has invalid JSON', () => {
-    sessionStorage.setItem('expense-user', '{invalid json}');
+  it('returns null when localStorage has invalid JSON', () => {
+    localStorage.setItem('expense-user', '{invalid json}');
     expect(getSessionUser()).toBeNull();
   });
 });

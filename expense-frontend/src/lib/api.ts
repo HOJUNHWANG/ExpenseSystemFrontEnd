@@ -1,4 +1,4 @@
-import { getSessionUser } from './session';
+import { getSessionUser, clearSessionUser } from './session';
 
 export { getSessionUser } from './session';
 
@@ -28,6 +28,13 @@ export async function apiFetch(
   });
 
   if (!res.ok) {
+    if (res.status === 401) {
+      clearSessionUser();
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+      throw new Error('Session expired. Please log in again.');
+    }
     const text = await res.text().catch(() => '');
     throw new Error(text || `Request failed: ${res.status}`);
   }

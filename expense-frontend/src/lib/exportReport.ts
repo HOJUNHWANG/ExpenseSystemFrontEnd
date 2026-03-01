@@ -103,7 +103,7 @@ export async function exportReportPdf(report: ExpenseReport): Promise<void> {
 
   const rowH = 7;
   const cardPad = 5;
-  const infoCardH = infoFields.length * rowH + cardPad * 2 + 6;
+  const infoCardH = infoFields.length * rowH + cardPad * 2 + 9;
   drawSectionCard(y, infoCardH);
 
   y += cardPad + 4;
@@ -111,11 +111,12 @@ export async function exportReportPdf(report: ExpenseReport): Promise<void> {
   doc.setFontSize(10);
   setColor(C.primary);
   doc.text("Report Details", mx + 4, y);
-  y += 5;
+  y += 6;
 
   doc.setDrawColor(...C.border);
   doc.setLineWidth(0.2);
   doc.line(mx + 2, y - 1.5, mx + contentW - 2, y - 1.5);
+  y += 2;
 
   doc.setFontSize(9);
   const labelX = mx + 6;
@@ -265,71 +266,342 @@ export async function exportReportPdf(report: ExpenseReport): Promise<void> {
 // ─── Excel ──────────────────────────────────────────────────────────────────
 
 export async function exportReportExcel(report: ExpenseReport): Promise<void> {
-  const XLSX = await import("xlsx");
-
-  const wb = XLSX.utils.book_new();
+  const { Workbook } = await import("exceljs");
+  const wb = new Workbook();
+  wb.creator = "Company Ops";
+  wb.created = new Date();
 
   const perDiemDays = report.perDiemDays || 0;
   const perDiemRate = report.perDiemRate || 0;
   const perDiemAmount = report.perDiemAmount || 0;
   const items = report.items || [];
   const itemsSubtotal = items.reduce((s, it) => s + (it.amount || 0), 0);
-  const grandTotal =
-    report.totalAmount ?? itemsSubtotal + perDiemAmount;
+  const grandTotal = report.totalAmount ?? itemsSubtotal + perDiemAmount;
 
-  const summaryData: (string | number | null)[][] = [
-    ["Expense Report Summary"],
-    [],
-    ["Report ID", report.id],
-    ["Title", report.title],
-    ["Status", report.status],
-    ["Destination", report.destination || "-"],
-    ["Departure", report.departureDate || "-"],
-    ["Return", report.returnDate || "-"],
-    ["Submitter", report.submitterName || "-"],
-    ["Approver", report.approverName || "-"],
-    [
-      "Approved At",
-      report.approvedAt ? report.approvedAt.replace("T", " ") : "-",
-    ],
-    ["Comment", report.approvalComment || "-"],
-    [],
-    [
-      "Per-Diem Rate",
-      perDiemDays > 0
-        ? `${fmt(perDiemRate)}/day (${perDiemLabel(perDiemRate)})`
-        : "N/A",
-    ],
-    ["Per-Diem Days", perDiemDays > 0 ? perDiemDays : "N/A"],
-    ["Per-Diem Amount", perDiemDays > 0 ? fmt(perDiemAmount) : "N/A"],
-    [],
-    ["Grand Total", fmt(grandTotal)],
+  // ── Color palette ──────────────────────────────────────────────
+  const NAVY    = "FF1F2937";
+  const NAVY2   = "FF374151";
+  const NAVY3   = "FF4B5563";
+  const BLUE_LT = "FFEFF6FF";
+  const BLUE_MD = "FFDBEAFE";
+  const GRN_LT  = "FFDCFCE7";
+  const GRN_DK  = "FF166534";
+  const RED_LT  = "FFFEF2F2";
+  const GRAY_LT = "FFF9FAFB";
+  const GRAY_MD = "FFF3F4F6";
+  const WHITE   = "FFFFFFFF";
+  const MUTED   = "FF6B7280";
+  const BORDER  = "FFD1D5DB";
+
+  type BorderStyle = "thin" | "medium";
+  const border = (style: BorderStyle = "thin", color = BORDER) => ({
+    top:    { style, color: { argb: color } },
+    left:   { style, color: { argb: color } },
+    bottom: { style, color: { argb: color } },
+    right:  { style, color: { argb: color } },
+  } as const);
+
+  const fill = (argb: string) =>
+    ({ type: "pattern" as const, pattern: "solid" as const, fgColor: { argb } });
+
+  const ws = wb.addWorksheet("Expense Report", {
+    pageSetup: { paperSize: 9, orientation: "portrait", fitToPage: true, margins: { left: 0.5, right: 0.5, top: 0.5, bottom: 0.5, header: 0.3, footer: 0.3 } },
+  });
+
+  ws.columns = [
+    { width: 14 }, // A  No. / Label
+    { width: 20 }, // B  Date / Value
+    { width: 16 }, // C  Category / Label
+    { width: 26 }, // D  Description / Value
+    { width: 14 }, // E  Amount / Label
+    { width: 14 }, // F  (Amount merged)
   ];
 
-  const ws1 = XLSX.utils.aoa_to_sheet(summaryData);
-  ws1["!cols"] = [{ wch: 16 }, { wch: 36 }];
-  ws1["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }];
-  XLSX.utils.book_append_sheet(wb, ws1, "Report Summary");
+  let r = 1; // current row index (1-based)
 
-  const itemRows: (string | number)[][] = items.map((it) => [
-    it.date || "-",
-    it.description,
-    it.category,
-    Number(it.amount) || 0,
-  ]);
-  itemRows.push([]);
-  itemRows.push(["", "", "Items Subtotal", itemsSubtotal]);
-  if (perDiemDays > 0) {
-    itemRows.push(["", "", "Per-Diem", perDiemAmount]);
+  // ── Title banner (rows 1-2) ────────────────────────────────────
+  ws.mergeCells(`A${r}:F${r}`);
+  const titleCell = ws.getCell(`A${r}`);
+  titleCell.value   = "EXPENSE REPORT";
+  titleCell.font    = { name: "Calibri", size: 22, bold: true, color: { argb: WHITE } };
+  titleCell.fill    = fill(NAVY);
+  titleCell.alignment = { horizontal: "center", vertical: "middle" };
+  ws.getRow(r).height = 44;
+  r++;
+
+  ws.mergeCells(`A${r}:F${r}`);
+  const subCell = ws.getCell(`A${r}`);
+  subCell.value   = report.title;
+  subCell.font    = { name: "Calibri", size: 12, color: { argb: "FFBFDBFE" } };
+  subCell.fill    = fill(NAVY);
+  subCell.alignment = { horizontal: "center", vertical: "middle" };
+  ws.getRow(r).height = 22;
+  r++;
+
+  // ── Doc-info strip (row 3) ─────────────────────────────────────
+  ws.mergeCells(`A${r}:B${r}`);
+  ws.mergeCells(`C${r}:D${r}`);
+  ws.mergeCells(`E${r}:F${r}`);
+
+  const ripCell = ws.getCell(`A${r}`);
+  ripCell.value = `Report #${report.id}`;
+  ripCell.font  = { name: "Calibri", size: 11, bold: true, color: { argb: NAVY } };
+  ripCell.fill  = fill(BLUE_LT);
+  ripCell.alignment = { horizontal: "left", vertical: "middle", indent: 1 };
+  ripCell.border = border();
+
+  const genCell = ws.getCell(`C${r}`);
+  genCell.value = `Generated: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`;
+  genCell.font  = { name: "Calibri", size: 10, color: { argb: MUTED } };
+  genCell.fill  = fill(BLUE_LT);
+  genCell.alignment = { horizontal: "center", vertical: "middle" };
+  genCell.border = border();
+
+  const stCell = ws.getCell(`E${r}`);
+  const isApproved = report.status === "APPROVED";
+  const isRejected = report.status === "REJECTED";
+  stCell.value = report.status;
+  stCell.font  = { name: "Calibri", size: 11, bold: true,
+    color: { argb: isApproved ? GRN_DK : isRejected ? "FFDC2626" : NAVY } };
+  stCell.fill  = fill(isApproved ? GRN_LT : isRejected ? RED_LT : GRAY_MD);
+  stCell.alignment = { horizontal: "center", vertical: "middle" };
+  stCell.border = border();
+  ws.getRow(r).height = 26;
+  r++;
+
+  // Spacer
+  ws.getRow(r).height = 6; r++;
+
+  // ── Section helper ─────────────────────────────────────────────
+  const sectionHeader = (label: string) => {
+    ws.mergeCells(`A${r}:F${r}`);
+    const hCell = ws.getCell(`A${r}`);
+    hCell.value = `  ${label}`;
+    hCell.font  = { name: "Calibri", size: 10, bold: true, color: { argb: WHITE } };
+    hCell.fill  = fill(NAVY2);
+    hCell.alignment = { horizontal: "left", vertical: "middle" };
+    ws.getRow(r).height = 20;
+    r++;
+  };
+
+  // ── Report Details ─────────────────────────────────────────────
+  sectionHeader("REPORT DETAILS");
+
+  const infoRows: [string, string, string, string][] = [
+    ["Submitter",   report.submitterName  || "—", "Destination",    report.destination   || "—"],
+    ["Approver",    report.approverName   || "—", "Departure Date", report.departureDate || "—"],
+    ["Created At",  (report.createdAt     || "—").replace("T", " "), "Return Date",  report.returnDate    || "—"],
+    ["Approved At", (report.approvedAt    || "—").replace("T", " "), "Comment",      report.approvalComment || "—"],
+  ];
+
+  for (const [lbl1, val1, lbl2, val2] of infoRows) {
+    ws.mergeCells(`C${r}:D${r}`);
+    ws.mergeCells(`E${r}:F${r}`);
+
+    const lbl1c = ws.getCell(`A${r}`);
+    lbl1c.value = lbl1; lbl1c.font = { name: "Calibri", size: 10, bold: true };
+    lbl1c.fill = fill(BLUE_MD); lbl1c.alignment = { horizontal: "right", vertical: "middle", indent: 1 };
+    lbl1c.border = border();
+
+    const val1c = ws.getCell(`B${r}`);
+    val1c.value = val1; val1c.font = { name: "Calibri", size: 10 };
+    val1c.fill = fill(WHITE); val1c.alignment = { horizontal: "left", vertical: "middle", indent: 1 };
+    val1c.border = border();
+
+    const lbl2c = ws.getCell(`C${r}`);
+    lbl2c.value = lbl2; lbl2c.font = { name: "Calibri", size: 10, bold: true };
+    lbl2c.fill = fill(BLUE_MD); lbl2c.alignment = { horizontal: "right", vertical: "middle", indent: 1 };
+    lbl2c.border = border();
+
+    const val2c = ws.getCell(`E${r}`);
+    val2c.value = val2; val2c.font = { name: "Calibri", size: 10 };
+    val2c.fill = fill(WHITE); val2c.alignment = { horizontal: "left", vertical: "middle", indent: 1, wrapText: true };
+    val2c.border = border();
+
+    ws.getRow(r).height = 20; r++;
   }
-  itemRows.push(["", "", "Grand Total", grandTotal]);
 
-  const ws2 = XLSX.utils.aoa_to_sheet([
-    ["Date", "Description", "Category", "Amount"],
-    ...itemRows,
-  ]);
-  ws2["!cols"] = [{ wch: 12 }, { wch: 28 }, { wch: 16 }, { wch: 14 }];
-  XLSX.utils.book_append_sheet(wb, ws2, "Expense Items");
+  ws.getRow(r).height = 6; r++;
 
-  XLSX.writeFile(wb, `expense-report-${report.id}.xlsx`);
+  // ── Per-Diem (if applicable) ────────────────────────────────────
+  if (perDiemDays > 0) {
+    sectionHeader("PER-DIEM ALLOWANCE");
+
+    ws.mergeCells(`A${r}:B${r}`); ws.mergeCells(`C${r}:D${r}`); ws.mergeCells(`E${r}:F${r}`);
+    const pdHdrs = [["A", "Daily Rate"], ["C", "Days"], ["E", "Per-Diem Total"]] as const;
+    for (const [col, label] of pdHdrs) {
+      const c = ws.getCell(`${col}${r}`);
+      c.value = label; c.font = { name: "Calibri", size: 10, bold: true, color: { argb: WHITE } };
+      c.fill = fill(NAVY3); c.alignment = { horizontal: "center", vertical: "middle" }; c.border = border();
+    }
+    ws.getRow(r).height = 20; r++;
+
+    ws.mergeCells(`A${r}:B${r}`); ws.mergeCells(`C${r}:D${r}`); ws.mergeCells(`E${r}:F${r}`);
+    const rCell = ws.getCell(`A${r}`);
+    rCell.value = `$${perDiemRate}/day (${perDiemLabel(perDiemRate)})`;
+    rCell.font = { name: "Calibri", size: 10 }; rCell.fill = fill(WHITE);
+    rCell.alignment = { horizontal: "center", vertical: "middle" }; rCell.border = border();
+
+    const dCell = ws.getCell(`C${r}`);
+    dCell.value = perDiemDays; dCell.font = { name: "Calibri", size: 10 }; dCell.fill = fill(WHITE);
+    dCell.alignment = { horizontal: "center", vertical: "middle" }; dCell.border = border();
+
+    const tCell = ws.getCell(`E${r}`);
+    tCell.value = perDiemAmount; tCell.numFmt = '"$"#,##0.00';
+    tCell.font = { name: "Calibri", size: 10, bold: true }; tCell.fill = fill(WHITE);
+    tCell.alignment = { horizontal: "right", vertical: "middle", indent: 1 }; tCell.border = border();
+    ws.getRow(r).height = 20; r++;
+
+    ws.getRow(r).height = 6; r++;
+  }
+
+  // ── Expense Items table ─────────────────────────────────────────
+  sectionHeader("EXPENSE ITEMS");
+
+  // Column header row
+  ws.mergeCells(`E${r}:F${r}`);
+  const itemHdrDefs: [string, string, "center" | "right" | "left"][] = [
+    ["A", "No.",         "center"],
+    ["B", "Date",        "center"],
+    ["C", "Category",    "center"],
+    ["D", "Description", "center"],
+    ["E", "Amount (USD)", "right"],
+  ];
+  for (const [col, label, align] of itemHdrDefs) {
+    const c = ws.getCell(`${col}${r}`);
+    c.value = label; c.font = { name: "Calibri", size: 10, bold: true, color: { argb: WHITE } };
+    c.fill = fill(NAVY); c.alignment = { horizontal: align, vertical: "middle" }; c.border = border();
+  }
+  ws.getRow(r).height = 22; r++;
+
+  // Data rows
+  items.forEach((it, i) => {
+    ws.mergeCells(`E${r}:F${r}`);
+    const bg = i % 2 === 1 ? GRAY_LT : WHITE;
+
+    const noC = ws.getCell(`A${r}`);
+    noC.value = i + 1; noC.font = { name: "Calibri", size: 10, color: { argb: MUTED } };
+    noC.fill = fill(bg); noC.alignment = { horizontal: "center", vertical: "middle" }; noC.border = border();
+
+    const dtC = ws.getCell(`B${r}`);
+    dtC.value = it.date || "—"; dtC.font = { name: "Calibri", size: 10 };
+    dtC.fill = fill(bg); dtC.alignment = { horizontal: "center", vertical: "middle" }; dtC.border = border();
+
+    const catC = ws.getCell(`C${r}`);
+    catC.value = it.category; catC.font = { name: "Calibri", size: 10 };
+    catC.fill = fill(bg); catC.alignment = { horizontal: "center", vertical: "middle" }; catC.border = border();
+
+    const dscC = ws.getCell(`D${r}`);
+    dscC.value = it.description; dscC.font = { name: "Calibri", size: 10 };
+    dscC.fill = fill(bg); dscC.alignment = { horizontal: "left", vertical: "middle", indent: 1, wrapText: true }; dscC.border = border();
+
+    const amtC = ws.getCell(`E${r}`);
+    amtC.value = Number(it.amount) || 0; amtC.numFmt = '"$"#,##0.00';
+    amtC.font = { name: "Calibri", size: 10 }; amtC.fill = fill(bg);
+    amtC.alignment = { horizontal: "right", vertical: "middle", indent: 1 }; amtC.border = border();
+
+    ws.getRow(r).height = 20; r++;
+  });
+
+  // Subtotal row
+  ws.mergeCells(`A${r}:D${r}`); ws.mergeCells(`E${r}:F${r}`);
+  const stLbl = ws.getCell(`A${r}`);
+  stLbl.value = "Items Subtotal"; stLbl.font = { name: "Calibri", size: 10, bold: true };
+  stLbl.fill = fill(GRAY_MD); stLbl.alignment = { horizontal: "right", vertical: "middle", indent: 1 }; stLbl.border = border();
+  const stAmt = ws.getCell(`E${r}`);
+  stAmt.value = itemsSubtotal; stAmt.numFmt = '"$"#,##0.00';
+  stAmt.font = { name: "Calibri", size: 10, bold: true }; stAmt.fill = fill(GRAY_MD);
+  stAmt.alignment = { horizontal: "right", vertical: "middle", indent: 1 }; stAmt.border = border();
+  ws.getRow(r).height = 20; r++;
+
+  if (perDiemDays > 0) {
+    ws.mergeCells(`A${r}:D${r}`); ws.mergeCells(`E${r}:F${r}`);
+    const pdLbl = ws.getCell(`A${r}`);
+    pdLbl.value = "Per-Diem Allowance"; pdLbl.font = { name: "Calibri", size: 10, bold: true };
+    pdLbl.fill = fill(GRAY_MD); pdLbl.alignment = { horizontal: "right", vertical: "middle", indent: 1 }; pdLbl.border = border();
+    const pdAmt = ws.getCell(`E${r}`);
+    pdAmt.value = perDiemAmount; pdAmt.numFmt = '"$"#,##0.00';
+    pdAmt.font = { name: "Calibri", size: 10, bold: true }; pdAmt.fill = fill(GRAY_MD);
+    pdAmt.alignment = { horizontal: "right", vertical: "middle", indent: 1 }; pdAmt.border = border();
+    ws.getRow(r).height = 20; r++;
+  }
+
+  // Grand Total row
+  ws.mergeCells(`A${r}:D${r}`); ws.mergeCells(`E${r}:F${r}`);
+  const gtLbl = ws.getCell(`A${r}`);
+  gtLbl.value = "GRAND TOTAL"; gtLbl.font = { name: "Calibri", size: 13, bold: true, color: { argb: WHITE } };
+  gtLbl.fill = fill(NAVY); gtLbl.alignment = { horizontal: "right", vertical: "middle", indent: 1 }; gtLbl.border = border("medium", NAVY);
+  const gtAmt = ws.getCell(`E${r}`);
+  gtAmt.value = grandTotal; gtAmt.numFmt = '"$"#,##0.00';
+  gtAmt.font = { name: "Calibri", size: 13, bold: true, color: { argb: WHITE } }; gtAmt.fill = fill(NAVY);
+  gtAmt.alignment = { horizontal: "right", vertical: "middle", indent: 1 }; gtAmt.border = border("medium", NAVY);
+  ws.getRow(r).height = 28; r++;
+
+  ws.getRow(r).height = 8; r++;
+
+  // ── Approval section ───────────────────────────────────────────
+  sectionHeader("APPROVAL");
+
+  // Three approval boxes: Submitter | Manager/Approver | CFO/Finance
+  ws.mergeCells(`A${r}:B${r}`); ws.mergeCells(`C${r}:D${r}`); ws.mergeCells(`E${r}:F${r}`);
+  for (const [col, label] of [["A", "Submitter"], ["C", "Manager / Approver"], ["E", "CFO / Finance"]] as const) {
+    const c = ws.getCell(`${col}${r}`);
+    c.value = label; c.font = { name: "Calibri", size: 9, bold: true, color: { argb: WHITE } };
+    c.fill = fill(NAVY3); c.alignment = { horizontal: "center", vertical: "middle" }; c.border = border();
+  }
+  ws.getRow(r).height = 18; r++;
+
+  // Name row
+  ws.mergeCells(`A${r}:B${r}`); ws.mergeCells(`C${r}:D${r}`); ws.mergeCells(`E${r}:F${r}`);
+  for (const [col, val] of [[`A`, report.submitterName || ""], [`C`, report.approverName || ""], [`E`, ""]] as const) {
+    const c = ws.getCell(`${col}${r}`);
+    c.value = val; c.font = { name: "Calibri", size: 10, bold: true };
+    c.fill = fill(WHITE); c.alignment = { horizontal: "center", vertical: "bottom" };
+    c.border = { top: border().top, left: border().left, right: border().right };
+  }
+  ws.getRow(r).height = 20; r++;
+
+  // Signature space row
+  ws.mergeCells(`A${r}:B${r}`); ws.mergeCells(`C${r}:D${r}`); ws.mergeCells(`E${r}:F${r}`);
+  for (const col of ["A", "C", "E"] as const) {
+    const c = ws.getCell(`${col}${r}`);
+    c.fill = fill(WHITE); c.border = { left: border().left, right: border().right };
+  }
+  ws.getRow(r).height = 34; r++;
+
+  // Date row
+  ws.mergeCells(`A${r}:B${r}`); ws.mergeCells(`C${r}:D${r}`); ws.mergeCells(`E${r}:F${r}`);
+  const createdDate  = report.createdAt  ? report.createdAt.split("T")[0]  : "";
+  const approvedDate = report.approvedAt ? report.approvedAt.split("T")[0] : "";
+  for (const [col, val] of [[`A`, createdDate], [`C`, approvedDate], [`E`, approvedDate]] as const) {
+    const c = ws.getCell(`${col}${r}`);
+    c.value = val ? `Date: ${val}` : "Date: "; c.font = { name: "Calibri", size: 9, color: { argb: MUTED } };
+    c.fill = fill(GRAY_LT); c.alignment = { horizontal: "center", vertical: "middle" };
+    c.border = { bottom: border().bottom, left: border().left, right: border().right };
+  }
+  ws.getRow(r).height = 18; r++;
+
+  ws.getRow(r).height = 8; r++;
+
+  // Footer
+  ws.mergeCells(`A${r}:F${r}`);
+  const ftCell = ws.getCell(`A${r}`);
+  ftCell.value = `Company Ops — Expense System  |  Report #${report.id}  |  Generated ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`;
+  ftCell.font = { name: "Calibri", size: 8, color: { argb: "FF9CA3AF" } };
+  ftCell.alignment = { horizontal: "center", vertical: "middle" };
+  ws.getRow(r).height = 16;
+
+  // ── Download ───────────────────────────────────────────────────
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `expense-report-${report.id}.xlsx`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }

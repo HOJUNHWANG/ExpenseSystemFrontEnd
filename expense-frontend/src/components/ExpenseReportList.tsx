@@ -48,7 +48,7 @@ export default function ExpenseReportList() {
     { label: 'CFO review', value: REPORT_STATUS.CFO_REVIEW },
     { label: 'CEO review', value: REPORT_STATUS.CEO_REVIEW },
     { label: 'CFO special', value: REPORT_STATUS.CFO_SPECIAL_REVIEW },
-    { label: 'Changes requested', value: REPORT_STATUS.CHANGES_REQUESTED },
+    { label: 'Changes Req.', value: REPORT_STATUS.CHANGES_REQUESTED },
     { label: 'Approved', value: REPORT_STATUS.APPROVED },
     { label: 'Rejected', value: REPORT_STATUS.REJECTED },
   ];

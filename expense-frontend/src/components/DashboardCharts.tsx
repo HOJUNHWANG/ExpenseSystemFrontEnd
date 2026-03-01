@@ -36,8 +36,8 @@ export function CategoryDonut({ data }: { data: CategoryStat[] }) {
 
   return (
     <div className="flex flex-col lg:flex-row items-center gap-4">
-      <ResponsiveContainer width="100%" height={220}>
-        <PieChart>
+      <ResponsiveContainer width="100%" height={260}>
+        <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
           <Pie
             data={data}
             dataKey="amount"

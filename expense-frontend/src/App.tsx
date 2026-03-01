@@ -93,6 +93,7 @@ interface NavItem {
   label: string;
   icon: React.ElementType;
   section?: string;
+  exact?: boolean;
 }
 
 function SidebarNav({
@@ -126,9 +127,10 @@ function SidebarNav({
             </p>
           )}
           {section.items.map((item) => {
-            const isActive =
-              currentPath === item.to ||
-              (item.to !== "/" && currentPath.startsWith(item.to + "/"));
+            const isActive = item.exact
+              ? currentPath === item.to
+              : currentPath === item.to ||
+                (item.to !== "/" && currentPath.startsWith(item.to + "/"));
             const Icon = item.icon;
             return (
               <Link
@@ -285,7 +287,7 @@ function App() {
       { to: "/", label: "Welcome", icon: Home, section: "General" },
       { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, section: "General" },
       { to: "/create", label: "Create Report", icon: PlusCircle, section: "Reports" },
-      { to: "/reports", label: "My Reports", icon: FileText, section: "Reports" },
+      { to: "/reports", label: "My Reports", icon: FileText, section: "Reports", exact: true },
       { to: "/reports/in-progress", label: "In Progress", icon: Clock, section: "Reports" },
       { to: "/search", label: "Search", icon: Search, section: "Reports" },
     ];

@@ -91,8 +91,8 @@ interface SearchParams {
 
 export const fetchSearch = async (params: SearchParams): Promise<PageResponse<ExpenseReportListItem>> => {
   const qs = new URLSearchParams();
-  qs.set('requesterId', String(params.requesterId));
-  qs.set('requesterRole', String(params.requesterRole));
+  if (params.requesterId !== undefined && params.requesterId !== '') qs.set('requesterId', String(params.requesterId));
+  if (params.requesterRole) qs.set('requesterRole', params.requesterRole);
   if (params.q?.trim()) qs.set('q', params.q.trim());
   if (params.status) qs.set('status', params.status);
   if (params.minTotal !== '' && params.minTotal !== undefined) qs.set('minTotal', String(Number(params.minTotal)));

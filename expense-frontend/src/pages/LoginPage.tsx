@@ -19,7 +19,6 @@ export default function LoginPage() {
       await loginWithEmail(email);
       navigate(from, { replace: true });
     } catch (err: unknown) {
-      console.error(err);
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setLoading(false);

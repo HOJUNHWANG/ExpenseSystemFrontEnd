@@ -113,8 +113,8 @@ export default function DashboardPage() {
     (user.role === USER_ROLES.MANAGER || user.role === USER_ROLES.CFO || user.role === USER_ROLES.CEO);
 
   const { data: myReportsData, isLoading: reportsLoading, error: reportsError } = useQuery({
-    queryKey: queryKeys.reports(user?.id),
-    queryFn: () => fetchReports({ submitterId: user?.id ?? 0 }),
+    queryKey: queryKeys.reports(user?.id, undefined, 0),
+    queryFn: () => fetchReports({ submitterId: user?.id ?? 0, page: 0, size: 200 }),
     enabled: !!user,
   });
 

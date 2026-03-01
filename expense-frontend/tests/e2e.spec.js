@@ -64,6 +64,7 @@ test("CFO: reject requires per-item note", async ({ page, request }) => {
   });
   expect(login.ok()).toBeTruthy();
   const financeUser = await login.json();
+  const financeToken = financeUser.token;
 
   const qs = new URLSearchParams({
     requesterId: String(financeUser.id),
@@ -72,14 +73,18 @@ test("CFO: reject requires per-item note", async ({ page, request }) => {
     sort: "activity_desc",
   });
 
-  const search = await request.get(`${apiBase}/api/expense-reports/search?${qs.toString()}`);
+  const search = await request.get(`${apiBase}/api/expense-reports/search?${qs.toString()}`, {
+    headers: { "Authorization": `Bearer ${financeToken}` },
+  });
   expect(search.ok()).toBeTruthy();
   const list = await search.json();
   const target = (list || []).find((r) => r.title === "Draft — Hotel Exception (needs Finance)");
   expect(target).toBeTruthy();
 
   // Sanity-check backend seed: special review must exist + have items
-  const sr = await request.get(`${apiBase}/api/expense-reports/${target.id}/special-review`);
+  const sr = await request.get(`${apiBase}/api/expense-reports/${target.id}/special-review`, {
+    headers: { "Authorization": `Bearer ${financeToken}` },
+  });
   expect(sr.ok()).toBeTruthy();
   const srJson = await sr.json();
   expect(Array.isArray(srJson?.items) && srJson.items.length > 0).toBeTruthy();
@@ -162,8 +167,10 @@ test("flow: exception reject -> edit/resubmit -> approvals", async ({ page, requ
   });
   expect(empLogin.ok()).toBeTruthy();
   const employee = await empLogin.json();
+  const employeeToken = employee.token;
 
   const create = await request.post(`${apiBase}/api/expense-reports`, {
+    headers: { "Authorization": `Bearer ${employeeToken}` },
     data: {
       submitterId: employee.id,
       title,
@@ -176,6 +183,7 @@ test("flow: exception reject -> edit/resubmit -> approvals", async ({ page, requ
   const reportId = await create.json();
 
   const patch = await request.put(`${apiBase}/api/expense-reports/${reportId}`, {
+    headers: { "Authorization": `Bearer ${employeeToken}` },
     data: {
       submitterId: employee.id,
       title,
@@ -188,6 +196,7 @@ test("flow: exception reject -> edit/resubmit -> approvals", async ({ page, requ
   expect(patch.ok()).toBeTruthy();
 
   const submit = await request.post(`${apiBase}/api/expense-reports/${reportId}/submit`, {
+    headers: { "Authorization": `Bearer ${employeeToken}` },
     data: { submitterId: employee.id, reasons: [] },
   });
   expect(submit.ok()).toBeTruthy();

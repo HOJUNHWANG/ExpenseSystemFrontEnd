@@ -1,79 +1,104 @@
-# Company Ops Demo (Frontend)
+# Expense System — Frontend
 
-Public portfolio UI for a corporate-style expense workflow: **create reports → policy checks → exception review → approvals**.
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
+![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3-06B6D4?logo=tailwindcss)
+![TanStack Query](https://img.shields.io/badge/TanStack_Query-5-FF4154?logo=reactquery)
 
-This is an **open demo** (seeded accounts + Reset Demo) designed to be **solo-friendly** via a **Role Switcher**.
+A full-featured enterprise expense management frontend demonstrating modern React patterns, JWT authentication, and a multi-role approval workflow.
 
-## Highlights
-- **Solo-friendly demo mode**: Role Switcher (Employee / Manager / CFO / CEO)
-- **Policy exceptions** (aka *exception review*) before entering the normal approval queue
-- **Dashboard** with Recent Activity
-- **Search** with role-based scope
-- **Reset Demo** (seed data; safe for public visitors)
+## Features
 
-## Key routes
-- `/` → Welcome
-- `/dashboard` → Dashboard + recent activity
-- `/create` → Create report
-- `/reports` → My reports
-- `/approvals` → Approval queue (Manager/CFO/CEO)
-- `/policy-exceptions` → Policy exceptions inbox (CFO)
+- **JWT Authentication** — login returns a signed JWT; all API calls send `Authorization: Bearer <token>`
+- **Multi-role approval workflow** — Employee → Manager → CFO → CEO chain with special-review exceptions
+- **Policy engine integration** — real-time warnings for hotel, airfare, and meal policy violations
+- **Role switching** — four demo accounts (Employee, Manager, CFO, CEO), all sharing password `demo1234`
+- **TanStack Query** — optimistic updates, loading skeletons, background refetch
+- **Dark mode** — CSS variable-based theme (shadcn/ui + Tailwind)
+- **Command palette** — `Ctrl+K` quick navigation
+- **Dashboard charts** — spend-by-category and monthly trends (recharts, lazy-loaded)
+- **PDF / Excel export** — available on all finalized reports
+- **Accessibility** — `aria-current`, `role="dialog"`, `aria-label` throughout
 
-Legacy redirects (kept for compatibility):
-- `/special-approvals` → `/policy-exceptions`
-- `/special-approval/:id` → `/policy-exceptions/:id`
+## Tech Stack
 
-## Demo policy (simplified)
-- **No receipt upload feature** (intentionally omitted for the public demo)
-- Caps:
-  - Entertainment: **$100**
-  - Hotel: **$250**
-  - Airfare: **US $500 / Intl $1000**
-  - Meals: **$75/day**
-- Item dates should be within the trip date range
+| Layer | Library |
+|---|---|
+| Framework | React 18 + Vite 5 |
+| Language | TypeScript 5 (strict) |
+| Styling | TailwindCSS 3 + shadcn/ui |
+| State / Data | TanStack Query v5 |
+| Forms | React Hook Form + Zod |
+| Animation | Framer Motion |
+| Toast | Sonner |
+| Charts | Recharts |
+| Testing | Vitest + Testing Library |
 
-## Country input
-- Country dropdown uses a curated list of major countries.
-- Includes **Other…** for manual entry (used only to build the destination label `City, Country`).
+## Local Development
 
-## Code quality
-
-### Error Boundary
-A global `ErrorBoundary` component wraps the app. If a React render error occurs, it shows a user-friendly fallback with a "Try again" button instead of a white screen.
-
-### Centralized constants
-All report statuses (`DRAFT`, `MANAGER_REVIEW`, etc.) and user roles (`EMPLOYEE`, `MANAGER`, `CFO`, `CEO`) are defined in `src/lib/constants.js` and imported throughout the codebase — no magic strings.
-
-### Code splitting (React.lazy)
-Page-level components are lazy-loaded via `React.lazy()` + `<Suspense>`, so the initial bundle stays small and each route loads on demand.
-
-## Local development
-
-### Requirements
-- Node.js 18+
-- Backend running locally on `http://localhost:8080`
-
-### Run
 ```bash
-cd expense-frontend
+# Install dependencies
 npm install
+
+# Start dev server (requires backend running on :8080)
 npm run dev
+
+# Type-check
+npx tsc --noEmit
+
+# Run tests
+npm test
 ```
 
-## Environment variables
+## Authentication
 
-### `VITE_API_BASE_URL`
-Base URL for the backend API.
+All demo accounts share the password **`demo1234`**.
 
-Examples:
-- Local: `http://localhost:8080`
-- Render: `https://company-ops-demo-api.onrender.com`
+| Email | Role |
+|---|---|
+| `jun@example.com` | Employee |
+| `manager@example.com` | Manager |
+| `finance@example.com` | CFO |
+| `ceo@example.com` | CEO |
+
+After login, the JWT is stored in `localStorage` and sent as `Authorization: Bearer <token>` on every request. Switch roles by logging in with a different demo account.
+
+## Key Routes
+
+| Route | Description |
+|---|---|
+| `/` | Welcome / landing |
+| `/dashboard` | Dashboard + recent activity |
+| `/create` | Create report |
+| `/reports` | My reports |
+| `/approvals` | Approval queue (Manager/CFO/CEO) |
+| `/policy-exceptions` | Exception inbox (CFO/CEO) |
+| `/search` | Role-scoped search |
+
+## Demo Policy (simplified)
+
+| Category | Limit |
+|---|---|
+| Hotel | $250/night |
+| Airfare (domestic) | $500 |
+| Airfare (international) | $1,000 |
+| Meals | $75/day |
+| Entertainment | $100 |
+
+Items outside the trip date range also generate a policy warning.
+
+## Environment Variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `VITE_API_BASE_URL` | `http://localhost:8080` | Backend base URL |
 
 ## Deployment (Vercel)
+
 1. Import this repo into Vercel
 2. Set project root to `expense-frontend/`
-3. Add env var:
-   - `VITE_API_BASE_URL` = your backend public URL
+3. Add env var: `VITE_API_BASE_URL` = your backend public URL
 4. Deploy
 
-> Note: This is intended as a public portfolio demo. Do not use for sensitive data.
+> This is a public portfolio demo. Do not use for sensitive data.

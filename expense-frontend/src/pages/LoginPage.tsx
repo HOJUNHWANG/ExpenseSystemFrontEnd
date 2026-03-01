@@ -4,6 +4,7 @@ import { useAuth } from '../AuthContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('jun@example.com');
+  const [password, setPassword] = useState('demo1234');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { loginWithEmail } = useAuth();
@@ -16,7 +17,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      await loginWithEmail(email);
+      await loginWithEmail(email, password);
       navigate(from, { replace: true });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -27,16 +28,29 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto mt-10 bg-card shadow-sm rounded-xl p-6">
-      <h1 className="text-xl font-semibold mb-4">Login</h1>
+      <h1 className="text-xl font-semibold mb-1">Login</h1>
+      <p className="text-xs text-muted-foreground mb-4">Demo credentials — password is the same for all users.</p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
+          <label className="block text-sm font-medium mb-1" htmlFor="email">Email</label>
           <input
+            id="email"
             type="email"
             className="w-full border rounded-lg px-3 py-2 text-sm"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="jun@example.com"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1" htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            className="w-full border rounded-lg px-3 py-2 text-sm"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="demo1234"
           />
         </div>
         {error && (
@@ -53,12 +67,12 @@ export default function LoginPage() {
         </button>
       </form>
       <div className="mt-4 text-xs text-muted-foreground">
-        Demo users:
-        <ul className="list-disc ml-5">
-          <li>jun@example.com (EMPLOYEE)</li>
-          <li>manager@example.com (MANAGER)</li>
-          <li>finance@example.com (CFO)</li>
-          <li>ceo@example.com (CEO)</li>
+        <p className="font-medium mb-1">Demo accounts (password: <code className="bg-muted px-1 rounded">demo1234</code>):</p>
+        <ul className="list-disc ml-5 space-y-0.5">
+          <li>jun@example.com — Employee</li>
+          <li>manager@example.com — Manager</li>
+          <li>finance@example.com — CFO</li>
+          <li>ceo@example.com — CEO</li>
         </ul>
       </div>
     </div>

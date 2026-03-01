@@ -11,12 +11,11 @@ export async function apiFetch(
 ): Promise<unknown> {
   const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
 
-  // Inject user identity headers from sessionStorage
+  // Inject JWT Authorization header from session
   const sessionUser = getSessionUser();
   const identityHeaders: Record<string, string> = {};
-  if (sessionUser) {
-    identityHeaders['X-User-Id'] = String(sessionUser.id);
-    identityHeaders['X-User-Role'] = String(sessionUser.role);
+  if (sessionUser?.token) {
+    identityHeaders['Authorization'] = `Bearer ${sessionUser.token}`;
   }
 
   const res = await fetch(url, {

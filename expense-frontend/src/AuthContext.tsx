@@ -14,7 +14,7 @@ interface AuthContextValue {
   user: User | null;
   login: (userData: User) => void;
   logout: () => void;
-  loginWithEmail: (email: string) => Promise<User>;
+  loginWithEmail: (email: string, password?: string) => Promise<User>;
   switchDemoRole: (role: string) => Promise<User>;
 }
 
@@ -44,10 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const loginWithEmail = useCallback(
-    async (email: string): Promise<User> => {
+    async (email: string, password = "demo1234"): Promise<User> => {
       const data = (await apiFetch("/api/auth/login", {
         method: "POST",
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, password }),
       })) as User;
       login(data);
       return data;

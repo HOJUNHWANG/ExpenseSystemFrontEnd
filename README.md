@@ -8,6 +8,16 @@
 
 A full-featured enterprise expense management frontend demonstrating modern React patterns, JWT authentication, and a multi-role approval workflow.
 
+
+## 🛠 Engineering & Development Process
+
+**AI-Assisted Frontend Development**
+To accelerate the UI development process, I leveraged AI code generation tools (e.g., Claude) to build component boilerplates and layout structures. This approach enabled me to concentrate on the core logic and integration aspects, such as:
+- **API Integration:** Seamlessly connecting the frontend client to the decoupled backend REST API.
+- **State Management:** Handling asynchronous data flows and updating UI states based on financial data changes.
+- **User Flow Design:** Architecting a logical and intuitive user experience for expense tracking.
+  
+
 ## Features
 
 - **JWT Authentication** — login returns a signed JWT; all API calls send `Authorization: Bearer <token>`
@@ -102,3 +112,4 @@ Items outside the trip date range also generate a policy warning.
 4. Deploy
 
 > This is a public portfolio demo. Do not use for sensitive data.
+

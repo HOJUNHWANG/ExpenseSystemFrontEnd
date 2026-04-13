@@ -8,6 +8,7 @@ import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import { ThemeProvider } from "./components/ThemeProvider.tsx";
 import { Toaster } from "sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Analytics } from "@vercel/analytics/react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,6 +31,7 @@ ReactDOM.createRoot(rootEl).render(
             <AuthProvider>
               <App />
               <Toaster position="top-right" richColors closeButton />
+              <Analytics />
             </AuthProvider>
           </QueryClientProvider>
         </ThemeProvider>

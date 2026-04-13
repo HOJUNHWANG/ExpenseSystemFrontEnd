@@ -2,11 +2,26 @@ import type { User } from '../types';
 
 const SESSION_KEY = 'expense-user';
 
+function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    // expired if exp (seconds) is in the past
+    return typeof payload.exp === 'number' && payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+}
+
 export function getSessionUser(): User | null {
   const saved = localStorage.getItem(SESSION_KEY);
   if (!saved) return null;
   try {
-    return JSON.parse(saved) as User;
+    const user = JSON.parse(saved) as User;
+    if (!user.token || isTokenExpired(user.token)) {
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+    return user;
   } catch {
     return null;
   }

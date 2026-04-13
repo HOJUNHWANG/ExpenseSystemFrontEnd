@@ -60,7 +60,7 @@ test("CFO: reject requires per-item note", async ({ page, request }) => {
 
   // Get Finance user + seeded report id via API
   const login = await request.post(`${apiBase}/api/auth/login`, {
-    data: { email: "finance@example.com" },
+    data: { email: "finance@example.com", password: "demo1234" },
   });
   expect(login.ok()).toBeTruthy();
   const financeUser = await login.json();
@@ -163,7 +163,7 @@ test("flow: exception reject -> edit/resubmit -> approvals", async ({ page, requ
 
   // 1) Create + submit an exception report (API for speed/determinism)
   const empLogin = await request.post(`${apiBase}/api/auth/login`, {
-    data: { email: "jun@example.com" },
+    data: { email: "jun@example.com", password: "demo1234" },
   });
   expect(empLogin.ok()).toBeTruthy();
   const employee = await empLogin.json();
